@@ -192,7 +192,7 @@
   "payload": {
     "roomId": "R123456",
     "roomType": "OFFICIAL",
-    "maxSeats": 6,
+    "maxSeats": 9,
     "blinds": { "sb": 1, "bb": 2 },
     "buyInCap": 100,
     "phase": "PRE_FLOP",
