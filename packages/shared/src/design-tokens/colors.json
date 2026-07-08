@@ -1,0 +1,35 @@
+{
+  "color": {
+    "brand": {
+      "primary": "#1B5E3B",
+      "secondary": "#C9A227",
+      "accent": "#8B0000"
+    },
+    "felt": {
+      "base": "#0F4A2F",
+      "rail": "#3D2817",
+      "railHighlight": "#5C3D24"
+    },
+    "bg": {
+      "lobby": "#121418",
+      "card": "#1E2228"
+    },
+    "text": {
+      "primary": "#F5F5F5",
+      "secondary": "#9E9E9E",
+      "disabled": "#616161"
+    },
+    "semantic": {
+      "success": "#2E7D32",
+      "danger": "#C62828",
+      "warning": "#F9A825",
+      "info": "#1565C0"
+    }
+  },
+  "spacing": [4, 8, 12, 16, 24, 32, 48, 64],
+  "radius": {
+    "sm": 4,
+    "md": 8,
+    "lg": 12
+  }
+}
