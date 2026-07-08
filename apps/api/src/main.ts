@@ -19,11 +19,10 @@ import {
 import {
   createGuestUser,
   findUserById,
-  mockRecharge,
   signAccessToken,
   verifyAccessToken,
   newDeviceId,
-  getWeeklyProfitTop,
+  getDualLeaderboard,
   searchUsers,
   setUserStatus,
   adminAdjustChips,
@@ -42,7 +41,16 @@ import {
   updateReportStatus,
   getEconomyStats,
   listRiskAlerts,
+  processRecharge,
+  listUserChipTransactions,
+  declareAge,
+  setSelfExclusion,
+  acknowledgeBetaMigration,
+  getComplianceStatus,
+  isUserPlayAllowed,
+  setAdminRemark,
   type UserRow,
+  type RechargeChannel,
 } from '@texas-holdem/db';
 import type { SupportedLocale } from '@texas-holdem/shared';
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@texas-holdem/shared';
@@ -80,7 +88,25 @@ function toProfile(user: UserRow) {
     preferredLocale: user.preferred_locale,
     status: user.status,
     privateRoomPermission: user.private_room_permission,
+    ageVerified: !!user.age_verified_at,
+    hasCompletedRecharge: !!user.has_completed_recharge,
   };
+}
+
+async function assertPlayAllowed(userId: number): Promise<UserRow> {
+  const user = await findUserById(userId);
+  if (!user) throw new UnauthorizedException();
+  if (!(await isUserPlayAllowed(userId))) {
+    throw new ForbiddenException({ code: 'FORBIDDEN', messageKey: 'errors.account_blocked' });
+  }
+  const compliance = await getComplianceStatus(userId, user.preferred_locale);
+  if (!compliance.ageVerified) {
+    throw new ForbiddenException({ code: 'AGE_REQUIRED', messageKey: 'errors.age_required' });
+  }
+  if (compliance.migrationRequired) {
+    throw new ForbiddenException({ code: 'MIGRATION_REQUIRED', messageKey: 'errors.migration_required' });
+  }
+  return user;
 }
 
 function toHandRow(row: Awaited<ReturnType<typeof getHandById>>) {
@@ -135,21 +161,59 @@ class ApiController {
       throw new ForbiddenException({ code: 'FORBIDDEN', messageKey: 'errors.mock_payment_disabled' });
     }
     const { userId } = authUser(auth);
-    const amount = Math.floor(body.amount);
-    if (!amount || amount <= 0) throw new BadRequestException('Invalid amount');
-    if (amount > 50000) throw new BadRequestException('Daily limit exceeded');
-    const balance = await mockRecharge(userId, amount, body.requestId ?? `mock-${Date.now()}`);
-    return { code: 0, message: 'ok', data: { chipsBalance: balance, amount } };
+    const result = await processRecharge({
+      userId,
+      channel: 'MOCK',
+      amount: body.amount,
+      requestId: body.requestId ?? `mock-${Date.now()}`,
+    });
+    return { code: 0, message: 'ok', data: result };
+  }
+
+  @Post('shop/recharge')
+  async shopRecharge(
+    @Headers('authorization') auth: string,
+    @Body()
+    body: {
+      channel: RechargeChannel;
+      amount: number;
+      requestId: string;
+      receiptToken?: string;
+      productId?: string;
+      fiatAmountCents?: number;
+    },
+  ) {
+    const { userId } = authUser(auth);
+    if (body.channel === 'MOCK' && process.env.PAYMENT_MODE !== 'mock') {
+      throw new ForbiddenException({ code: 'FORBIDDEN', messageKey: 'errors.mock_payment_disabled' });
+    }
+    try {
+      const result = await processRecharge({
+        userId,
+        channel: body.channel,
+        amount: body.amount,
+        requestId: body.requestId ?? `rc-${Date.now()}`,
+        receiptToken: body.receiptToken,
+        productId: body.productId,
+        fiatAmountCents: body.fiatAmountCents,
+      });
+      return { code: 0, message: 'ok', data: result };
+    } catch (e) {
+      const msg = (e as Error).message;
+      if (msg === 'DAILY_LIMIT_EXCEEDED') {
+        throw new BadRequestException({ code: 'DAILY_LIMIT', messageKey: 'errors.daily_limit' });
+      }
+      if (msg === 'INVALID_RECEIPT') {
+        throw new BadRequestException({ code: 'INVALID_RECEIPT', messageKey: 'errors.invalid_receipt' });
+      }
+      throw e;
+    }
   }
 
   @Post('match/quick-start')
   async quickStart(@Headers('authorization') auth: string) {
     const { userId } = authUser(auth);
-    const user = await findUserById(userId);
-    if (!user) throw new UnauthorizedException();
-    if (user.status === 'BANNED' || user.status === 'FROZEN') {
-      throw new ForbiddenException({ code: 'FORBIDDEN', messageKey: 'errors.account_blocked' });
-    }
+    const user = await assertPlayAllowed(userId);
     if (Number(user.chips_balance) < 2) {
       throw new BadRequestException({ code: 'INSUFFICIENT_CHIPS', messageKey: 'errors.insufficient_chips' });
     }
@@ -169,18 +233,45 @@ class ApiController {
 
   @Get('leaderboard/weekly-profit')
   async weeklyProfit() {
-    const top = await getWeeklyProfitTop(10);
-    const enriched = await Promise.all(
-      top.map(async (row) => {
-        const user = await findUserById(row.userId);
-        return {
-          userId: row.userId,
-          nickname: user?.nickname ?? `Player${row.userId}`,
-          profit: row.score,
-        };
-      }),
-    );
-    return { code: 0, message: 'ok', data: { list: enriched } };
+    const board = await getDualLeaderboard(10);
+    return { code: 0, message: 'ok', data: { list: board.profit } };
+  }
+
+  @Get('leaderboard')
+  async leaderboard() {
+    const data = await getDualLeaderboard(10);
+    return { code: 0, message: 'ok', data };
+  }
+
+  @Get('user/compliance')
+  async compliance(@Headers('authorization') auth: string) {
+    const { userId } = authUser(auth);
+    const user = await findUserById(userId);
+    if (!user) throw new UnauthorizedException();
+    const data = await getComplianceStatus(userId, user.preferred_locale);
+    return { code: 0, message: 'ok', data };
+  }
+
+  @Post('user/age-declaration')
+  async ageDeclaration(@Headers('authorization') auth: string, @Body() body: { confirmed: boolean }) {
+    if (!body.confirmed) throw new BadRequestException('Confirmation required');
+    const { userId } = authUser(auth);
+    await declareAge(userId);
+    return { code: 0, message: 'ok', data: { ok: true } };
+  }
+
+  @Post('user/self-exclude')
+  async selfExclude(@Headers('authorization') auth: string, @Body() body: { days: number }) {
+    const { userId } = authUser(auth);
+    const until = await setSelfExclusion(userId, body.days ?? 30);
+    return { code: 0, message: 'ok', data: { selfExcludedUntil: until.toISOString() } };
+  }
+
+  @Post('migration/acknowledge')
+  async migrationAck(@Headers('authorization') auth: string) {
+    const { userId } = authUser(auth);
+    await acknowledgeBetaMigration(userId);
+    return { code: 0, message: 'ok', data: { ok: true } };
   }
 }
 
@@ -384,6 +475,49 @@ class AdminController {
     return { code: 0, message: 'ok', data: { chipsBalance: balance } };
   }
 
+  @Get('users/:id')
+  async userDetail(@Headers('authorization') auth: string, @Param('id', ParseIntPipe) id: number) {
+    requireAdmin(auth);
+    const user = await findUserById(id);
+    if (!user) throw new BadRequestException('User not found');
+    const [transactions, hands] = await Promise.all([
+      listUserChipTransactions(id, 50),
+      listHandHistories({ userId: id, limit: 10 }),
+    ]);
+    return {
+      code: 0,
+      message: 'ok',
+      data: {
+        user: {
+          ...toProfile(user),
+          adminRemark: user.admin_remark ?? '',
+          deviceId: user.device_id,
+          createdAt: user.created_at,
+        },
+        transactions: transactions.map((t) => ({
+          id: t.id,
+          amount: Number(t.amount),
+          balanceAfter: Number(t.balance_after),
+          type: t.type,
+          referenceId: t.reference_id,
+          createdAt: t.created_at,
+        })),
+        recentHands: hands.map((row) => toHandRow(row)!),
+      },
+    };
+  }
+
+  @Post('users/:id/remark')
+  async userRemark(
+    @Headers('authorization') auth: string,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { remark: string },
+  ) {
+    requireAdmin(auth);
+    await setAdminRemark(id, body.remark ?? '');
+    return { code: 0, message: 'ok', data: { ok: true } };
+  }
+
   @Get('hands')
   async hands(
     @Headers('authorization') auth: string,
@@ -423,7 +557,7 @@ class AdminController {
   @Post('config')
   async updateConfig(
     @Headers('authorization') auth: string,
-    @Body() body: { privateRoomEnabled?: boolean; privateRoomGlobalPause?: boolean },
+    @Body() body: Partial<Awaited<ReturnType<typeof getSystemConfig>>>,
   ) {
     requireAdmin(auth);
     const data = await updateSystemConfig(body);
@@ -503,7 +637,7 @@ class AdminController {
 class HealthController {
   @Get('health')
   health() {
-    return { status: 'ok', service: 'api', version: '0.3.0' };
+    return { status: 'ok', service: 'api', version: '0.4.0' };
   }
 }
 

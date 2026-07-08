@@ -76,5 +76,29 @@
     "dissolve_failed": "Dissolve vote failed",
     "room_dissolved": "Room dissolved",
     "report_sent": "Report submitted"
+  },
+  "compliance": {
+    "age_title": "Age verification",
+    "age_confirm": "I confirm I am 18+ and understand chips have no cash value.",
+    "age_agree": "Confirm & continue",
+    "migration_title": "Open beta notice",
+    "migration_agree": "I have read and agree"
+  },
+  "settings": {
+    "title": "Settings & compliance",
+    "back": "Lobby",
+    "disclaimer": "For entertainment only. Chips have no real-world cash value.",
+    "responsible_gaming": "Responsible gaming",
+    "self_exclude_desc": "Self-exclusion freezes your account for 30 days.",
+    "self_exclude_btn": "Self-exclude 30 days",
+    "self_exclude_title": "Confirm self-exclusion?",
+    "self_exclude_confirm": "You cannot play for 30 days. Continue?",
+    "self_exclude_done": "Self-exclusion applied",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  },
+  "shop": {
+    "first_bonus_title": "First recharge bonus",
+    "first_bonus_body": "You received {{bonus}} bonus chips!"
   }
 }

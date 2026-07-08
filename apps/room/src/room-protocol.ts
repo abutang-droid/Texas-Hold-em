@@ -3,6 +3,7 @@ import {
   saveHandHistory,
   recordHandExp,
   addWeeklyProfit,
+  addWeeklyBiggestPot,
   saveRoomSnapshot,
   setUserActiveRoom,
   clearUserActiveRoom,
@@ -87,6 +88,12 @@ async function persistHandEnd(summary: HandEndSummary): Promise<void> {
     if (!Number.isFinite(uid)) continue;
     if (r.profit !== 0) await addWeeklyProfit(uid, r.profit);
     await recordHandExp(uid, 10);
+  }
+
+  for (const w of summary.winners) {
+    const uid = Number(w.userId);
+    if (!Number.isFinite(uid)) continue;
+    await addWeeklyBiggestPot(uid, w.winAmount);
   }
 
   await checkHandForChipDumping({

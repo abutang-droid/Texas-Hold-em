@@ -45,9 +45,71 @@ export async function getProfile() {
 }
 
 export async function mockRecharge(amount: number, requestId: string) {
-  return request<{ chipsBalance: number }>('/api/v1/shop/mock-recharge', {
+  return request<{
+    chipsBalance: number;
+    amount: number;
+    bonusChips: number;
+    isFirstRecharge: boolean;
+  }>('/api/v1/shop/mock-recharge', {
     method: 'POST',
     body: JSON.stringify({ amount, requestId }),
+  });
+}
+
+export async function shopRecharge(
+  channel: 'MOCK' | 'APPLE_IAP' | 'GOOGLE_PLAY',
+  amount: number,
+  requestId: string,
+  receiptToken?: string,
+) {
+  return request<{
+    chipsBalance: number;
+    amount: number;
+    bonusChips: number;
+    isFirstRecharge: boolean;
+  }>('/api/v1/shop/recharge', {
+    method: 'POST',
+    body: JSON.stringify({ channel, amount, requestId, receiptToken }),
+  });
+}
+
+export async function getLeaderboard() {
+  return request<{
+    profit: Array<{ userId: number; nickname: string; score: number }>;
+    biggestPot: Array<{ userId: number; nickname: string; score: number }>;
+    refreshedAt: string;
+    refreshMinutes: number;
+  }>('/api/v1/leaderboard');
+}
+
+export async function getCompliance() {
+  return request<{
+    ageVerified: boolean;
+    migrationRequired: boolean;
+    migrationMessage: string;
+    isSelfExcluded: boolean;
+    selfExcludedUntil: string | null;
+  }>('/api/v1/user/compliance');
+}
+
+export async function declareAge() {
+  return request<{ ok: boolean }>('/api/v1/user/age-declaration', {
+    method: 'POST',
+    body: JSON.stringify({ confirmed: true }),
+  });
+}
+
+export async function acknowledgeMigration() {
+  return request<{ ok: boolean }>('/api/v1/migration/acknowledge', {
+    method: 'POST',
+    body: JSON.stringify({}),
+  });
+}
+
+export async function selfExclude(days: number) {
+  return request<{ selfExcludedUntil: string }>('/api/v1/user/self-exclude', {
+    method: 'POST',
+    body: JSON.stringify({ days }),
   });
 }
 

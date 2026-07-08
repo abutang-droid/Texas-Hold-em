@@ -21,6 +21,8 @@ export default function EconomyPage() {
     { label: '累计 Rake', value: stats.totalRakeCollected },
     { label: '总手牌数', value: stats.handsPlayed },
     { label: '活跃私人房', value: stats.privateRoomsActive },
+    { label: 'Bot 净亏损', value: stats.botNetLoss },
+    { label: '今日充值量', value: stats.rechargeVolumeToday },
   ];
 
   return (

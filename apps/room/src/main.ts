@@ -4,6 +4,7 @@ import {
   buyInChips,
   cashOutChips,
   findPrivateRoomByRoomId,
+  getRakeRate,
 } from '@texas-holdem/db';
 import type { ActionType } from '@texas-holdem/poker-engine';
 import { createServer } from 'node:http';
@@ -35,13 +36,14 @@ async function resolveTableConfig(roomId: string): Promise<Partial<TableConfig> 
   if (!roomId.startsWith('P')) return undefined;
   const row = await findPrivateRoomByRoomId(roomId);
   if (!row) return undefined;
+  const rakeRate = await getRakeRate('PRIVATE');
   return {
     roomType: 'PRIVATE',
     maxSeats: row.max_seats,
     smallBlind: Number(row.small_blind),
     bigBlind: Number(row.big_blind),
     buyInCap: Number(row.buy_in_cap),
-    rakeRate: 0.03,
+    rakeRate,
     hostUserId: String(row.host_user_id),
   };
 }
