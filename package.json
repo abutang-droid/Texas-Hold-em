@@ -12,7 +12,11 @@
     "dev:room": "pnpm --filter @texas-holdem/room run start:dev",
     "dev:mobile": "pnpm --filter @texas-holdem/mobile run start",
     "dev:admin": "pnpm --filter @texas-holdem/admin run dev",
-    "smoke": "tsx scripts/smoke-api.ts"
+    "smoke": "tsx scripts/smoke-api.ts",
+    "local:up": "bash scripts/local-up.sh",
+    "local:down": "bash scripts/local-down.sh",
+    "local:test": "bash scripts/local-test.sh",
+    "migrate": "bash scripts/migrate.sh"
   },
   "engines": {
     "node": ">=20"

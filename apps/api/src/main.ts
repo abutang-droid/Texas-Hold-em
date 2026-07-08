@@ -41,6 +41,7 @@ import {
   listReports,
   updateReportStatus,
   getEconomyStats,
+  listRiskAlerts,
   type UserRow,
 } from '@texas-holdem/db';
 import type { SupportedLocale } from '@texas-holdem/shared';
@@ -475,6 +476,26 @@ class AdminController {
   async economy(@Headers('authorization') auth: string) {
     requireAdmin(auth);
     return { code: 0, message: 'ok', data: await getEconomyStats() };
+  }
+
+  @Get('risk-alerts')
+  async riskAlerts(@Headers('authorization') auth: string) {
+    requireAdmin(auth);
+    const rows = await listRiskAlerts(100);
+    return {
+      code: 0,
+      message: 'ok',
+      data: {
+        list: rows.map((r) => ({
+          id: r.id,
+          alertType: r.alert_type,
+          userId: r.user_id ? Number(r.user_id) : null,
+          roomId: r.room_id,
+          detail: r.detail_json,
+          createdAt: r.created_at,
+        })),
+      },
+    };
   }
 }
 

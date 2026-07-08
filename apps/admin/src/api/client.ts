@@ -66,6 +66,15 @@ export interface ReportTicket {
   createdAt: string;
 }
 
+export interface RiskAlert {
+  id: number;
+  alertType: string;
+  userId: number | null;
+  roomId: string | null;
+  detail: unknown;
+  createdAt: string;
+}
+
 export interface EconomyStats {
   totalUsers: number;
   totalChipsInCirculation: number;
@@ -104,4 +113,5 @@ export const adminApi = {
       body: JSON.stringify({ status }),
     }),
   getEconomy: () => request<EconomyStats>('/api/v1/admin/economy'),
+  listRiskAlerts: () => request<{ list: RiskAlert[] }>('/api/v1/admin/risk-alerts'),
 };

@@ -71,6 +71,7 @@ export interface HandEndSummary {
   roomType: 'OFFICIAL' | 'PRIVATE';
   boardCards: string;
   potSize: number;
+  buyInCap: number;
   rakeAmount: number;
   winners: Array<{ seatIndex: number; userId: string; winAmount: number }>;
   actions: HandActionRecord[];
@@ -142,6 +143,22 @@ export class InteractiveTable {
 
   markKickAfterHand(userId: string): void {
     this.pendingKick.add(userId);
+  }
+
+  addChipsToPlayer(userId: string, amount: number): void {
+    const p = this.players.find((pl) => pl.userId === userId);
+    if (!p) throw new Error('NOT_SEATED');
+    const cap = this.config.buyInCap;
+    const room = p.chips + amount;
+    p.chips = Math.min(cap, room);
+  }
+
+  getSeatedHumanUserIds(): string[] {
+    return this.players.filter((p) => !p.isBot).map((p) => p.userId);
+  }
+
+  getSeatedCount(): number {
+    return this.players.filter((p) => !p.isBot).length;
   }
 
   hasPlayer(userId: string): boolean {
@@ -483,6 +500,7 @@ export class InteractiveTable {
         roomType: this.config.roomType,
         boardCards: this.communityCards.map((c) => c.rank + c.suit).join(' '),
         potSize: totalPot,
+        buyInCap: this.config.buyInCap,
         rakeAmount,
         winners,
         actions: [...this.actionLog],

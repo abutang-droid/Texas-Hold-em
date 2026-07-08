@@ -32,6 +32,9 @@ export function Layout() {
         <NavLink className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`} to="/economy">
           经济看板
         </NavLink>
+        <NavLink className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`} to="/risk">
+          风控告警
+        </NavLink>
         <button className="btn btn-secondary" style={{ marginTop: 24, width: '100%' }} onClick={logout}>
           退出
         </button>

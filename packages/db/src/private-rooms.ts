@@ -111,6 +111,10 @@ export async function countActivePrivateRooms(): Promise<number> {
   return Number(res.rows[0]?.count ?? 0);
 }
 
+export async function setPrivateRoomStatusByRoomId(roomId: string, status: string): Promise<void> {
+  await query(`UPDATE private_rooms SET status = $1 WHERE room_id = $2`, [status, roomId]);
+}
+
 export async function setPrivateRoomStatus(roomCode: string, status: string): Promise<void> {
   await query(`UPDATE private_rooms SET status = $1 WHERE room_code = $2`, [status, roomCode]);
 }

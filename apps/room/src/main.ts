@@ -18,6 +18,11 @@ import {
   resolveReconnectRoom,
   wireTableHandlers,
 } from './room-protocol.js';
+import {
+  registerPrivateHandlers,
+  handleDissolveVoteStart,
+  onPlayerJoinedPrivateRoom,
+} from './register-private-handlers.js';
 import type { Server, Socket } from 'socket.io';
 import { Server as SocketServer } from 'socket.io';
 
@@ -105,6 +110,7 @@ async function handleJoin(
     });
     userRoom.set(userId, msg.roomId);
     ensureRoomTick(io, msg.roomId);
+    onPlayerJoinedPrivateRoom(msg.roomId, userId, table);
     const result = { ok: true as const, seatIndex: seat };
     cacheRequestResult(msg.requestId, result);
     return result;
@@ -150,6 +156,8 @@ export function startRoomServer(port: number): void {
   io.on('connection', (socket) => {
     const userId = socket.data.userId as string;
     const nickname = socket.data.nickname as string;
+
+    registerPrivateHandlers({ io, socket, userId, nickname, userRoom, rooms });
 
     socket.on(
       'join_room',
@@ -282,6 +290,8 @@ export function startRoomServer(port: number): void {
           table.setPaused(true);
         } else if (msg.action === 'resume') {
           table.setPaused(false);
+        } else if (msg.action === 'dissolve_vote') {
+          handleDissolveVoteStart({ io, roomId, table, hostUserId: userId, userRoom });
         }
         broadcastState(io, roomId, table);
       },

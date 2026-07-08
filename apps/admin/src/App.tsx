@@ -6,6 +6,7 @@ import HandsPage from './pages/HandsPage';
 import ConfigPage from './pages/ConfigPage';
 import ReportsPage from './pages/ReportsPage';
 import EconomyPage from './pages/EconomyPage';
+import RiskPage from './pages/RiskPage';
 import { getAdminKey } from './api/client';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="config" element={<ConfigPage />} />
         <Route path="reports" element={<ReportsPage />} />
         <Route path="economy" element={<EconomyPage />} />
+        <Route path="risk" element={<RiskPage />} />
       </Route>
     </Routes>
   );

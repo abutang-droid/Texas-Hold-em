@@ -7,6 +7,7 @@ import {
   setUserActiveRoom,
   clearUserActiveRoom,
   getUserActiveRoom,
+  checkHandForChipDumping,
 } from '@texas-holdem/db';
 import type { ActionType } from '@texas-holdem/poker-engine';
 import type { HandEndSummary, InteractiveTable } from './game/interactive-table.js';
@@ -87,6 +88,13 @@ async function persistHandEnd(summary: HandEndSummary): Promise<void> {
     if (r.profit !== 0) await addWeeklyProfit(uid, r.profit);
     await recordHandExp(uid, 10);
   }
+
+  await checkHandForChipDumping({
+    roomId: summary.roomId,
+    roomType: summary.roomType,
+    buyInCap: summary.buyInCap,
+    results: summary.results,
+  });
 }
 
 export async function syncRoomSnapshot(table: InteractiveTable): Promise<void> {

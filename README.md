@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-**Phase 3 进行中** — 私人场 v1.0.5 + Admin Web UI
+**Phase 3 核心完成** — 私人场 v1.0.5 + Admin + 本机测试环境
 
 | 模块 | 状态 |
 |---|---|
@@ -17,21 +17,19 @@
 
 ## 快速开始
 
+详见 **[本机测试环境搭建](docs/LOCAL_DEV.md)**
+
 ```bash
 pnpm install
-pnpm build
+pnpm local:up          # Docker: PostgreSQL + Redis + migrations
 
-# 基础设施
-docker compose up -d
+pnpm dev:api           # http://localhost:3000
+pnpm dev:room          # http://localhost:3001
+pnpm dev:admin         # http://localhost:5173
+pnpm dev:mobile        # Expo
 
-# 服务（各开终端）
-pnpm dev:api      # http://localhost:3000
-pnpm dev:room     # http://localhost:3001
-pnpm dev:mobile   # Expo
-pnpm dev:admin    # http://localhost:5173
-
-cp .env.example .env
-pnpm smoke
+pnpm smoke             # API 冒烟
+pnpm local:test        # 完整测试（需 api 运行）
 ```
 
 ## Admin 后台
