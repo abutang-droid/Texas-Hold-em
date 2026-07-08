@@ -4,7 +4,44 @@
 
 ## 当前阶段
 
-**PRD v2.0 已定稿** — 可启动 Phase 1 开发。
+**Phase 1 已启动** — Monorepo + `poker-engine` 核心引擎可用。
+
+## 快速开始
+
+```bash
+# 安装依赖
+pnpm install
+
+# 运行扑克引擎单元测试（16 tests）
+pnpm --filter @texas-holdem/poker-engine test
+
+# 9 人桌 CLI 演示
+pnpm demo
+
+# 构建所有包
+pnpm build
+
+# 启动基础设施（MySQL + Redis）
+docker compose up -d
+
+# 启动 API / Room 服务
+pnpm dev:api   # http://localhost:3000/health
+pnpm dev:room  # http://localhost:3001/health
+```
+
+## 项目结构
+
+```
+apps/
+  api/          REST API 服务（NestJS）
+  room/         实时房间服务（NestJS，Phase 2 接 WebSocket）
+packages/
+  poker-engine/ 核心扑克引擎（洗牌/比牌/边池/抽水/Bot/状态机）
+  shared/       共享类型
+infra/
+  migrations/   MySQL DDL
+docs/           产品与技术文档
+```
 
 ## 权威文档（请优先阅读）
 

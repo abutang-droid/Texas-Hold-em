@@ -1,0 +1,18 @@
+{
+  "name": "texas-holdem",
+  "private": true,
+  "version": "0.1.0",
+  "description": "联网多人德州扑克",
+  "scripts": {
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "lint": "pnpm -r run lint",
+    "demo": "pnpm --filter @texas-holdem/poker-engine run demo",
+    "dev:api": "pnpm --filter @texas-holdem/api run start:dev",
+    "dev:room": "pnpm --filter @texas-holdem/room run start:dev"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.9.0"
+}

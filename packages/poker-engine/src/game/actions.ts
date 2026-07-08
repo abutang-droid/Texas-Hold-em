@@ -1,0 +1,134 @@
+import type { PlayerState } from './settlement.js';
+
+export type ActionType = 'fold' | 'check' | 'call' | 'raise' | 'all_in';
+
+export interface ActionContext {
+  players: PlayerState[];
+  currentSeat: number;
+  bigBlind: number;
+  currentBet: number;
+  minRaise: number;
+}
+
+export interface ValidActions {
+  actions: ActionType[];
+  callAmount: number;
+  minRaiseTotal: number;
+  maxRaiseTotal: number;
+}
+
+export function getValidActions(ctx: ActionContext): ValidActions {
+  const player = ctx.players.find((p) => p.seatIndex === ctx.currentSeat);
+  if (!player || player.status !== 'ACTIVE') {
+    return { actions: [], callAmount: 0, minRaiseTotal: 0, maxRaiseTotal: 0 };
+  }
+
+  const toCall = ctx.currentBet - player.betThisRound;
+  const actions: ActionType[] = [];
+  const canCheck = toCall <= 0;
+  const remaining = player.chips;
+
+  if (!canCheck) actions.push('fold');
+  if (canCheck) actions.push('check');
+  if (toCall > 0 && remaining >= toCall) actions.push('call');
+  if (remaining > toCall) {
+    actions.push('raise');
+    actions.push('all_in');
+  } else if (remaining > 0 && toCall > 0) {
+    actions.push('all_in');
+  }
+
+  const minRaiseTotal = ctx.currentBet + ctx.minRaise;
+  const maxRaiseTotal = player.betThisRound + remaining;
+
+  return {
+    actions,
+    callAmount: Math.min(toCall, remaining),
+    minRaiseTotal: Math.min(minRaiseTotal, maxRaiseTotal),
+    maxRaiseTotal,
+  };
+}
+
+export interface ApplyActionInput {
+  player: PlayerState;
+  action: ActionType;
+  amount?: number;
+  currentBet: number;
+  minRaise: number;
+}
+
+export interface ApplyActionResult {
+  player: PlayerState;
+  newCurrentBet: number;
+  raiseSize: number;
+}
+
+export function applyAction(input: ApplyActionInput): ApplyActionResult {
+  const { player, action, currentBet, minRaise } = input;
+  const updated = { ...player, holeCards: [...player.holeCards] };
+  const toCall = currentBet - updated.betThisRound;
+  let newCurrentBet = currentBet;
+  let raiseSize = 0;
+
+  switch (action) {
+    case 'fold':
+      updated.status = 'FOLDED';
+      break;
+    case 'check':
+      if (toCall > 0) throw new Error('Cannot check when facing a bet');
+      break;
+    case 'call': {
+      const pay = Math.min(toCall, updated.chips);
+      updated.chips -= pay;
+      updated.betThisRound += pay;
+      updated.totalBetInHand += pay;
+      if (updated.chips === 0) updated.status = 'ALL_IN';
+      break;
+    }
+    case 'raise':
+    case 'all_in': {
+      const targetTotal = action === 'all_in'
+        ? updated.betThisRound + updated.chips
+        : (input.amount ?? currentBet);
+      if (targetTotal < updated.betThisRound) {
+        throw new Error('Invalid raise amount');
+      }
+      const add = Math.min(targetTotal - updated.betThisRound, updated.chips);
+      if (action === 'raise' && targetTotal < currentBet + minRaise && add < updated.chips) {
+        throw new Error(`Raise must be at least ${currentBet + minRaise}`);
+      }
+      updated.chips -= add;
+      updated.betThisRound += add;
+      updated.totalBetInHand += add;
+      raiseSize = updated.betThisRound - currentBet;
+      newCurrentBet = Math.max(newCurrentBet, updated.betThisRound);
+      if (updated.chips === 0) updated.status = 'ALL_IN';
+      break;
+    }
+    default:
+      throw new Error(`Unknown action: ${action}`);
+  }
+
+  return { player: updated, newCurrentBet, raiseSize };
+}
+
+export function isBettingRoundComplete(players: PlayerState[], currentBet: number): boolean {
+  const canAct = players.filter((p) => p.status === 'ACTIVE');
+  if (canAct.length <= 1) return true;
+  return canAct.every((p) => p.betThisRound === currentBet);
+}
+
+export function countActivePlayers(players: PlayerState[]): number {
+  return players.filter((p) => p.status === 'ACTIVE' || p.status === 'ALL_IN').length;
+}
+
+export function nextActiveSeat(players: PlayerState[], fromSeat: number): number | null {
+  const sorted = [...players].sort((a, b) => a.seatIndex - b.seatIndex);
+  const n = sorted.length;
+  const start = sorted.findIndex((p) => p.seatIndex === fromSeat);
+  for (let i = 1; i <= n; i += 1) {
+    const p = sorted[(start + i) % n];
+    if (p.status === 'ACTIVE') return p.seatIndex;
+  }
+  return null;
+}
