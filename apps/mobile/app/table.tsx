@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,24 @@ interface TableState {
   seats: SeatView[];
 }
 
+function applySnapshot(
+  payload: TableState & { seats: SeatView[] },
+  setState: (s: TableState) => void,
+  setMyUserId: (id: string) => void,
+) {
+  setState({
+    potTotal: payload.potTotal,
+    communityCards: payload.communityCards,
+    currentTurnSeat: payload.currentTurnSeat,
+    seats: payload.seats.map((seat) => ({
+      ...seat,
+      isActive: seat.seatIndex === payload.currentTurnSeat,
+    })),
+  });
+  const me = payload.seats.find((x) => x.holeCards && x.holeCards[0] !== '**');
+  if (me?.userId) setMyUserId(me.userId);
+}
+
 export default function TableScreen() {
   const { roomId } = useLocalSearchParams<{ roomId: string }>();
   const { t } = useTranslation();
@@ -27,36 +45,42 @@ export default function TableScreen() {
   });
   const [socket, setSocket] = useState<Socket | null>(null);
   const [myUserId, setMyUserId] = useState<string | null>(null);
+  const joinedRef = useRef(false);
 
   useEffect(() => {
     const token = getToken();
     if (!token || !roomId) return;
 
-    const s = io(ROOM_URL, { auth: { token }, transports: ['websocket'] });
+    const s = io(ROOM_URL, {
+      auth: { token },
+      transports: ['websocket'],
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+    });
     setSocket(s);
 
-    s.on('connect', () => {
-      s.emit('join_room', { roomId, buyInAmount: 100 }, (ack: { ok: boolean }) => {
-        if (!ack?.ok) router.back();
+    const join = (reconnect = false) => {
+      const event = reconnect ? 'reconnect_room' : 'join_room';
+      const payload = reconnect
+        ? { roomId, requestId: `reconnect-${Date.now()}` }
+        : { roomId, buyInAmount: 100, requestId: `join-${Date.now()}` };
+      s.emit(event, payload, (ack: { ok: boolean }) => {
+        if (!ack?.ok && !reconnect) router.back();
       });
+    };
+
+    s.on('connect', () => {
+      join(joinedRef.current);
+      joinedRef.current = true;
     });
 
     s.on('room_state_sync', (msg: { payload: TableState & { seats: SeatView[] } }) => {
-      const p = msg.payload;
-      setState({
-        potTotal: p.potTotal,
-        communityCards: p.communityCards,
-        currentTurnSeat: p.currentTurnSeat,
-        seats: p.seats.map((seat) => ({
-          ...seat,
-          isActive: seat.seatIndex === p.currentTurnSeat,
-        })),
-      });
-      const me = p.seats.find((x) => x.holeCards && x.holeCards[0] !== '**');
-      if (me?.userId) setMyUserId(me.userId);
+      applySnapshot(msg.payload, setState, setMyUserId);
     });
 
     return () => {
+      s.emit('leave_room', { requestId: `leave-${Date.now()}` });
       s.disconnect();
     };
   }, [roomId, router]);
@@ -90,7 +114,7 @@ export default function TableScreen() {
       <Pressable
         style={styles.back}
         onPress={() => {
-          socket?.emit('leave_room');
+          socket?.emit('leave_room', { requestId: `leave-${Date.now()}` });
           router.back();
         }}
       >

@@ -31,6 +31,7 @@ export interface SeatInfo {
 
 export interface PublicTableState {
   roomId: string;
+  roomType: 'OFFICIAL' | 'PRIVATE';
   phase: HandPhase;
   handId: string | null;
   maxSeats: number;
@@ -39,8 +40,10 @@ export interface PublicTableState {
   buttonSeat: number;
   communityCards: string[];
   potTotal: number;
+  pots: Array<{ amount: number; eligibleSeats: number[] }>;
   currentTurnSeat: number | null;
   actionDeadline: number | null;
+  mySeatIndex: number | null;
   seats: Array<{
     seatIndex: number;
     userId: string;
@@ -51,6 +54,27 @@ export interface PublicTableState {
     isBot: boolean;
     holeCards: string[] | ['**', '**'];
   }>;
+}
+
+export interface HandActionRecord {
+  seatIndex: number;
+  userId: string;
+  actionType: string;
+  amount?: number;
+  phase: string;
+  ts: number;
+}
+
+export interface HandEndSummary {
+  handId: string;
+  roomId: string;
+  boardCards: string;
+  potSize: number;
+  rakeAmount: number;
+  winners: Array<{ seatIndex: number; userId: string; winAmount: number }>;
+  actions: HandActionRecord[];
+  playerSnapshot: Record<string, { nickname: string; chips: number; isBot: boolean }>;
+  results: Array<{ userId: string; profit: number; isBot: boolean }>;
 }
 
 const BOT_NAMES = ['Mike_D', 'PokerKing88', 'LuckyAce', 'RiverRat', 'ChipStack', 'BluffMaster'];
@@ -106,12 +130,48 @@ export class InteractiveTable {
     if (p && p.status === 'ACTIVE') p.status = 'SIT_OUT';
   }
 
-  setHandEndHandler(handler: (results: Array<{ userId: string; profit: number; isBot: boolean }>) => void): void {
+  setHandEndHandler(handler: (summary: HandEndSummary) => void): void {
     this.onHandEnd = handler;
   }
 
-  private onHandEnd?: (results: Array<{ userId: string; profit: number; isBot: boolean }>) => void;
+  setGameStartedHandler(handler: (info: {
+    handId: string;
+    buttonSeat: number;
+    sbSeat: number;
+    bbSeat: number;
+  }) => void): void {
+    this.onGameStarted = handler;
+  }
+
+  getValidTurnActions(): ReturnType<typeof getValidActions> | null {
+    if (this.phase === 'WAITING' || this.phase === 'END_HAND' || this.actionDeadline === null) return null;
+    return getValidActions({
+      players: this.players,
+      currentSeat: this.currentSeat,
+      bigBlind: this.bb,
+      currentBet: this.currentBet,
+      minRaise: this.minRaise,
+    });
+  }
+
+  getCurrentTurnSeat(): number | null {
+    if (this.phase === 'WAITING' || this.phase === 'END_HAND') return null;
+    return this.currentSeat;
+  }
+
+  getSnapshot(forUserId?: string): PublicTableState {
+    return this.getPublicState(forUserId);
+  }
+
+  private onHandEnd?: (summary: HandEndSummary) => void;
+  private onGameStarted?: (info: {
+    handId: string;
+    buttonSeat: number;
+    sbSeat: number;
+    bbSeat: number;
+  }) => void;
   private chipsAtHandStart = new Map<string, number>();
+  private actionLog: HandActionRecord[] = [];
 
   addPlayer(userId: string, nickname: string, chips: number, isBot = false): number {
     const used = new Set(this.players.map((p) => p.seatIndex));
@@ -194,12 +254,19 @@ export class InteractiveTable {
     const btnIdx = seats.indexOf(this.buttonSeat) >= 0 ? seats.indexOf(this.buttonSeat) : 0;
     const sbSeat = seats[(btnIdx + 1) % seats.length];
     const bbSeat = seats[(btnIdx + 2) % seats.length];
+    this.actionLog = [];
     this.postBlind(sbSeat, this.sb);
     this.postBlind(bbSeat, this.bb);
     this.currentBet = this.bb;
     this.minRaise = this.bb;
     this.currentSeat = nextActiveSeat(this.players, bbSeat) ?? bbSeat;
     this.setDeadline();
+    this.onGameStarted?.({
+      handId: this.handId!,
+      buttonSeat: this.buttonSeat,
+      sbSeat,
+      bbSeat,
+    });
   }
 
   private postBlind(seatIndex: number, amount: number): void {
@@ -235,6 +302,14 @@ export class InteractiveTable {
     Object.assign(p, result.player);
     if (result.raiseSize > 0) this.minRaise = Math.max(this.minRaise, result.raiseSize);
     this.currentBet = result.newCurrentBet;
+    this.actionLog.push({
+      seatIndex,
+      userId: p.userId,
+      actionType: action,
+      amount,
+      phase: this.phase,
+      ts: Date.now(),
+    });
     this.advanceAfterAction();
   }
 
@@ -290,10 +365,18 @@ export class InteractiveTable {
   private finishHand(): void {
     const active = this.players.filter((p) => p.status !== 'FOLDED' && p.status !== 'SIT_OUT');
     const totalPot = this.getPotTotal();
+    let rakeAmount = 0;
+    const winners: HandEndSummary['winners'] = [];
 
     if (active.length === 1) {
       const rake = calculateRake({ totalPot, reachedFlop: this.reachedFlop, rakeRate: this.rakeRate });
+      rakeAmount = rake.rakeAmount;
       active[0].chips += rake.distributablePot;
+      winners.push({
+        seatIndex: active[0].seatIndex,
+        userId: active[0].userId,
+        winAmount: rake.distributablePot,
+      });
     } else if (active.length > 1) {
       const pots = calculateSidePots(
         this.players.map((p) => ({
@@ -312,9 +395,15 @@ export class InteractiveTable {
         this.rakeRate,
         active.map((p) => p.seatIndex),
       );
+      rakeAmount = settlement.totalRake;
       for (const w of settlement.winners) {
         const p = this.players.find((pl) => pl.seatIndex === w.seatIndex);
         if (p) p.chips += w.winAmount;
+        winners.push({
+          seatIndex: w.seatIndex,
+          userId: p?.userId ?? '',
+          winAmount: w.winAmount,
+        });
       }
     }
 
@@ -322,13 +411,31 @@ export class InteractiveTable {
     this.buttonSeat = (this.buttonSeat + 1) % 9;
     this.actionDeadline = null;
 
-    if (this.onHandEnd) {
+    if (this.onHandEnd && this.handId) {
       const results = this.players.map((p) => ({
         userId: p.userId,
         profit: p.chips - (this.chipsAtHandStart.get(p.userId) ?? p.chips),
         isBot: p.isBot,
       }));
-      this.onHandEnd(results);
+      const playerSnapshot: HandEndSummary['playerSnapshot'] = {};
+      for (const p of this.players) {
+        playerSnapshot[p.userId] = {
+          nickname: p.nickname,
+          chips: p.chips,
+          isBot: p.isBot,
+        };
+      }
+      this.onHandEnd({
+        handId: this.handId,
+        roomId: this.roomId,
+        boardCards: this.communityCards.map((c) => c.rank + c.suit).join(' '),
+        potSize: totalPot,
+        rakeAmount,
+        winners,
+        actions: [...this.actionLog],
+        playerSnapshot,
+        results,
+      });
     }
 
     setTimeout(() => {
@@ -381,8 +488,17 @@ export class InteractiveTable {
   }
 
   getPublicState(forUserId?: string): PublicTableState {
+    const mySeat = forUserId
+      ? this.players.find((p) => p.userId === forUserId)?.seatIndex ?? null
+      : null;
+    const potTotal = this.getPotTotal();
+    const eligibleSeats = this.players
+      .filter((p) => p.status !== 'FOLDED' && p.status !== 'SIT_OUT')
+      .map((p) => p.seatIndex);
+
     return {
       roomId: this.roomId,
+      roomType: 'OFFICIAL',
       phase: this.phase,
       handId: this.handId,
       maxSeats: 9,
@@ -390,9 +506,11 @@ export class InteractiveTable {
       buyInCap: 100,
       buttonSeat: this.buttonSeat,
       communityCards: this.communityCards.map((c) => c.rank + c.suit),
-      potTotal: this.getPotTotal(),
+      potTotal,
+      pots: [{ amount: potTotal, eligibleSeats }],
       currentTurnSeat: this.phase !== 'WAITING' && this.phase !== 'END_HAND' ? this.currentSeat : null,
       actionDeadline: this.actionDeadline,
+      mySeatIndex: mySeat,
       seats: this.players.map((p) => ({
         seatIndex: p.seatIndex,
         userId: p.userId,

@@ -1,6 +1,21 @@
 import 'reflect-metadata';
-import { NestFactory } from '@nestjs/core';
-import { Module, Controller, Post, Get, Body, Headers, UnauthorizedException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  NestFactory,
+} from '@nestjs/core';
+import {
+  Module,
+  Controller,
+  Post,
+  Get,
+  Body,
+  Headers,
+  Param,
+  Query,
+  UnauthorizedException,
+  BadRequestException,
+  ForbiddenException,
+  ParseIntPipe,
+} from '@nestjs/common';
 import {
   createGuestUser,
   findUserById,
@@ -9,6 +24,12 @@ import {
   verifyAccessToken,
   newDeviceId,
   getWeeklyProfitTop,
+  searchUsers,
+  setUserStatus,
+  adminAdjustChips,
+  verifyAdminKey,
+  listHandHistories,
+  getHandById,
   type UserRow,
 } from '@texas-holdem/db';
 import type { SupportedLocale } from '@texas-holdem/shared';
@@ -30,6 +51,12 @@ function authUser(authHeader?: string): { userId: number; nickname: string } {
   return { userId: payload.sub, nickname: payload.nickname };
 }
 
+function requireAdmin(authHeader?: string): void {
+  if (!verifyAdminKey(authHeader)) {
+    throw new ForbiddenException({ code: 'FORBIDDEN', messageKey: 'errors.admin_forbidden' });
+  }
+}
+
 function toProfile(user: UserRow) {
   return {
     id: user.id,
@@ -39,6 +66,23 @@ function toProfile(user: UserRow) {
     level: user.level,
     totalExp: user.total_exp,
     preferredLocale: user.preferred_locale,
+    status: user.status,
+  };
+}
+
+function toHandRow(row: Awaited<ReturnType<typeof getHandById>>) {
+  if (!row) return null;
+  return {
+    handId: row.hand_id,
+    roomId: row.room_id,
+    roomType: row.room_type,
+    potSize: Number(row.pot_size),
+    rakeAmount: Number(row.rake_amount),
+    boardCards: row.board_cards,
+    winners: row.winners_json,
+    actions: row.actions_json,
+    playerSnapshot: row.player_snapshot,
+    createdAt: row.created_at,
   };
 }
 
@@ -90,6 +134,9 @@ class ApiController {
     const { userId } = authUser(auth);
     const user = await findUserById(userId);
     if (!user) throw new UnauthorizedException();
+    if (user.status === 'BANNED' || user.status === 'FROZEN') {
+      throw new ForbiddenException({ code: 'FORBIDDEN', messageKey: 'errors.account_blocked' });
+    }
     if (Number(user.chips_balance) < 2) {
       throw new BadRequestException({ code: 'INSUFFICIENT_CHIPS', messageKey: 'errors.insufficient_chips' });
     }
@@ -124,15 +171,79 @@ class ApiController {
   }
 }
 
+@Controller('api/v1/admin')
+class AdminController {
+  @Get('users')
+  async users(@Headers('authorization') auth: string, @Query('q') q?: string) {
+    requireAdmin(auth);
+    const rows = await searchUsers(q ?? '', 50);
+    return { code: 0, message: 'ok', data: { list: rows.map(toProfile) } };
+  }
+
+  @Post('users/:id/ban')
+  async banUser(
+    @Headers('authorization') auth: string,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { status?: 'BANNED' | 'FROZEN' | 'ACTIVE' },
+  ) {
+    requireAdmin(auth);
+    const status = body.status ?? 'BANNED';
+    const user = await setUserStatus(id, status);
+    if (!user) throw new BadRequestException('User not found');
+    return { code: 0, message: 'ok', data: toProfile(user) };
+  }
+
+  @Post('users/:id/adjust-chips')
+  async adjustChips(
+    @Headers('authorization') auth: string,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { amount: number; reason: string },
+  ) {
+    requireAdmin(auth);
+    const balance = await adminAdjustChips(id, Math.floor(body.amount), body.reason ?? 'admin');
+    return { code: 0, message: 'ok', data: { chipsBalance: balance } };
+  }
+
+  @Get('hands')
+  async hands(
+    @Headers('authorization') auth: string,
+    @Query('roomId') roomId?: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
+    requireAdmin(auth);
+    const rows = await listHandHistories({
+      roomId,
+      limit: limit ? Number(limit) : 20,
+      offset: offset ? Number(offset) : 0,
+    });
+    return {
+      code: 0,
+      message: 'ok',
+      data: {
+        list: rows.map((row) => toHandRow(row)!),
+      },
+    };
+  }
+
+  @Get('hands/:handId')
+  async handDetail(@Headers('authorization') auth: string, @Param('handId') handId: string) {
+    requireAdmin(auth);
+    const row = await getHandById(handId);
+    if (!row) throw new BadRequestException('Hand not found');
+    return { code: 0, message: 'ok', data: toHandRow(row) };
+  }
+}
+
 @Controller()
 class HealthController {
   @Get('health')
   health() {
-    return { status: 'ok', service: 'api', version: '0.2.0' };
+    return { status: 'ok', service: 'api', version: '0.2.1' };
   }
 }
 
-@Module({ controllers: [HealthController, ApiController] })
+@Module({ controllers: [HealthController, ApiController, AdminController] })
 class AppModule {}
 
 async function bootstrap() {

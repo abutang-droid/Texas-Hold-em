@@ -11,8 +11,9 @@
 | `poker-engine` | ✅ 16 单测通过 |
 | `packages/db` | ✅ PostgreSQL + Redis 封装 |
 | `apps/api` | ✅ 游客登录 / 模拟充值 / 快速开始 / 周榜 |
-| `apps/room` | ✅ Socket.io 9 人桌 + Bot 补位 + DB 买入 |
-| `apps/mobile` | ✅ 大厅 / 牌桌 / i18n / Onboarding |
+| `apps/room` | ✅ Socket.io 9 人桌 + Bot 补位 + DB 买入 + 手牌落库 |
+| `apps/mobile` | ✅ 大厅 / 牌桌 / i18n / Onboarding / 断线重连 |
+| Admin API | ✅ 用户查询/封禁/调账 + hand_histories 只读 |
 
 ## 快速开始
 
@@ -80,5 +81,17 @@ docs/           产品与技术文档
 
 ## 下一步
 
-- Phase 2 收尾：断线重连 Snapshot、后台 v1.0、完整 WS 协议对齐
+- Phase 2 收尾：完整 WS 增量事件动画队列、运营后台 UI
 - Phase 3：私人场（v1.0.5）
+
+## Admin API（v1.0）
+
+需请求头 `Authorization: Bearer <ADMIN_API_KEY>`：
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| GET | `/api/v1/admin/users?q=` | 用户搜索 |
+| POST | `/api/v1/admin/users/:id/ban` | 封禁/解冻 |
+| POST | `/api/v1/admin/users/:id/adjust-chips` | 手动调账 |
+| GET | `/api/v1/admin/hands` | 手牌列表（只读） |
+| GET | `/api/v1/admin/hands/:handId` | 手牌详情 |
