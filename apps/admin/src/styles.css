@@ -1,0 +1,189 @@
+:root {
+  --bg: #121418;
+  --card: #1e2228;
+  --border: #2a2f38;
+  --text: #f5f5f5;
+  --muted: #9e9e9e;
+  --gold: #c9a227;
+  --green: #2e7d32;
+  --red: #c62828;
+  --blue: #1565c0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+a {
+  color: var(--gold);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+}
+
+.sidebar {
+  background: #0d0f12;
+  border-right: 1px solid var(--border);
+  padding: 24px 16px;
+}
+
+.sidebar h1 {
+  font-size: 16px;
+  margin: 0 0 24px;
+  color: var(--gold);
+}
+
+.nav-link {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--muted);
+  text-decoration: none;
+  margin-bottom: 4px;
+}
+
+.nav-link.active,
+.nav-link:hover {
+  background: var(--card);
+  color: var(--text);
+}
+
+.main {
+  padding: 24px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+input,
+select,
+textarea {
+  background: #121418;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: var(--gold);
+  color: #1a1a1a;
+}
+
+.btn-danger {
+  background: var(--red);
+  color: #fff;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.badge-active {
+  background: rgba(46, 125, 50, 0.2);
+  color: #81c784;
+}
+
+.badge-banned {
+  background: rgba(198, 40, 40, 0.2);
+  color: #ef9a9a;
+}
+
+.badge-frozen {
+  background: rgba(21, 101, 192, 0.2);
+  color: #90caf9;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+.login-card {
+  width: min(420px, 92vw);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.error {
+  color: #ef9a9a;
+  margin-top: 8px;
+}
+
+pre.json {
+  background: #0d0f12;
+  border-radius: 8px;
+  padding: 12px;
+  overflow: auto;
+  font-size: 12px;
+}

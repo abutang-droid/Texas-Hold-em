@@ -1,8 +1,9 @@
-import { InteractiveTable } from './game/interactive-table.js';
+import { InteractiveTable, type TableConfig } from './game/interactive-table.js';
 import {
   verifyAccessToken,
   buyInChips,
   cashOutChips,
+  findPrivateRoomByRoomId,
 } from '@texas-holdem/db';
 import type { ActionType } from '@texas-holdem/poker-engine';
 import { createServer } from 'node:http';
@@ -21,13 +22,34 @@ import type { Server, Socket } from 'socket.io';
 import { Server as SocketServer } from 'socket.io';
 
 const rooms = new Map<string, InteractiveTable>();
+const roomConfigs = new Map<string, Partial<TableConfig>>();
 const roomTicks = new Map<string, ReturnType<typeof setInterval>>();
 const userRoom = new Map<string, string>();
 
-function getOrCreateRoom(roomId: string, io: Server): InteractiveTable {
+async function resolveTableConfig(roomId: string): Promise<Partial<TableConfig> | undefined> {
+  if (!roomId.startsWith('P')) return undefined;
+  const row = await findPrivateRoomByRoomId(roomId);
+  if (!row) return undefined;
+  return {
+    roomType: 'PRIVATE',
+    maxSeats: row.max_seats,
+    smallBlind: Number(row.small_blind),
+    bigBlind: Number(row.big_blind),
+    buyInCap: Number(row.buy_in_cap),
+    rakeRate: 0.03,
+    hostUserId: String(row.host_user_id),
+  };
+}
+
+async function getOrCreateRoom(roomId: string, io: Server): Promise<InteractiveTable> {
   let table = rooms.get(roomId);
   if (!table) {
-    table = new InteractiveTable(roomId);
+    let cfg = roomConfigs.get(roomId);
+    if (!cfg) {
+      cfg = await resolveTableConfig(roomId);
+      if (cfg) roomConfigs.set(roomId, cfg);
+    }
+    table = new InteractiveTable(roomId, cfg);
     wireTableHandlers(table, io, roomId);
     rooms.set(roomId, table);
   }
@@ -64,8 +86,9 @@ async function handleJoin(
   const cached = getCachedRequest<{ ok: boolean; seatIndex: number }>(msg.requestId);
   if (cached) return cached;
 
-  const buyIn = Math.min(100, Math.floor(msg.buyInAmount ?? 100));
-  const table = getOrCreateRoom(msg.roomId, io);
+  const table = await getOrCreateRoom(msg.roomId, io);
+  const cap = table.config.buyInCap;
+  const actualBuyIn = Math.min(cap, Math.floor(msg.buyInAmount ?? cap));
 
   try {
     const { seat } = await joinRoomFlow({
@@ -75,9 +98,9 @@ async function handleJoin(
       roomId: msg.roomId,
       userId,
       nickname,
-      buyIn,
+      buyIn: actualBuyIn,
       buyInFn: async () => {
-        await buyInChips(Number(userId), buyIn, `${msg.roomId}:${userId}`);
+        await buyInChips(Number(userId), actualBuyIn, `${msg.roomId}:${userId}`);
       },
     });
     userRoom.set(userId, msg.roomId);
@@ -102,7 +125,7 @@ export function startRoomServer(port: number): void {
   const httpServer = createServer((req, res) => {
     if (req.url === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.2.1' }));
+      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.3.0' }));
       return;
     }
     res.writeHead(404);
@@ -241,6 +264,26 @@ export function startRoomServer(port: number): void {
         } catch {
           emitError(socket, 'INVALID_ACTION', msg.requestId, 'errors.invalid_action');
         }
+      },
+    );
+
+    socket.on(
+      'room_admin_action',
+      (msg: { action: string; targetUserId?: string; requestId?: string }) => {
+        const roomId = userRoom.get(userId);
+        const table = roomId ? rooms.get(roomId) : undefined;
+        if (!roomId || !table || table.getHostUserId() !== userId) {
+          emitError(socket, 'FORBIDDEN', msg.requestId);
+          return;
+        }
+        if (msg.action === 'kick' && msg.targetUserId) {
+          table.markKickAfterHand(msg.targetUserId);
+        } else if (msg.action === 'pause') {
+          table.setPaused(true);
+        } else if (msg.action === 'resume') {
+          table.setPaused(false);
+        }
+        broadcastState(io, roomId, table);
       },
     );
 

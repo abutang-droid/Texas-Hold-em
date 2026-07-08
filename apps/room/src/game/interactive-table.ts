@@ -68,6 +68,7 @@ export interface HandActionRecord {
 export interface HandEndSummary {
   handId: string;
   roomId: string;
+  roomType: 'OFFICIAL' | 'PRIVATE';
   boardCards: string;
   potSize: number;
   rakeAmount: number;
@@ -79,8 +80,28 @@ export interface HandEndSummary {
 
 const BOT_NAMES = ['Mike_D', 'PokerKing88', 'LuckyAce', 'RiverRat', 'ChipStack', 'BluffMaster'];
 
+export interface TableConfig {
+  roomType: 'OFFICIAL' | 'PRIVATE';
+  maxSeats: number;
+  smallBlind: number;
+  bigBlind: number;
+  buyInCap: number;
+  rakeRate: number;
+  hostUserId?: string;
+}
+
+const OFFICIAL_DEFAULT: TableConfig = {
+  roomType: 'OFFICIAL',
+  maxSeats: 9,
+  smallBlind: 1,
+  bigBlind: 2,
+  buyInCap: 100,
+  rakeRate: 0.05,
+};
+
 export class InteractiveTable {
   readonly roomId: string;
+  readonly config: TableConfig;
   private players: PlayerState[] = [];
   private deck: Card[] = [];
   private communityCards: Card[] = [];
@@ -91,15 +112,36 @@ export class InteractiveTable {
   private currentBet = 0;
   private minRaise = 2;
   private reachedFlop = false;
-  private readonly sb = 1;
-  private readonly bb = 2;
-  private readonly rakeRate = 0.05;
   private actionDeadline: number | null = null;
   private botFillTimer: ReturnType<typeof setTimeout> | null = null;
   private realPlayerCount = 0;
+  private paused = false;
+  private pendingKick = new Set<string>();
 
-  constructor(roomId: string) {
+  constructor(roomId: string, config?: Partial<TableConfig>) {
     this.roomId = roomId;
+    this.config = { ...OFFICIAL_DEFAULT, ...config };
+    this.minRaise = this.config.bigBlind;
+  }
+
+  getHostUserId(): string | undefined {
+    return this.config.hostUserId;
+  }
+
+  isPrivate(): boolean {
+    return this.config.roomType === 'PRIVATE';
+  }
+
+  setPaused(paused: boolean): void {
+    this.paused = paused;
+  }
+
+  isPaused(): boolean {
+    return this.paused;
+  }
+
+  markKickAfterHand(userId: string): void {
+    this.pendingKick.add(userId);
   }
 
   hasPlayer(userId: string): boolean {
@@ -148,7 +190,7 @@ export class InteractiveTable {
     return getValidActions({
       players: this.players,
       currentSeat: this.currentSeat,
-      bigBlind: this.bb,
+      bigBlind: this.config.bigBlind,
       currentBet: this.currentBet,
       minRaise: this.minRaise,
     });
@@ -176,10 +218,10 @@ export class InteractiveTable {
   addPlayer(userId: string, nickname: string, chips: number, isBot = false): number {
     const used = new Set(this.players.map((p) => p.seatIndex));
     let seat = 0;
-    while (used.has(seat) && seat < 9) seat += 1;
-    if (seat >= 9) throw new Error('ROOM_FULL');
+    while (used.has(seat) && seat < this.config.maxSeats) seat += 1;
+    if (seat >= this.config.maxSeats) throw new Error('ROOM_FULL');
 
-    const buyIn = Math.min(100, chips);
+    const buyIn = Math.min(this.config.buyInCap, chips);
     this.players.push({
       seatIndex: seat,
       userId,
@@ -198,22 +240,28 @@ export class InteractiveTable {
   }
 
   private scheduleBotFill(): void {
+    if (this.config.roomType === 'PRIVATE') return;
     if (this.botFillTimer) clearTimeout(this.botFillTimer);
     if (this.realPlayerCount < 1) return;
     this.botFillTimer = setTimeout(() => {
       const reals = this.players.filter((p) => !p.isBot).length;
       const total = this.players.length;
-      if (reals >= 1 && total < 3 && total < 9) {
+      if (reals >= 1 && total < 3 && total < this.config.maxSeats) {
         const botId = `bot_${Date.now()}_${total}`;
-        this.addPlayer(botId, BOT_NAMES[total % BOT_NAMES.length], 100, true);
+        this.addPlayer(botId, BOT_NAMES[total % BOT_NAMES.length], this.config.buyInCap, true);
       }
-      if (this.players.length < 3 && this.players.filter((p) => !p.isBot).length >= 1) {
+      if (
+        this.players.length < 3 &&
+        this.players.filter((p) => !p.isBot).length >= 1 &&
+        this.players.length < this.config.maxSeats
+      ) {
         this.scheduleBotFill();
       }
     }, 5000);
   }
 
   private tryStartHand(): void {
+    if (this.paused) return;
     const active = this.players.filter((p) => p.status !== 'SIT_OUT' && p.chips > 0);
     if (active.length < 2 || this.phase !== 'WAITING' && this.phase !== 'END_HAND') return;
     if (this.phase === 'END_HAND') {
@@ -255,10 +303,10 @@ export class InteractiveTable {
     const sbSeat = seats[(btnIdx + 1) % seats.length];
     const bbSeat = seats[(btnIdx + 2) % seats.length];
     this.actionLog = [];
-    this.postBlind(sbSeat, this.sb);
-    this.postBlind(bbSeat, this.bb);
-    this.currentBet = this.bb;
-    this.minRaise = this.bb;
+    this.postBlind(sbSeat, this.config.smallBlind);
+    this.postBlind(bbSeat, this.config.bigBlind);
+    this.currentBet = this.config.bigBlind;
+    this.minRaise = this.config.bigBlind;
     this.currentSeat = nextActiveSeat(this.players, bbSeat) ?? bbSeat;
     this.setDeadline();
     this.onGameStarted?.({
@@ -337,7 +385,7 @@ export class InteractiveTable {
     this.advancePhase();
     for (const p of this.players) p.betThisRound = 0;
     this.currentBet = 0;
-    this.minRaise = this.bb;
+    this.minRaise = this.config.bigBlind;
     this.currentSeat = nextActiveSeat(this.players, this.buttonSeat) ?? this.buttonSeat;
     this.setDeadline();
   }
@@ -369,7 +417,11 @@ export class InteractiveTable {
     const winners: HandEndSummary['winners'] = [];
 
     if (active.length === 1) {
-      const rake = calculateRake({ totalPot, reachedFlop: this.reachedFlop, rakeRate: this.rakeRate });
+      const rake = calculateRake({
+        totalPot,
+        reachedFlop: this.reachedFlop,
+        rakeRate: this.config.rakeRate,
+      });
       rakeAmount = rake.rakeAmount;
       active[0].chips += rake.distributablePot;
       winners.push({
@@ -392,7 +444,7 @@ export class InteractiveTable {
         this.communityCards,
         evaluateBestHand,
         this.reachedFlop,
-        this.rakeRate,
+        this.config.rakeRate,
         active.map((p) => p.seatIndex),
       );
       rakeAmount = settlement.totalRake;
@@ -408,7 +460,7 @@ export class InteractiveTable {
     }
 
     this.phase = 'END_HAND';
-    this.buttonSeat = (this.buttonSeat + 1) % 9;
+    this.buttonSeat = (this.buttonSeat + 1) % this.config.maxSeats;
     this.actionDeadline = null;
 
     if (this.onHandEnd && this.handId) {
@@ -428,6 +480,7 @@ export class InteractiveTable {
       this.onHandEnd({
         handId: this.handId,
         roomId: this.roomId,
+        roomType: this.config.roomType,
         boardCards: this.communityCards.map((c) => c.rank + c.suit).join(' '),
         potSize: totalPot,
         rakeAmount,
@@ -439,6 +492,10 @@ export class InteractiveTable {
     }
 
     setTimeout(() => {
+      for (const uid of [...this.pendingKick]) {
+        if (this.hasPlayer(uid)) this.removePlayer(uid);
+        this.pendingKick.delete(uid);
+      }
       this.phase = 'WAITING';
       this.tryStartHand();
     }, 3000);
@@ -456,7 +513,7 @@ export class InteractiveTable {
     const valid = getValidActions({
       players: this.players,
       currentSeat: this.currentSeat,
-      bigBlind: this.bb,
+      bigBlind: this.config.bigBlind,
       currentBet: this.currentBet,
       minRaise: this.minRaise,
     });
@@ -470,7 +527,7 @@ export class InteractiveTable {
         potSize: this.getPotTotal(),
         toCall: this.currentBet - p.betThisRound,
         stack: p.chips,
-        bigBlind: this.bb,
+        bigBlind: this.config.bigBlind,
         seatIndex: p.seatIndex,
         buttonSeat: this.buttonSeat,
         valid,
@@ -498,12 +555,12 @@ export class InteractiveTable {
 
     return {
       roomId: this.roomId,
-      roomType: 'OFFICIAL',
+      roomType: this.config.roomType,
       phase: this.phase,
       handId: this.handId,
-      maxSeats: 9,
-      blinds: { sb: this.sb, bb: this.bb },
-      buyInCap: 100,
+      maxSeats: this.config.maxSeats,
+      blinds: { sb: this.config.smallBlind, bb: this.config.bigBlind },
+      buyInCap: this.config.buyInCap,
       buttonSeat: this.buttonSeat,
       communityCards: this.communityCards.map((c) => c.rank + c.suit),
       potTotal,

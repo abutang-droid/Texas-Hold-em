@@ -4,94 +4,74 @@
 
 ## 当前阶段
 
-**Phase 2 进行中** — API 认证/支付/匹配 + Room Server Socket.io + Expo 客户端骨架。
+**Phase 3 进行中** — 私人场 v1.0.5 + Admin Web UI
 
 | 模块 | 状态 |
 |---|---|
 | `poker-engine` | ✅ 16 单测通过 |
-| `packages/db` | ✅ PostgreSQL + Redis 封装 |
-| `apps/api` | ✅ 游客登录 / 模拟充值 / 快速开始 / 周榜 |
-| `apps/room` | ✅ Socket.io 9 人桌 + Bot 补位 + DB 买入 + 手牌落库 |
-| `apps/mobile` | ✅ 大厅 / 牌桌 / i18n / Onboarding / 断线重连 |
-| Admin API | ✅ 用户查询/封禁/调账 + hand_histories 只读 |
+| `packages/db` | ✅ PostgreSQL + Redis |
+| `apps/api` | ✅ 官方场 + 私人场 + Admin API |
+| `apps/room` | ✅ 官方/私人桌 + 房主管理 |
+| `apps/mobile` | ✅ 大厅 / 牌桌 / 私人场 |
+| `apps/admin` | ✅ 运营后台 Web UI |
 
 ## 快速开始
 
 ```bash
-# 安装依赖
 pnpm install
-
-# 构建所有包
 pnpm build
 
-# 运行扑克引擎单元测试
-pnpm test
-
-# 9 人桌 CLI 演示
-pnpm demo
-
-# 启动基础设施（PostgreSQL + Redis）
+# 基础设施
 docker compose up -d
 
-# 启动服务（另开终端）
-pnpm dev:api    # http://localhost:3000/health
-pnpm dev:room   # http://localhost:3001/health
-pnpm dev:mobile # Expo 开发服务器
+# 服务（各开终端）
+pnpm dev:api      # http://localhost:3000
+pnpm dev:room     # http://localhost:3001
+pnpm dev:mobile   # Expo
+pnpm dev:admin    # http://localhost:5173
 
-# API 冒烟测试（需 docker compose 已启动）
 cp .env.example .env
 pnpm smoke
 ```
+
+## Admin 后台
+
+1. 启动 `pnpm dev:api` 与 `pnpm dev:admin`
+2. 浏览器打开 http://localhost:5173
+3. 使用 `.env` 中 `ADMIN_API_KEY` 登录
+
+功能：用户查询/封禁/调账、手牌只读、私人场开关、举报工单、经济看板
+
+## 私人场（v1.0.5）
+
+客户端大厅 →「私人场」：
+
+1. 支付 100 筹码开通权限（协议存证）
+2. 建房：配置人数/带入上限，获取 6 位房间号 + 分享文案
+3. 加入：输入房间号进入牌桌
+
+API：`POST /api/v1/private/grant-permission` · `create-room` · `join-room`
 
 ## 项目结构
 
 ```
 apps/
-  api/          REST API（NestJS）
-  room/         实时房间服务（Socket.io）
-  mobile/       Expo 客户端（iOS / Android / Web）
+  api/          REST API
+  room/         Socket.io 房间服务
+  mobile/       Expo 客户端
+  admin/        运营后台 (Vite + React)
 packages/
-  poker-engine/ 核心扑克引擎
-  db/           PostgreSQL + Redis 数据访问
+  poker-engine/ 扑克引擎
+  db/           数据访问层
   shared/       共享类型 + Design Tokens
-infra/
-  migrations/   PostgreSQL DDL
-docs/           产品与技术文档
+infra/migrations/
+docs/
 ```
 
 ## 权威文档
 
 | 文档 | 说明 |
 |---|---|
-| **[PRD-完整版-v2.1.md](docs/PRD-完整版-v2.1.md)** | 产品单一事实来源 |
-| [11-统一设计规范.md](docs/11-统一设计规范.md) | 视觉 / 组件规范 |
-| [12-多语言规划.md](docs/12-多语言规划.md) | zh-CN + en-US |
+| [PRD-完整版-v2.1.md](docs/PRD-完整版-v2.1.md) | 产品主文档 |
 | [07-开发里程碑与任务拆分.md](docs/07-开发里程碑与任务拆分.md) | Phase 1–5 |
-
-## v2.1 关键决策
-
-| 项 | 决策 |
-|---|---|
-| 官方场 | 9 人桌 |
-| 数据库 | PostgreSQL 16 + Redis 7 |
-| 语言 | zh-CN + en-US |
-| 支付 v1.0 | Mock（`PAYMENT_MODE=mock`） |
-| Bot v1.0 | 规则型，Room Server 内置 |
-| 私人场 | v1.0.5 |
-
-## 下一步
-
-- Phase 2 收尾：完整 WS 增量事件动画队列、运营后台 UI
-- Phase 3：私人场（v1.0.5）
-
-## Admin API（v1.0）
-
-需请求头 `Authorization: Bearer <ADMIN_API_KEY>`：
-
-| 方法 | 路径 | 说明 |
-|---|---|---|
-| GET | `/api/v1/admin/users?q=` | 用户搜索 |
-| POST | `/api/v1/admin/users/:id/ban` | 封禁/解冻 |
-| POST | `/api/v1/admin/users/:id/adjust-chips` | 手动调账 |
-| GET | `/api/v1/admin/hands` | 手牌列表（只读） |
-| GET | `/api/v1/admin/hands/:handId` | 手牌详情 |
+| [10-版本范围规划.md](docs/10-版本范围规划.md) | v1.0 / v1.0.5 / v1.1 |

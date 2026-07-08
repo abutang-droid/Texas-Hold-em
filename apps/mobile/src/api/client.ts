@@ -63,3 +63,50 @@ export async function getWeeklyTop() {
     '/api/v1/leaderboard/weekly-profit',
   );
 }
+
+export async function getPrivatePermission() {
+  return request<{
+    hasPermission: boolean;
+    officialHandsPlayed: number;
+    canCreateTwoPlayer: boolean;
+    fee: number;
+  }>('/api/v1/private/permission');
+}
+
+export async function grantPrivatePermission() {
+  return request<{ privateRoomPermission: boolean }>('/api/v1/private/grant-permission', {
+    method: 'POST',
+    body: JSON.stringify({ agreed: true }),
+  });
+}
+
+export async function createPrivateRoom(config: {
+  maxSeats: number;
+  smallBlind: number;
+  bigBlind: number;
+  buyInCap: number;
+}) {
+  return request<{
+    roomCode: string;
+    roomId: string;
+    inviteText: string;
+    deepLink: string;
+    buyInCap: number;
+    blinds: { sb: number; bb: number };
+  }>('/api/v1/private/create-room', {
+    method: 'POST',
+    body: JSON.stringify(config),
+  });
+}
+
+export async function joinPrivateRoom(roomCode: string) {
+  return request<{
+    roomCode: string;
+    roomId: string;
+    buyInCap: number;
+    blinds: { sb: number; bb: number };
+  }>('/api/v1/private/join-room', {
+    method: 'POST',
+    body: JSON.stringify({ roomCode }),
+  });
+}

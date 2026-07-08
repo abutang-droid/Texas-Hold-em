@@ -12,6 +12,7 @@ export interface UserRow {
   level: number;
   preferred_locale: SupportedLocale;
   device_id: string | null;
+  private_room_permission: boolean;
   status: string;
 }
 

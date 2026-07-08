@@ -6,6 +6,7 @@
   "lobby": {
     "quick_start": "快速开始",
     "recharge": "充值",
+    "private": "私人场",
     "weekly_top": "本周盈利榜",
     "balance": "余额"
   },
@@ -35,5 +36,23 @@
   },
   "errors": {
     "insufficient_chips": "筹码不足"
+  },
+  "private": {
+    "title": "私人场",
+    "back": "返回大厅",
+    "permission_desc": "开通私人场权限需一次性支付 {{fee}} 筹码，并同意合规协议。",
+    "grant_permission": "同意协议并开通",
+    "create": "创建房间",
+    "create_btn": "建房",
+    "max_seats": "人数上限 (2-9)",
+    "buy_in_cap": "带入上限",
+    "room_created": "建房成功",
+    "share": "分享邀请",
+    "enter_room": "进入牌桌",
+    "join": "加入房间",
+    "room_code": "6 位房间号",
+    "join_btn": "加入",
+    "two_player_blocked": "2 人局需先完成 10 局官方场",
+    "official_hands": "已完成官方场 {{count}} 局"
   }
 }

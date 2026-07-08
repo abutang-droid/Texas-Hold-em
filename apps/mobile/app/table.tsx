@@ -34,7 +34,10 @@ function applySnapshot(
 }
 
 export default function TableScreen() {
-  const { roomId } = useLocalSearchParams<{ roomId: string }>();
+  const { roomId, buyInCap: buyInCapParam } = useLocalSearchParams<{
+    roomId: string;
+    buyInCap?: string;
+  }>();
   const { t } = useTranslation();
   const router = useRouter();
   const [state, setState] = useState<TableState>({
@@ -60,11 +63,13 @@ export default function TableScreen() {
     });
     setSocket(s);
 
+    const buyIn = buyInCapParam ? Number(buyInCapParam) : 100;
+
     const join = (reconnect = false) => {
       const event = reconnect ? 'reconnect_room' : 'join_room';
       const payload = reconnect
         ? { roomId, requestId: `reconnect-${Date.now()}` }
-        : { roomId, buyInAmount: 100, requestId: `join-${Date.now()}` };
+        : { roomId, buyInAmount: buyIn, requestId: `join-${Date.now()}` };
       s.emit(event, payload, (ack: { ok: boolean }) => {
         if (!ack?.ok && !reconnect) router.back();
       });
@@ -83,7 +88,7 @@ export default function TableScreen() {
       s.emit('leave_room', { requestId: `leave-${Date.now()}` });
       s.disconnect();
     };
-  }, [roomId, router]);
+  }, [roomId, buyInCapParam, router]);
 
   const sendAction = (actionType: string, amount?: number) => {
     socket?.emit('player_action', { actionType, amount, requestId: `a-${Date.now()}` });

@@ -6,6 +6,7 @@
   "lobby": {
     "quick_start": "Quick Start",
     "recharge": "Recharge",
+    "private": "Private Room",
     "weekly_top": "Weekly Top",
     "balance": "Balance"
   },
@@ -35,5 +36,23 @@
   },
   "errors": {
     "insufficient_chips": "Insufficient chips"
+  },
+  "private": {
+    "title": "Private Room",
+    "back": "Lobby",
+    "permission_desc": "Unlock private rooms for a one-time fee of {{fee}} chips. You must agree to the compliance terms.",
+    "grant_permission": "Agree & Unlock",
+    "create": "Create Room",
+    "create_btn": "Create",
+    "max_seats": "Max seats (2-9)",
+    "buy_in_cap": "Buy-in cap",
+    "room_created": "Room Created",
+    "share": "Share Invite",
+    "enter_room": "Enter Table",
+    "join": "Join Room",
+    "room_code": "6-digit room code",
+    "join_btn": "Join",
+    "two_player_blocked": "2-player games require 10 official hands first",
+    "official_hands": "Official hands played: {{count}}"
   }
 }

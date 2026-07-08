@@ -30,6 +30,17 @@ import {
   verifyAdminKey,
   listHandHistories,
   getHandById,
+  getSystemConfig,
+  updateSystemConfig,
+  isPrivateRoomAllowed,
+  grantPrivateRoomPermission,
+  createPrivateRoom,
+  findPrivateRoomByCode,
+  countOfficialHandsForUser,
+  createReport,
+  listReports,
+  updateReportStatus,
+  getEconomyStats,
   type UserRow,
 } from '@texas-holdem/db';
 import type { SupportedLocale } from '@texas-holdem/shared';
@@ -67,6 +78,7 @@ function toProfile(user: UserRow) {
     totalExp: user.total_exp,
     preferredLocale: user.preferred_locale,
     status: user.status,
+    privateRoomPermission: user.private_room_permission,
   };
 }
 
@@ -171,6 +183,173 @@ class ApiController {
   }
 }
 
+@Controller('api/v1/private')
+class PrivateController {
+  @Post('grant-permission')
+  async grantPermission(
+    @Headers('authorization') auth: string,
+    @Headers('x-forwarded-for') forwarded: string,
+    @Headers('user-agent') ua: string,
+    @Body() body: { agreed: boolean },
+  ) {
+    if (!body.agreed) throw new BadRequestException('Agreement required');
+    if (!(await isPrivateRoomAllowed())) {
+      throw new ForbiddenException({ code: 'FORBIDDEN', messageKey: 'errors.private_room_disabled' });
+    }
+    const { userId } = authUser(auth);
+    const user = await grantPrivateRoomPermission(userId, forwarded?.split(',')[0] ?? null, ua ?? null);
+    return { code: 0, message: 'ok', data: toProfile(user) };
+  }
+
+  @Get('permission')
+  async permission(@Headers('authorization') auth: string) {
+    const { userId } = authUser(auth);
+    const user = await findUserById(userId);
+    if (!user) throw new UnauthorizedException();
+    const officialHands = await countOfficialHandsForUser(userId);
+    return {
+      code: 0,
+      message: 'ok',
+      data: {
+        hasPermission: user.private_room_permission,
+        officialHandsPlayed: officialHands,
+        canCreateTwoPlayer: officialHands >= 10,
+        fee: 100,
+      },
+    };
+  }
+
+  @Post('create-room')
+  async createRoom(
+    @Headers('authorization') auth: string,
+    @Body()
+    body: {
+      maxSeats: number;
+      smallBlind: number;
+      bigBlind: number;
+      buyInCap: number;
+    },
+  ) {
+    if (!(await isPrivateRoomAllowed())) {
+      throw new ForbiddenException({ code: 'FORBIDDEN', messageKey: 'errors.private_room_disabled' });
+    }
+    const { userId } = authUser(auth);
+    const user = await findUserById(userId);
+    if (!user?.private_room_permission) {
+      throw new ForbiddenException({ code: 'FORBIDDEN', messageKey: 'errors.private_permission_required' });
+    }
+    const maxSeats = Math.min(9, Math.max(2, Math.floor(body.maxSeats ?? 6)));
+    if (maxSeats === 2) {
+      const hands = await countOfficialHandsForUser(userId);
+      if (hands < 10) {
+        throw new ForbiddenException({ code: 'FORBIDDEN', messageKey: 'errors.two_player_requires_official' });
+      }
+    }
+    const sb = Math.floor(body.smallBlind ?? 1);
+    const bb = Math.floor(body.bigBlind ?? 2);
+    const buyInCap = Math.min(10000, Math.max(10, Math.floor(body.buyInCap ?? 500)));
+    if (bb <= sb) throw new BadRequestException('Invalid blinds');
+
+    const room = await createPrivateRoom({
+      hostUserId: userId,
+      maxSeats,
+      smallBlind: sb,
+      bigBlind: bb,
+      buyInCap,
+    });
+    const roomServerUrl = process.env.ROOM_SERVER_URL ?? 'http://localhost:3001';
+    return {
+      code: 0,
+      message: 'ok',
+      data: {
+        roomCode: room.room_code,
+        roomId: room.room_id,
+        wsUrl: roomServerUrl,
+        maxSeats: room.max_seats,
+        blinds: { sb: Number(room.small_blind), bb: Number(room.big_blind) },
+        buyInCap: Number(room.buy_in_cap),
+        inviteText: `来打德州！房间号 ${room.room_code}，盲注 ${sb}/${bb}，上限 ${buyInCap}`,
+        deepLink: `texasholdem://room/${room.room_code}`,
+      },
+    };
+  }
+
+  @Post('join-room')
+  async joinRoom(@Headers('authorization') auth: string, @Body() body: { roomCode: string }) {
+    if (!(await isPrivateRoomAllowed())) {
+      throw new ForbiddenException({ code: 'FORBIDDEN', messageKey: 'errors.private_room_disabled' });
+    }
+    const { userId } = authUser(auth);
+    const user = await findUserById(userId);
+    if (!user) throw new UnauthorizedException();
+    const room = await findPrivateRoomByCode(body.roomCode);
+    if (!room) throw new BadRequestException({ code: 'ROOM_NOT_FOUND', messageKey: 'errors.room_not_found' });
+    const roomServerUrl = process.env.ROOM_SERVER_URL ?? 'http://localhost:3001';
+    return {
+      code: 0,
+      message: 'ok',
+      data: {
+        roomCode: room.room_code,
+        roomId: room.room_id,
+        wsUrl: roomServerUrl,
+        hostUserId: Number(room.host_user_id),
+        maxSeats: room.max_seats,
+        blinds: { sb: Number(room.small_blind), bb: Number(room.big_blind) },
+        buyInCap: Number(room.buy_in_cap),
+      },
+    };
+  }
+
+  @Get('room/:code')
+  async roomInfo(@Param('code') code: string) {
+    const room = await findPrivateRoomByCode(code);
+    if (!room) throw new BadRequestException('Room not found');
+    return {
+      code: 0,
+      message: 'ok',
+      data: {
+        roomCode: room.room_code,
+        roomId: room.room_id,
+        maxSeats: room.max_seats,
+        blinds: { sb: Number(room.small_blind), bb: Number(room.big_blind) },
+        buyInCap: Number(room.buy_in_cap),
+        status: room.status,
+      },
+    };
+  }
+
+  @Post('report')
+  async report(
+    @Headers('authorization') auth: string,
+    @Body()
+    body: {
+      reportedUserId?: number;
+      roomId?: string;
+      handId?: string;
+      category: string;
+      description?: string;
+    },
+  ) {
+    const { userId } = authUser(auth);
+    const ticket = await createReport({
+      reporterUserId: userId,
+      reportedUserId: body.reportedUserId,
+      roomId: body.roomId,
+      handId: body.handId,
+      category: body.category,
+      description: body.description,
+    });
+    return {
+      code: 0,
+      message: 'ok',
+      data: {
+        id: ticket.id,
+        status: ticket.status,
+      },
+    };
+  }
+}
+
 @Controller('api/v1/admin')
 class AdminController {
   @Get('users')
@@ -233,17 +412,81 @@ class AdminController {
     if (!row) throw new BadRequestException('Hand not found');
     return { code: 0, message: 'ok', data: toHandRow(row) };
   }
+
+  @Get('config')
+  async config(@Headers('authorization') auth: string) {
+    requireAdmin(auth);
+    return { code: 0, message: 'ok', data: await getSystemConfig() };
+  }
+
+  @Post('config')
+  async updateConfig(
+    @Headers('authorization') auth: string,
+    @Body() body: { privateRoomEnabled?: boolean; privateRoomGlobalPause?: boolean },
+  ) {
+    requireAdmin(auth);
+    const data = await updateSystemConfig(body);
+    return { code: 0, message: 'ok', data };
+  }
+
+  @Get('reports')
+  async reports(@Headers('authorization') auth: string) {
+    requireAdmin(auth);
+    const rows = await listReports(100);
+    return {
+      code: 0,
+      message: 'ok',
+      data: {
+        list: rows.map((r) => ({
+          id: r.id,
+          reporterUserId: Number(r.reporter_user_id),
+          reportedUserId: r.reported_user_id ? Number(r.reported_user_id) : null,
+          roomId: r.room_id,
+          handId: r.hand_id,
+          category: r.category,
+          description: r.description,
+          status: r.status,
+          createdAt: r.created_at,
+        })),
+      },
+    };
+  }
+
+  @Post('reports/:id')
+  async updateReport(
+    @Headers('authorization') auth: string,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { status: string },
+  ) {
+    requireAdmin(auth);
+    const row = await updateReportStatus(id, body.status);
+    if (!row) throw new BadRequestException('Report not found');
+    return {
+      code: 0,
+      message: 'ok',
+      data: {
+        id: row.id,
+        status: row.status,
+      },
+    };
+  }
+
+  @Get('economy')
+  async economy(@Headers('authorization') auth: string) {
+    requireAdmin(auth);
+    return { code: 0, message: 'ok', data: await getEconomyStats() };
+  }
 }
 
 @Controller()
 class HealthController {
   @Get('health')
   health() {
-    return { status: 'ok', service: 'api', version: '0.2.1' };
+    return { status: 'ok', service: 'api', version: '0.3.0' };
   }
 }
 
-@Module({ controllers: [HealthController, ApiController, AdminController] })
+@Module({ controllers: [HealthController, ApiController, PrivateController, AdminController] })
 class AppModule {}
 
 async function bootstrap() {

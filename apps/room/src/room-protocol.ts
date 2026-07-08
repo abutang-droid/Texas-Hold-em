@@ -71,7 +71,7 @@ async function persistHandEnd(summary: HandEndSummary): Promise<void> {
   await saveHandHistory({
     handId: summary.handId,
     roomId: summary.roomId,
-    roomType: 'OFFICIAL',
+    roomType: summary.roomType,
     potSize: summary.potSize,
     rakeAmount: summary.rakeAmount,
     boardCards: summary.boardCards,

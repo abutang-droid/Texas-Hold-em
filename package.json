@@ -11,6 +11,7 @@
     "dev:api": "pnpm --filter @texas-holdem/api run start:dev",
     "dev:room": "pnpm --filter @texas-holdem/room run start:dev",
     "dev:mobile": "pnpm --filter @texas-holdem/mobile run start",
+    "dev:admin": "pnpm --filter @texas-holdem/admin run dev",
     "smoke": "tsx scripts/smoke-api.ts"
   },
   "engines": {

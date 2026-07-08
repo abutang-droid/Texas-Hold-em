@@ -77,6 +77,10 @@ export default function LobbyScreen() {
       <Pressable style={styles.secondaryBtn} onPress={onRecharge}>
         <Text style={styles.secondaryText}>{t('lobby.recharge')}</Text>
       </Pressable>
+
+      <Pressable style={styles.secondaryBtn} onPress={() => router.push('/private')}>
+        <Text style={styles.secondaryText}>{t('lobby.private')}</Text>
+      </Pressable>
     </View>
   );
 }
@@ -104,6 +108,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 12,
   },
   secondaryText: { color: '#C9A227', fontSize: 16 },
 });
