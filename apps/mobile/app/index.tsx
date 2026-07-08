@@ -4,8 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import {
   guestLogin,
-  getProfile,
-  mockRecharge,
   quickStart,
   getLeaderboard,
   getCompliance,
@@ -43,23 +41,10 @@ export default function LobbyScreen() {
     init();
   }, [init]);
 
-  const onRecharge = async () => {
-    try {
-      const res = await mockRecharge(100, `req-${Date.now()}`);
-      const profile = await getProfile();
-      setUser({ ...profile, chipsBalance: res.chipsBalance });
-      if (res.bonusChips > 0) {
-        Alert.alert(t('shop.first_bonus_title'), t('shop.first_bonus_body', { bonus: res.bonusChips }));
-      }
-    } catch (e) {
-      Alert.alert('Error', (e as Error).message);
-    }
-  };
-
   const onQuickStart = async () => {
     if (!user || user.chipsBalance < 2) {
       Alert.alert(t('bankruptcy.title'), '', [
-        { text: t('bankruptcy.cta_recharge'), onPress: onRecharge },
+        { text: t('bankruptcy.cta_recharge'), onPress: () => router.push('/shop') },
         { text: t('bankruptcy.cta_lobby') },
       ]);
       return;
@@ -118,7 +103,7 @@ export default function LobbyScreen() {
         <Text style={styles.primaryText}>{t('lobby.quick_start')}</Text>
       </Pressable>
 
-      <Pressable style={styles.secondaryBtn} onPress={onRecharge}>
+      <Pressable style={styles.secondaryBtn} onPress={() => router.push('/shop')}>
         <Text style={styles.secondaryText}>{t('lobby.recharge')}</Text>
       </Pressable>
 

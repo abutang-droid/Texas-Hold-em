@@ -100,6 +100,15 @@
     "stealth_desc": "Stealth mode (hide from rankings)"
   },
   "shop": {
+    "title": "Chip Shop",
+    "back": "Back",
+    "buy": "Buy",
+    "sandbox_mode": "Sandbox mode (development)",
+    "first_bonus_hint": "First purchase bonus: +{{pct}}%",
+    "success_title": "Purchase complete",
+    "success_body": "You received {{chips}} chips",
+    "native_only_title": "Device purchase required",
+    "native_only_body": "Real IAP requires an iOS or Android device via App Store / Google Play.",
     "first_bonus_title": "First recharge bonus",
     "first_bonus_body": "You received {{bonus}} bonus chips!"
   }

@@ -43,6 +43,7 @@ import {
   listRiskAlerts,
   processRecharge,
   listUserChipTransactions,
+  getIapProducts,
   declareAge,
   setSelfExclusion,
   acknowledgeBetaMigration,
@@ -240,6 +241,27 @@ class ApiController {
     return { code: 0, message: 'ok', data: { leaderboardStealth: !!body.enabled } };
   }
 
+  @Get('shop/products')
+  async shopProducts(@Headers('accept-language') acceptLang?: string) {
+    const locale = parseLocale(acceptLang);
+    const [products, cfg] = await Promise.all([getIapProducts(), getSystemConfig()]);
+    return {
+      code: 0,
+      message: 'ok',
+      data: {
+        products: products.map((p) => ({
+          id: p.id,
+          chips: p.chips,
+          priceCents: p.priceCents,
+          label: p.label[locale] ?? p.label['en-US'] ?? p.id,
+        })),
+        firstRechargeBonusEnabled: cfg.firstRechargeBonusEnabled,
+        firstRechargeBonusPct: cfg.firstRechargeBonusPct,
+        iapSandboxMode: process.env.IAP_SANDBOX_MODE !== 'false',
+      },
+    };
+  }
+
   @Post('shop/mock-recharge')
   async mockRecharge(
     @Headers('authorization') auth: string,
@@ -264,7 +286,7 @@ class ApiController {
     @Body()
     body: {
       channel: RechargeChannel;
-      amount: number;
+      amount?: number;
       requestId: string;
       receiptToken?: string;
       productId?: string;
@@ -279,7 +301,7 @@ class ApiController {
       const result = await processRecharge({
         userId,
         channel: body.channel,
-        amount: body.amount,
+        amount: body.amount ?? 0,
         requestId: body.requestId ?? `rc-${Date.now()}`,
         receiptToken: body.receiptToken,
         productId: body.productId,
@@ -293,6 +315,9 @@ class ApiController {
       }
       if (msg === 'INVALID_RECEIPT') {
         throw new BadRequestException({ code: 'INVALID_RECEIPT', messageKey: 'errors.invalid_receipt' });
+      }
+      if (msg === 'INVALID_AMOUNT' || msg === 'INVALID_PRODUCT') {
+        throw new BadRequestException({ code: 'INVALID_PRODUCT', messageKey: 'errors.invalid_product' });
       }
       throw e;
     }

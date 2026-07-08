@@ -56,6 +56,31 @@ async function main() {
   );
   console.log('   balance:', recharge.chipsBalance, 'bonus:', (recharge as { bonusChips?: number }).bonusChips ?? 0);
 
+  console.log('3b. Shop products');
+  const catalog = await req<{
+    products: Array<{ id: string; chips: number }>;
+    iapSandboxMode: boolean;
+  }>('/api/v1/shop/products', {}, token);
+  const product = catalog.products[0];
+  if (!product) throw new Error('No IAP products configured');
+  console.log('   product:', product.id, product.chips, 'sandbox:', catalog.iapSandboxMode);
+
+  console.log('3c. IAP sandbox recharge');
+  const iap = await req<{ chipsBalance: number; bonusChips: number }>(
+    '/api/v1/shop/recharge',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        channel: 'APPLE_IAP',
+        productId: product.id,
+        requestId: `iap-smoke-${Date.now()}`,
+        receiptToken: `sandbox:apple:${product.id}`,
+      }),
+    },
+    token,
+  );
+  console.log('   iap balance:', iap.chipsBalance, 'bonus:', iap.bonusChips);
+
   console.log('4. Quick start');
   const match = await req<{ roomId: string; wsUrl: string }>(
     '/api/v1/match/quick-start',

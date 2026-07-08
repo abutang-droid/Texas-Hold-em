@@ -100,6 +100,15 @@
     "stealth_desc": "隐身模式（不上榜）"
   },
   "shop": {
+    "title": "充值商城",
+    "back": "返回",
+    "buy": "购买",
+    "sandbox_mode": "沙盒模式（开发测试）",
+    "first_bonus_hint": "首充额外赠送 {{pct}}%",
+    "success_title": "充值成功",
+    "success_body": "已获得 {{chips}} 筹码",
+    "native_only_title": "需真机购买",
+    "native_only_body": "正式 IAP 需在 iOS/Android 真机上通过 App Store / Google Play 购买。",
     "first_bonus_title": "首充赠送",
     "first_bonus_body": "额外获得 {{bonus}} 筹码！"
   }

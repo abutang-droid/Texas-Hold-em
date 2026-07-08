@@ -66,6 +66,22 @@ export async function getProfile() {
   return request<UserProfile>('/api/v1/user/profile');
 }
 
+export interface ShopProduct {
+  id: string;
+  chips: number;
+  priceCents: number;
+  label: string;
+}
+
+export async function getShopProducts() {
+  return request<{
+    products: ShopProduct[];
+    firstRechargeBonusEnabled: boolean;
+    firstRechargeBonusPct: number;
+    iapSandboxMode: boolean;
+  }>('/api/v1/shop/products');
+}
+
 export async function mockRecharge(amount: number, requestId: string) {
   return request<{
     chipsBalance: number;
@@ -83,6 +99,7 @@ export async function shopRecharge(
   amount: number,
   requestId: string,
   receiptToken?: string,
+  productId?: string,
 ) {
   return request<{
     chipsBalance: number;
@@ -91,7 +108,7 @@ export async function shopRecharge(
     isFirstRecharge: boolean;
   }>('/api/v1/shop/recharge', {
     method: 'POST',
-    body: JSON.stringify({ channel, amount, requestId, receiptToken }),
+    body: JSON.stringify({ channel, amount, requestId, receiptToken, productId }),
   });
 }
 

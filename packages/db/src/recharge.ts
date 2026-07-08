@@ -2,8 +2,11 @@ import type { PoolClient } from 'pg';
 import { query, withTransaction } from './pool.js';
 import { addChips } from './users.js';
 import { getSystemConfig } from './system-config.js';
+import { verifyIapPurchase } from './iap/verify.js';
 
-export type RechargeChannel = 'MOCK' | 'APPLE_IAP' | 'GOOGLE_PLAY';
+import type { RechargeChannel } from './iap/types.js';
+
+export type { RechargeChannel } from './iap/types.js';
 
 export interface RechargeResult {
   chipsBalance: number;
@@ -35,11 +38,44 @@ async function addDailyRechargeTotal(
   );
 }
 
-function verifySandboxReceipt(channel: RechargeChannel, receipt: string, amount: number): boolean {
-  const prefix =
-    channel === 'APPLE_IAP' ? 'sandbox:apple:' : channel === 'GOOGLE_PLAY' ? 'sandbox:google:' : '';
-  if (!prefix) return true;
-  return receipt.startsWith(prefix) && receipt.includes(String(amount));
+async function findCompletedByReference(
+  client: PoolClient,
+  userId: number,
+  requestId: string,
+): Promise<RechargeResult | null> {
+  const dup = await client.query(
+    `SELECT id, status FROM recharge_orders WHERE reference_id = $1`,
+    [requestId],
+  );
+  if (dup.rows[0]?.status !== 'COMPLETED') return null;
+  const u = await client.query<{ chips_balance: string }>(
+    'SELECT chips_balance FROM users WHERE id = $1',
+    [userId],
+  );
+  const order = await client.query<{ amount_chips: string; bonus_chips: string }>(
+    `SELECT amount_chips, bonus_chips FROM recharge_orders WHERE reference_id = $1`,
+    [requestId],
+  );
+  return {
+    chipsBalance: Number(u.rows[0]?.chips_balance ?? 0),
+    amount: Number(order.rows[0]?.amount_chips ?? 0),
+    bonusChips: Number(order.rows[0]?.bonus_chips ?? 0),
+    isFirstRecharge: false,
+  };
+}
+
+async function findCompletedByStoreTransaction(
+  client: PoolClient,
+  userId: number,
+  storeTransactionId: string,
+): Promise<RechargeResult | null> {
+  const dup = await client.query<{ reference_id: string }>(
+    `SELECT reference_id FROM recharge_orders
+     WHERE store_transaction_id = $1 AND status = 'COMPLETED' LIMIT 1`,
+    [storeTransactionId],
+  );
+  if (!dup.rows[0]) return null;
+  return findCompletedByReference(client, userId, dup.rows[0].reference_id);
 }
 
 export async function processRecharge(opts: {
@@ -52,41 +88,60 @@ export async function processRecharge(opts: {
   fiatAmountCents?: number;
 }): Promise<RechargeResult> {
   const cfg = await getSystemConfig();
-  const amount = Math.floor(opts.amount);
-  if (!amount || amount <= 0) throw new Error('INVALID_AMOUNT');
+  let amount = Math.floor(opts.amount);
+  let fiatAmountCents = opts.fiatAmountCents;
+  let productId = opts.productId;
+  let storeTransactionId: string | undefined;
+
+  if (opts.channel === 'APPLE_IAP' || opts.channel === 'GOOGLE_PLAY') {
+    if (!opts.productId || !opts.receiptToken) {
+      throw new Error('INVALID_RECEIPT');
+    }
+    try {
+      const verified = await verifyIapPurchase({
+        channel: opts.channel,
+        productId: opts.productId,
+        receiptToken: opts.receiptToken,
+      });
+      amount = verified.chips;
+      fiatAmountCents = verified.fiatAmountCents;
+      productId = verified.productId;
+      storeTransactionId = verified.transactionId;
+    } catch (e) {
+      const msg = (e as Error).message;
+      if (
+        msg === 'PRODUCT_NOT_FOUND' ||
+        msg === 'APPLE_VERIFY_FAILED' ||
+        msg === 'GOOGLE_VERIFY_FAILED' ||
+        msg === 'INVALID_RECEIPT' ||
+        msg === 'APPLE_CONFIG_MISSING' ||
+        msg === 'GOOGLE_CONFIG_MISSING' ||
+        msg === 'GOOGLE_AUTH_FAILED'
+      ) {
+        throw new Error('INVALID_RECEIPT');
+      }
+      throw e;
+    }
+  } else if (!amount || amount <= 0) {
+    throw new Error('INVALID_AMOUNT');
+  }
 
   return withTransaction(async (client) => {
-    const dup = await client.query(
-      `SELECT id, status FROM recharge_orders WHERE reference_id = $1`,
-      [opts.requestId],
-    );
-    if (dup.rows[0]?.status === 'COMPLETED') {
-      const u = await client.query<{ chips_balance: string }>(
-        'SELECT chips_balance FROM users WHERE id = $1',
-        [opts.userId],
+    const byRef = await findCompletedByReference(client, opts.userId, opts.requestId);
+    if (byRef) return byRef;
+
+    if (storeTransactionId) {
+      const byStore = await findCompletedByStoreTransaction(
+        client,
+        opts.userId,
+        storeTransactionId,
       );
-      return {
-        chipsBalance: Number(u.rows[0]?.chips_balance ?? 0),
-        amount,
-        bonusChips: 0,
-        isFirstRecharge: false,
-      };
+      if (byStore) return byStore;
     }
 
     const dailyTotal = await getDailyRechargeTotal(client, opts.userId);
     if (dailyTotal + amount > cfg.dailyRechargeLimit) {
       throw new Error('DAILY_LIMIT_EXCEEDED');
-    }
-
-    if (opts.channel !== 'MOCK') {
-      const sandbox = process.env.IAP_SANDBOX_MODE !== 'false';
-      if (sandbox) {
-        if (!opts.receiptToken || !verifySandboxReceipt(opts.channel, opts.receiptToken, amount)) {
-          throw new Error('INVALID_RECEIPT');
-        }
-      } else if (!opts.receiptToken) {
-        throw new Error('INVALID_RECEIPT');
-      }
     }
 
     const userRes = await client.query<{ has_completed_recharge: boolean }>(
@@ -102,17 +157,21 @@ export async function processRecharge(opts: {
     await client.query(
       `INSERT INTO recharge_orders (
         user_id, channel, amount_chips, bonus_chips, fiat_amount_cents,
-        product_id, receipt_token, status, reference_id, completed_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'COMPLETED', $8, NOW())
-      ON CONFLICT (reference_id) DO UPDATE SET status = 'COMPLETED', completed_at = NOW()`,
+        product_id, receipt_token, store_transaction_id, status, reference_id, completed_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'COMPLETED', $9, NOW())
+      ON CONFLICT (reference_id) DO UPDATE SET
+        status = 'COMPLETED',
+        completed_at = NOW(),
+        store_transaction_id = COALESCE(recharge_orders.store_transaction_id, EXCLUDED.store_transaction_id)`,
       [
         opts.userId,
         opts.channel,
         amount,
         bonus,
-        opts.fiatAmountCents ?? null,
-        opts.productId ?? null,
+        fiatAmountCents ?? null,
+        productId ?? null,
         opts.receiptToken ?? null,
+        storeTransactionId ?? null,
         opts.requestId,
       ],
     );
@@ -123,7 +182,9 @@ export async function processRecharge(opts: {
     }
     await addDailyRechargeTotal(client, opts.userId, amount);
     if (isFirst) {
-      await client.query(`UPDATE users SET has_completed_recharge = TRUE WHERE id = $1`, [opts.userId]);
+      await client.query(`UPDATE users SET has_completed_recharge = TRUE WHERE id = $1`, [
+        opts.userId,
+      ]);
     }
 
     const bal = await client.query<{ chips_balance: string }>(
