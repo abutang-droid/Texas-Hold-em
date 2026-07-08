@@ -37,6 +37,8 @@ export interface PublicTableState {
   maxSeats: number;
   blinds: { sb: number; bb: number };
   buyInCap: number;
+  hostUserId?: string;
+  paused?: boolean;
   buttonSeat: number;
   communityCards: string[];
   potTotal: number;
@@ -579,6 +581,8 @@ export class InteractiveTable {
       maxSeats: this.config.maxSeats,
       blinds: { sb: this.config.smallBlind, bb: this.config.bigBlind },
       buyInCap: this.config.buyInCap,
+      hostUserId: this.config.hostUserId,
+      paused: this.paused,
       buttonSeat: this.buttonSeat,
       communityCards: this.communityCards.map((c) => c.rank + c.suit),
       potTotal,

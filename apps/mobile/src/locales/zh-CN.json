@@ -54,5 +54,27 @@
     "join_btn": "加入",
     "two_player_blocked": "2 人局需先完成 10 局官方场",
     "official_hands": "已完成官方场 {{count}} 局"
+  },
+  "table": {
+    "paused": "牌局已暂停",
+    "rebuy": "补码",
+    "pause": "暂停",
+    "resume": "继续",
+    "dissolve": "解散",
+    "kick": "踢出",
+    "report": "举报",
+    "approve": "同意",
+    "reject": "拒绝",
+    "rebuy_approval_title": "补码申请",
+    "rebuy_approval_body": "{{name}} 申请补码 {{amount}}，剩余 {{seconds}} 秒",
+    "rebuy_approved": "补码已通过",
+    "rebuy_rejected": "补码被拒绝",
+    "rebuy_pending": "已提交补码申请，等待房主审批",
+    "rebuy_failed": "补码申请失败",
+    "dissolve_vote_title": "解散投票",
+    "dissolve_vote_body": "赞成 {{current}}/{{required}}，剩余 {{seconds}} 秒",
+    "dissolve_failed": "解散投票未通过",
+    "room_dissolved": "房间已解散",
+    "report_sent": "举报已提交"
   }
 }

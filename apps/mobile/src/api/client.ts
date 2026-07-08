@@ -110,3 +110,16 @@ export async function joinPrivateRoom(roomCode: string) {
     body: JSON.stringify({ roomCode }),
   });
 }
+
+export async function submitReport(input: {
+  reportedUserId?: number;
+  roomId?: string;
+  handId?: string;
+  category: string;
+  description?: string;
+}) {
+  return request<{ id: number; status: string }>('/api/v1/private/report', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}

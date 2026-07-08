@@ -54,5 +54,27 @@
     "join_btn": "Join",
     "two_player_blocked": "2-player games require 10 official hands first",
     "official_hands": "Official hands played: {{count}}"
+  },
+  "table": {
+    "paused": "Game paused",
+    "rebuy": "Re-buy",
+    "pause": "Pause",
+    "resume": "Resume",
+    "dissolve": "Dissolve",
+    "kick": "Kick",
+    "report": "Report",
+    "approve": "Approve",
+    "reject": "Reject",
+    "rebuy_approval_title": "Re-buy request",
+    "rebuy_approval_body": "{{name}} requests {{amount}} chips — {{seconds}}s left",
+    "rebuy_approved": "Re-buy approved",
+    "rebuy_rejected": "Re-buy rejected",
+    "rebuy_pending": "Re-buy request sent — waiting for host",
+    "rebuy_failed": "Re-buy request failed",
+    "dissolve_vote_title": "Dissolve vote",
+    "dissolve_vote_body": "Approvals {{current}}/{{required}} — {{seconds}}s left",
+    "dissolve_failed": "Dissolve vote failed",
+    "room_dissolved": "Room dissolved",
+    "report_sent": "Report submitted"
   }
 }
