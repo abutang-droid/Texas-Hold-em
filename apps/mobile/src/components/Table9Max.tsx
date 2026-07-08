@@ -20,6 +20,7 @@ export interface SeatView {
   nickname: string;
   chips: number;
   isActive?: boolean;
+  isBot?: boolean;
   holeCards?: string[];
 }
 

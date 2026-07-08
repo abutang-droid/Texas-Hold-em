@@ -2,42 +2,54 @@
 
 ## 前置条件
 
-- Node.js ≥ 20
+- Node.js **20 LTS**（推荐；Expo 对 Node 24 支持不稳定）
 - pnpm ≥ 10
-- Docker + Docker Compose（PostgreSQL 16 + Redis 7）
+- 数据库二选一：
+  - **Docker Desktop**（`pnpm local:up`）
+  - **Homebrew** PostgreSQL 16 + Redis（`pnpm local:mac`，适合 Mac mini）
 
-## 一键启动基础设施
+## 首次安装（Mac mini 推荐流程）
 
 ```bash
+cd ~/Texas-Hold-em
+git checkout cursor/admin-ui-phase3-2fc9   # 完整代码在此分支，main 仅有 README
 pnpm install
-pnpm local:up
+pnpm build                                  # 必须：编译 poker-engine / db 等
+cp .env.example .env                        # 若不存在
+pnpm local:mac                              # Homebrew 数据库 + 迁移
 ```
 
-该命令会：
-
-1. 从 `.env.example` 复制 `.env`（若不存在）
-2. `docker compose up -d` 启动 PostgreSQL 与 Redis
-3. 等待服务就绪
-4. 执行 `infra/migrations/*.sql`
+> 使用 Docker 则改为 `pnpm local:up`（需先打开 Docker Desktop）。
 
 ## 启动应用服务
 
-在**独立终端**分别运行：
+在**独立终端**分别运行（自动加载 `.env`）：
 
 ```bash
-pnpm dev:api      # REST API  → http://localhost:3000/health
-pnpm dev:room     # Room WS   → http://localhost:3001/health
-pnpm dev:admin    # 运营后台  → http://localhost:5173
-pnpm dev:mobile   # Expo 客户端
+pnpm dev api      # REST API  → http://localhost:3000/health
+pnpm dev room     # Room WS   → http://localhost:3001/health
+pnpm dev admin    # 运营后台  → http://localhost:5173
+pnpm dev mobile   # Expo 客户端 → http://localhost:8081 (Web)
 ```
+
+等效命令：`bash scripts/dev.sh api` 等。
+
+## 各地址说明
+
+| 地址 | 用途 |
+|------|------|
+| http://localhost:3000/health | API 健康检查（JSON，无网页） |
+| http://localhost:3001/health | Room 健康检查（JSON） |
+| http://localhost:5173 | **Admin 运营后台** |
+| http://localhost:8081 | **游戏客户端 Web**（`pnpm dev mobile` 后打开） |
 
 ## 验证
 
 ```bash
-# API 冒烟（游客登录 / 充值 / 快速开始 / 周榜）
+# 需 API 已启动
 pnpm smoke
 
-# 完整本地测试（需 api 已启动）
+# 完整本地测试
 pnpm local:test
 ```
 
@@ -62,12 +74,21 @@ pnpm local:test
 ## 停止
 
 ```bash
-pnpm local:down
+pnpm local:down          # Docker 方式
+brew services stop postgresql@16 redis   # Homebrew 方式
 ```
 
 ## 常见问题
 
-**PostgreSQL 连接失败**：确认 `docker compose ps` 中 `th-postgres` 为 healthy。
+**`pnpm smoke` ECONNREFUSED**：API 未启动。先 `pnpm dev api`，等看到 `listening on :3000`。
+
+**Room 启动报 `poker-engine/dist` 找不到**：执行 `pnpm build`。
+
+**Expo Web 500 / MIME type json**：在项目根执行 `pnpm install && pnpm build`，然后在 `apps/mobile` 运行 `npx expo start --web --clear`。
+
+**`No package.json` 或只有 README**：确认在 `~/Texas-Hold-em` 且分支为 `cursor/admin-ui-phase3-2fc9`。
+
+**PostgreSQL 连接失败**：`brew services list` 确认 postgresql@16 为 started。
 
 **Migration 重复执行报错**：`002_phase3_private_rooms.sql` 使用 `IF NOT EXISTS`，可安全重跑 `pnpm migrate`。
 

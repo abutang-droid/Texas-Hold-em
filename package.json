@@ -15,6 +15,8 @@
     "smoke": "tsx scripts/smoke-api.ts",
     "local:up": "bash scripts/local-up.sh",
     "local:down": "bash scripts/local-down.sh",
+    "local:mac": "bash scripts/mac-local-up.sh",
+    "dev": "bash scripts/dev.sh",
     "local:test": "bash scripts/local-test.sh",
     "migrate": "bash scripts/migrate.sh"
   },
