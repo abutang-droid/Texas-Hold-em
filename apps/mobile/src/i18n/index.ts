@@ -1,8 +1,8 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import * as Localization from 'expo-localization';
-import zh from './locales/zh-CN.json';
-import en from './locales/en-US.json';
+import zh from '../locales/zh-CN.json';
+import en from '../locales/en-US.json';
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type SupportedLocale } from '@texas-holdem/shared';
 
 function detectLocale(): SupportedLocale {
