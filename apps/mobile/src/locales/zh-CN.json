@@ -1,0 +1,39 @@
+{
+  "common": {
+    "chips": "筹码",
+    "loading": "加载中..."
+  },
+  "lobby": {
+    "quick_start": "快速开始",
+    "recharge": "充值",
+    "weekly_top": "本周盈利榜",
+    "balance": "余额"
+  },
+  "game": {
+    "pot": "底池",
+    "action": {
+      "fold": "弃牌",
+      "check": "过牌",
+      "call": "跟注",
+      "raise": "加注",
+      "allIn": "全押"
+    }
+  },
+  "bankruptcy": {
+    "title": "筹码不足",
+    "cta_recharge": "立即充值",
+    "cta_lobby": "返回大厅"
+  },
+  "onboarding": {
+    "title": "欢迎来到德州扑克",
+    "step1": "快速开始即可匹配官方 9 人桌，不足时 Bot 自动补位。",
+    "step2": "新玩家注册即送 100 筹码，可在牌桌内完成买入。",
+    "step3": "支持弃牌、过牌、跟注、加注等标准操作，祝你好运！",
+    "next": "下一步",
+    "skip": "跳过",
+    "start": "开始游戏"
+  },
+  "errors": {
+    "insufficient_chips": "筹码不足"
+  }
+}

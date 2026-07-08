@@ -1,0 +1,39 @@
+{
+  "common": {
+    "chips": "chips",
+    "loading": "Loading..."
+  },
+  "lobby": {
+    "quick_start": "Quick Start",
+    "recharge": "Recharge",
+    "weekly_top": "Weekly Top",
+    "balance": "Balance"
+  },
+  "game": {
+    "pot": "Pot",
+    "action": {
+      "fold": "Fold",
+      "check": "Check",
+      "call": "Call",
+      "raise": "Raise",
+      "allIn": "All In"
+    }
+  },
+  "bankruptcy": {
+    "title": "Out of Chips",
+    "cta_recharge": "Recharge Now",
+    "cta_lobby": "Back to Lobby"
+  },
+  "onboarding": {
+    "title": "Welcome to Texas Hold'em",
+    "step1": "Quick Start matches you to a 9-max official table. Bots fill empty seats.",
+    "step2": "New players receive 100 chips on signup. Buy in at the table.",
+    "step3": "Fold, check, call, and raise — standard poker actions. Good luck!",
+    "next": "Next",
+    "skip": "Skip",
+    "start": "Play Now"
+  },
+  "errors": {
+    "insufficient_chips": "Insufficient chips"
+  }
+}

@@ -9,10 +9,15 @@
     "lint": "pnpm -r run lint",
     "demo": "pnpm --filter @texas-holdem/poker-engine run demo",
     "dev:api": "pnpm --filter @texas-holdem/api run start:dev",
-    "dev:room": "pnpm --filter @texas-holdem/room run start:dev"
+    "dev:room": "pnpm --filter @texas-holdem/room run start:dev",
+    "dev:mobile": "pnpm --filter @texas-holdem/mobile run start",
+    "smoke": "tsx scripts/smoke-api.ts"
   },
   "engines": {
     "node": ">=20"
   },
-  "packageManager": "pnpm@10.9.0"
+  "packageManager": "pnpm@10.9.0",
+  "devDependencies": {
+    "tsx": "^4.19.4"
+  }
 }

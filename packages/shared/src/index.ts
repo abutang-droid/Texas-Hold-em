@@ -5,6 +5,10 @@ export type SupportedLocale = 'zh-CN' | 'en-US';
 export const DEFAULT_LOCALE: SupportedLocale = 'en-US';
 export const SUPPORTED_LOCALES: SupportedLocale[] = ['zh-CN', 'en-US'];
 
+import colors from './design-tokens/colors.json' with { type: 'json' };
+
+export const designTokens = colors;
+
 export type PlayerActionType = 'fold' | 'check' | 'call' | 'raise' | 'all_in';
 
 export type GamePhase =

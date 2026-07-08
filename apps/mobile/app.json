@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Texas Hold'em",
+    "slug": "texas-holdem",
+    "version": "0.2.0",
+    "orientation": "landscape",
+    "scheme": "texasholdem",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#121418"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.texasholdem.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#121418"
+      },
+      "package": "com.texasholdem.app"
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": ["expo-router", "expo-localization"]
+  }
+}
