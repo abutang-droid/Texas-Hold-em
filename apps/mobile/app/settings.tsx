@@ -1,14 +1,31 @@
-import { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, Text, Pressable, StyleSheet, Alert, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { designTokens } from '@texas-holdem/shared';
-import { selfExclude } from '../src/api/client';
+import { getProfile, selfExclude, setLeaderboardStealth } from '../src/api/client';
 
 export default function SettingsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [stealth, setStealth] = useState(false);
+
+  useEffect(() => {
+    getProfile()
+      .then((p) => setStealth(!!(p as { settings?: { leaderboardStealth?: boolean } }).settings?.leaderboardStealth))
+      .catch(() => undefined);
+  }, []);
+
+  const onStealthToggle = async (enabled: boolean) => {
+    setStealth(enabled);
+    try {
+      await setLeaderboardStealth(enabled);
+    } catch (e) {
+      setStealth(!enabled);
+      Alert.alert('Error', (e as Error).message);
+    }
+  };
 
   const onSelfExclude = () => {
     Alert.alert(t('settings.self_exclude_title'), t('settings.self_exclude_confirm'), [
@@ -41,6 +58,14 @@ export default function SettingsScreen() {
       <Text style={styles.disclaimer}>{t('settings.disclaimer')}</Text>
 
       <View style={styles.card}>
+        <Text style={styles.section}>{t('settings.leaderboard')}</Text>
+        <View style={styles.row}>
+          <Text style={styles.body}>{t('settings.stealth_desc')}</Text>
+          <Switch value={stealth} onValueChange={onStealthToggle} />
+        </View>
+      </View>
+
+      <View style={styles.card}>
         <Text style={styles.section}>{t('settings.responsible_gaming')}</Text>
         <Text style={styles.body}>{t('settings.self_exclude_desc')}</Text>
         <Pressable style={styles.dangerBtn} onPress={onSelfExclude} disabled={loading}>
@@ -60,14 +85,17 @@ const styles = StyleSheet.create({
     backgroundColor: designTokens.color.bg.card,
     borderRadius: 12,
     padding: 16,
+    marginBottom: 16,
   },
   section: { color: '#F5F5F5', fontSize: 16, fontWeight: '600', marginBottom: 8 },
-  body: { color: '#9E9E9E', lineHeight: 22, marginBottom: 16 },
+  body: { color: '#9E9E9E', lineHeight: 22, flex: 1, marginRight: 12 },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   dangerBtn: {
     backgroundColor: '#B71C1C',
     borderRadius: 8,
     padding: 14,
     alignItems: 'center',
+    marginTop: 8,
   },
   dangerText: { color: '#fff', fontWeight: '700' },
 });

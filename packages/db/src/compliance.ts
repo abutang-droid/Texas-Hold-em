@@ -1,5 +1,6 @@
 import { query } from './pool.js';
 import { getConfigValue } from './system-config.js';
+import { revokeUserSessions } from './oauth.js';
 
 export interface ComplianceStatus {
   ageVerified: boolean;
@@ -24,6 +25,7 @@ export async function setSelfExclusion(userId: number, days: number): Promise<Da
      WHERE id = $2 RETURNING self_excluded_until`,
     [String(d), userId],
   );
+  await revokeUserSessions(userId);
   return res.rows[0]!.self_excluded_until;
 }
 

@@ -95,7 +95,9 @@
     "self_exclude_confirm": "You cannot play for 30 days. Continue?",
     "self_exclude_done": "Self-exclusion applied",
     "cancel": "Cancel",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "leaderboard": "Leaderboard",
+    "stealth_desc": "Stealth mode (hide from rankings)"
   },
   "shop": {
     "first_bonus_title": "First recharge bonus",

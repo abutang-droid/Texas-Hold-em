@@ -17,6 +17,7 @@
     "local:down": "bash scripts/local-down.sh",
     "local:mac": "bash scripts/mac-local-up.sh",
     "dev": "bash scripts/dev.sh",
+    "leaderboard:reset": "bash scripts/leaderboard-reset.sh",
     "local:test": "bash scripts/local-test.sh",
     "migrate": "bash scripts/migrate.sh"
   },

@@ -49,8 +49,16 @@ import {
   getComplianceStatus,
   isUserPlayAllowed,
   setAdminRemark,
+  verifyOAuthIdToken,
+  loginOrRegisterOAuth,
+  createRefreshSession,
+  rotateRefreshSession,
+  updateUserProfile,
+  setLeaderboardStealth,
+  getUserSettings,
   type UserRow,
   type RechargeChannel,
+  type OAuthProvider,
 } from '@texas-holdem/db';
 import type { SupportedLocale } from '@texas-holdem/shared';
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@texas-holdem/shared';
@@ -137,10 +145,68 @@ class ApiController {
     const nickname = body.nickname ?? `Guest_${deviceId.slice(0, 6)}`;
     const user = await createGuestUser(deviceId, nickname, locale);
     const token = signAccessToken({ sub: user.id, nickname: user.nickname });
+    const refreshToken = await createRefreshSession(user.id);
     return {
       code: 0,
       message: 'ok',
-      data: { token, deviceId, user: toProfile(user) },
+      data: { token, refreshToken, deviceId, user: toProfile(user) },
+    };
+  }
+
+  @Post('auth/oauth')
+  async oauthLogin(
+    @Body() body: { provider: OAuthProvider; idToken: string; nickname?: string },
+    @Headers('accept-language') acceptLang?: string,
+    @Headers('authorization') auth?: string,
+  ) {
+    const provider = body.provider;
+    if (provider !== 'APPLE' && provider !== 'GOOGLE') {
+      throw new BadRequestException('Invalid provider');
+    }
+    const verified = verifyOAuthIdToken(provider, body.idToken);
+    if (!verified) {
+      throw new UnauthorizedException({ code: 'INVALID_TOKEN', messageKey: 'errors.invalid_oauth' });
+    }
+
+    let linkGuestUserId: number | undefined;
+    try {
+      linkGuestUserId = authUser(auth).userId;
+    } catch {
+      /* optional guest bind */
+    }
+
+    const locale = parseLocale(acceptLang);
+    const nickname =
+      body.nickname ?? `${provider === 'APPLE' ? 'Apple' : 'Google'}_${verified.sub.slice(-6)}`;
+    const user = await loginOrRegisterOAuth({
+      provider,
+      sub: verified.sub,
+      nickname,
+      locale,
+      linkGuestUserId,
+    });
+    const token = signAccessToken({ sub: user.id, nickname: user.nickname });
+    const refreshToken = await createRefreshSession(user.id);
+    return {
+      code: 0,
+      message: 'ok',
+      data: { token, refreshToken, user: toProfile(user) },
+    };
+  }
+
+  @Post('auth/refresh')
+  async refresh(@Body() body: { refreshToken: string }) {
+    const rotated = await rotateRefreshSession(body.refreshToken);
+    if (!rotated) {
+      throw new UnauthorizedException({ code: 'INVALID_REFRESH', messageKey: 'errors.invalid_refresh' });
+    }
+    const user = await findUserById(rotated.userId);
+    if (!user) throw new UnauthorizedException();
+    const token = signAccessToken({ sub: user.id, nickname: user.nickname });
+    return {
+      code: 0,
+      message: 'ok',
+      data: { token, refreshToken: rotated.newRefreshToken, user: toProfile(user) },
     };
   }
 
@@ -149,7 +215,29 @@ class ApiController {
     const { userId } = authUser(auth);
     const user = await findUserById(userId);
     if (!user) throw new UnauthorizedException();
+    const settings = await getUserSettings(userId);
+    return { code: 0, message: 'ok', data: { ...toProfile(user), settings } };
+  }
+
+  @Post('user/profile')
+  async updateProfile(
+    @Headers('authorization') auth: string,
+    @Body() body: { nickname?: string; avatarUrl?: string | null },
+  ) {
+    const { userId } = authUser(auth);
+    const user = await updateUserProfile(userId, body);
+    if (!user) throw new BadRequestException('Nothing to update');
     return { code: 0, message: 'ok', data: toProfile(user) };
+  }
+
+  @Post('user/leaderboard-stealth')
+  async leaderboardStealth(
+    @Headers('authorization') auth: string,
+    @Body() body: { enabled: boolean },
+  ) {
+    const { userId } = authUser(auth);
+    await setLeaderboardStealth(userId, !!body.enabled);
+    return { code: 0, message: 'ok', data: { leaderboardStealth: !!body.enabled } };
   }
 
   @Post('shop/mock-recharge')

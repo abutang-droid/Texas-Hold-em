@@ -95,7 +95,9 @@
     "self_exclude_confirm": "封禁后 30 天内无法游戏，确定继续？",
     "self_exclude_done": "已提交自我封禁",
     "cancel": "取消",
-    "confirm": "确定"
+    "confirm": "确定",
+    "leaderboard": "排行榜",
+    "stealth_desc": "隐身模式（不上榜）"
   },
   "shop": {
     "first_bonus_title": "首充赠送",

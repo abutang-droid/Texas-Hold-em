@@ -54,6 +54,10 @@ async function getOrCreateRoom(roomId: string, io: Server): Promise<InteractiveT
     let cfg = roomConfigs.get(roomId);
     if (!cfg) {
       cfg = await resolveTableConfig(roomId);
+      if (!cfg && !roomId.startsWith('P')) {
+        const rakeRate = await getRakeRate('OFFICIAL');
+        cfg = { roomType: 'OFFICIAL', rakeRate };
+      }
       if (cfg) roomConfigs.set(roomId, cfg);
     }
     table = new InteractiveTable(roomId, cfg);

@@ -13,3 +13,5 @@ export * from './risk.js';
 export * from './recharge.js';
 export * from './compliance.js';
 export * from './leaderboard.js';
+export * from './oauth.js';
+export * from './profile.js';

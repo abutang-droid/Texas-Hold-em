@@ -5,6 +5,8 @@ import { query, withTransaction } from './pool.js';
 export interface UserRow {
   id: number;
   account_type: string;
+  oauth_provider?: string | null;
+  oauth_sub?: string | null;
   nickname: string;
   avatar_url: string | null;
   chips_balance: string;

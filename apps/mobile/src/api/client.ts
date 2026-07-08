@@ -32,12 +32,34 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 }
 
 export async function guestLogin(deviceId?: string) {
-  const data = await request<{ token: string; deviceId: string; user: UserProfile }>(
-    '/api/v1/auth/guest',
-    { method: 'POST', body: JSON.stringify({ deviceId }) },
-  );
+  const data = await request<{
+    token: string;
+    refreshToken: string;
+    deviceId: string;
+    user: UserProfile;
+  }>('/api/v1/auth/guest', { method: 'POST', body: JSON.stringify({ deviceId }) });
   setToken(data.token);
   return data;
+}
+
+export async function oauthLogin(provider: 'APPLE' | 'GOOGLE', idToken: string, nickname?: string) {
+  const data = await request<{
+    token: string;
+    refreshToken: string;
+    user: UserProfile;
+  }>('/api/v1/auth/oauth', {
+    method: 'POST',
+    body: JSON.stringify({ provider, idToken, nickname }),
+  });
+  setToken(data.token);
+  return data;
+}
+
+export async function setLeaderboardStealth(enabled: boolean) {
+  return request<{ leaderboardStealth: boolean }>('/api/v1/user/leaderboard-stealth', {
+    method: 'POST',
+    body: JSON.stringify({ enabled }),
+  });
 }
 
 export async function getProfile() {

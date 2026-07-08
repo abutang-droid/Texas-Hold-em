@@ -28,6 +28,7 @@ async function main() {
     body: JSON.stringify({ nickname: 'SmokeTest' }),
   });
   console.log('   chips:', login.user.chipsBalance);
+  let token = login.token;
 
   console.log('2b. Age declaration');
   await req('/api/v1/user/age-declaration', {
@@ -35,11 +36,23 @@ async function main() {
     body: JSON.stringify({ confirmed: true }),
   }, login.token);
 
+  console.log('2c. OAuth dev login');
+  const oauth = await req<{ token: string; user: { nickname: string } }>(
+    '/api/v1/auth/oauth',
+    {
+      method: 'POST',
+      body: JSON.stringify({ provider: 'GOOGLE', idToken: `dev:google:smoke-${Date.now()}` }),
+    },
+    token,
+  );
+  token = oauth.token;
+  console.log('   oauth user:', oauth.user.nickname);
+
   console.log('3. Mock recharge');
   const recharge = await req<{ chipsBalance: number }>(
     '/api/v1/shop/mock-recharge',
     { method: 'POST', body: JSON.stringify({ amount: 50, requestId: `smoke-${Date.now()}` }) },
-    login.token,
+    token,
   );
   console.log('   balance:', recharge.chipsBalance, 'bonus:', (recharge as { bonusChips?: number }).bonusChips ?? 0);
 
@@ -47,7 +60,7 @@ async function main() {
   const match = await req<{ roomId: string; wsUrl: string }>(
     '/api/v1/match/quick-start',
     { method: 'POST', body: JSON.stringify({}) },
-    login.token,
+    token,
   );
   console.log('   room:', match.roomId, match.wsUrl);
 
