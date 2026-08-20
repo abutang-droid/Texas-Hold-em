@@ -26,7 +26,7 @@ const outlineHtml = `
 <div class="outline-page">
   <h1 class="doc-title">Texas Hold'em</h1>
   <h2 class="doc-subtitle">商业化启动计划书</h2>
-  <p class="meta">文档版本 v1.4 · 更新日期 2026-08-20 · 报价币种：人民币（CNY）· 不含合规章节</p>
+  <p class="meta">文档版本 v1.5 · 更新日期 2026-08-20 · 报价币种：人民币（CNY）· 不含合规章节</p>
   <div class="outline-banner">本页为纲要摘要，详细数据见正文章节</div>
 </div>
 `;
