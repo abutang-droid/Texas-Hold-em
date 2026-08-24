@@ -22,9 +22,9 @@ const outlineHtml = `
   <table class="cover-table">
     <tr><th>总周期</th><td>10 周（合同签署日起）</td></tr>
     <tr><th>合同建议价</th><td>¥240,000（三期付款；含首季云资源）</td></tr>
-    <tr><th>第一期</th><td>W1 – W3 · ¥72,000 · 接场 + IAP/OAuth Alpha</td></tr>
-    <tr><th>第二期</th><td>W4 – W7 · ¥96,000 · 核心 UI + 压测 + 提审</td></tr>
-    <tr><th>第三期</th><td>W8 – W10 · ¥72,000 · 上线 + 迁移 + 终验</td></tr>
+    <tr><th>第一期</th><td>W1 – W3 · ¥96,000（40%）· 接场 + IAP/OAuth Alpha</td></tr>
+    <tr><th>第二期</th><td>W4 – W7 · ¥96,000（40%）· 核心 UI + 压测 + 提审</td></tr>
+    <tr><th>第三期</th><td>W8 – W10 · ¥48,000（20%）· 上线 + 迁移 + 终验</td></tr>
   </table>
 </div>
 `;
