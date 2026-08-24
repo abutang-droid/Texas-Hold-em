@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"/>
-<title>Texas Hold'em 全项目计划书</title><style>
+<title>Texas Hold'em 全项目方案书（精益版）</title><style>
   @page { margin: 14mm 12mm 16mm 12mm; size: A4; }
   * { box-sizing: border-box; }
   body {
@@ -11,9 +11,12 @@
   .doc-subtitle { font-size: 16pt; color: #1a5276; margin: 0 0 10px; }
   .meta { color: #666; font-size: 9pt; margin-bottom: 8px; }
   .outline-banner { background: #eaf2f8; border-left: 4px solid #1a5276; padding: 8px 12px; font-size: 9.5pt; color: #555; margin-bottom: 12px; }
+  .toc-hint { font-size: 9pt; color: #666; margin-top: 20px; }
   .cover-table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin-top: 16px; }
   .cover-table th, .cover-table td { border: 1px solid #bbb; padding: 6px 8px; text-align: left; }
   .cover-table th { background: #eaf2f8; width: 28%; }
+  .part-break { page-break-before: always; border-top: 3px solid #1a5276; margin: 24px 0 16px; padding-top: 8px; }
+  .part-break h2 { font-size: 14pt; color: #1a5276; margin: 0; border: none; }
   .content h1 { font-size: 16pt; margin: 20px 0 8px; page-break-after: avoid; border-bottom: 2px solid #1a5276; padding-bottom: 4px; }
   .content h2 { font-size: 12.5pt; margin: 16px 0 6px; page-break-after: avoid; color: #222; border-bottom: 1px solid #ddd; padding-bottom: 3px; }
   .content h3 { font-size: 10.5pt; margin: 10px 0 5px; page-break-after: avoid; }
@@ -30,21 +33,22 @@
   .content ul, .content ol { margin: 4px 0 8px 16px; }
   .mermaid-diagram { margin: 10px 0 14px; page-break-inside: avoid; text-align: center; }
   .mermaid-diagram svg { max-width: 100%; height: auto; }
-  .diagram-caption { font-size: 8.5pt; color: #555; text-align: center; margin: -6px 0 12px; }
 </style></head><body>
 
 <div class="outline-page">
   <h1 class="doc-title">Texas Hold'em</h1>
-  <h2 class="doc-subtitle">全项目计划书</h2>
-  <p class="meta">文档版本 v2.0 · 更新日期 2026-08-24 · 三期精益方案 · 10 周 · 含甘特图</p>
-  <div class="outline-banner">本 PDF 由项目计划书 Markdown 自动生成；甘特图见正文 §6.3</div>
+  <h2 class="doc-subtitle">全项目方案书（精益版）</h2>
+  <p class="meta">文档版本 v2.0 · 更新日期 2026-08-24 · 计划书 + 报价书 · 10 周 · 含甘特图</p>
+  <div class="outline-banner">本文档合并《全项目计划书》与《技术报价书》；¥24 万为纯技术服务费，云资源与域名网络费用由创始人另行承担。</div>
   <table class="cover-table">
     <tr><th>总周期</th><td>10 周（合同签署日起）</td></tr>
-    <tr><th>合同建议价</th><td>¥240,000（三期付款 4:4:2；纯技术服务费）</td></tr>
+    <tr><th>技术服务费</th><td>¥240,000（三期付款 4:4:2）</td></tr>
     <tr><th>第一期</th><td>W1 – W3 · ¥96,000（40%）· 接场 + IAP/OAuth Alpha</td></tr>
     <tr><th>第二期</th><td>W4 – W7 · ¥96,000（40%）· 核心 UI + 压测 + 提审</td></tr>
     <tr><th>第三期</th><td>W8 – W10 · ¥48,000（20%）· 上线 + 迁移 + 终验</td></tr>
+    <tr><th>不含在合同内</th><td>首期云资源、域名 / SSL / CDN（创始人账户支付，首期约 ¥1.3–2.2 万）</td></tr>
   </table>
+  <p class="toc-hint">正文：第一部分 项目计划书 · 附录 技术报价书</p>
 </div>
 <div class="content"><h1>Texas Hold&#39;em 全项目计划书</h1>
 <table>
@@ -1320,4 +1324,407 @@
 </blockquote>
 <hr>
 <p><em>本文档 v2.0 为精益上架方案；全量 58 周 / ¥101 万方案见 Git 历史 v1.1。</em></p>
+<p>---PART_BREAK---</p>
+<div class="part-break"><h2>附录：技术报价书</h2></div>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>文档版本</td>
+<td>v2.0</td>
+</tr>
+<tr>
+<td>更新日期</td>
+<td>2026-08-24</td>
+</tr>
+<tr>
+<td>报价口径</td>
+<td><strong>精益上架</strong>（范围做减法；接场 80% 代码；保上架与 IAP）</td>
+</tr>
+<tr>
+<td>适用阶段</td>
+<td><strong>v1.1 全球英文区公测上架</strong>（不含运营 / 买量）</td>
+</tr>
+<tr>
+<td>总周期</td>
+<td><strong>10 周</strong>（合同签署日起）</td>
+</tr>
+<tr>
+<td>代码基线</td>
+<td><code>cursor/phase4-open-beta-2fc9</code>（约 <strong>80%</strong> 完成度，接场模式）</td>
+</tr>
+<tr>
+<td>合同建议价</td>
+<td><strong>¥240,000</strong>（三期付款 <strong>4:4:2</strong>；<strong>纯技术服务费</strong>）</td>
+</tr>
+<tr>
+<td>币种</td>
+<td>人民币（CNY），含税参考价</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>配套文档：</strong> <code>docs/local/全项目计划书.md</code> v2.0<br><strong>全量审慎方案：</strong> <code>docs/local/全项目外包技术报价书.md</code> v1.1（58 周 · ¥101 万）</p>
+</blockquote>
+<hr>
+<h2>一、精益报价原则</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>原则</th>
+<th>本报价执行方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><strong>单一目标</strong></td>
+<td>10 周内双端上架、真实 IAP、私人场公测全开</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>接场优先</strong></td>
+<td>预算用于 P0 缺口，不从零开发</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>范围减法</strong></td>
+<td>核心路径 UI；不含 PRD 全量拟物化、300 CCU、30 天 Hypercare</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>三期付款</strong></td>
+<td><strong>40% / 40% / 20%（4:4:2）</strong>；验收后 5 个工作日内付款</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>硬顶</strong></td>
+<td><strong>¥240,000</strong> 为合同上限；超支由供应商承担</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>不含买量</strong></td>
+<td>用户获取、广告投放、客服人力不在本报价内</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>不含基础设施</strong></td>
+<td>首期云资源、域名、SSL、CDN 等由<strong>创始人账户支付</strong>；供应商负责部署与配置</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>二、项目总进度（10 周）</h2>
+<table>
+<thead>
+<tr>
+<th>期次</th>
+<th>周次</th>
+<th>核心目标</th>
+<th>付款</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>第一期</strong></td>
+<td>W1 – W3</td>
+<td>接场、Scope 锁定、Design Token、IAP/OAuth Alpha</td>
+<td><strong>¥96,000</strong></td>
+</tr>
+<tr>
+<td><strong>第二期</strong></td>
+<td>W4 – W7</td>
+<td>核心 UI 落地、商店素材、100 CCU 压测、<strong>提审</strong></td>
+<td><strong>¥96,000</strong></td>
+</tr>
+<tr>
+<td><strong>第三期</strong></td>
+<td>W8 – W10</td>
+<td><strong>正式上线</strong>、筹码迁移（方案 A）、终验</td>
+<td><strong>¥48,000</strong></td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td><strong>10 周</strong></td>
+<td></td>
+<td><strong>¥240,000</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>三、费用明细（¥240,000）</h2>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>金额</th>
+<th>期次</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>接场审计 + Scope</td>
+<td>¥10,000</td>
+<td>第一期</td>
+<td>W1 Gap 矩阵 + Scope Matrix</td>
+</tr>
+<tr>
+<td>IAP / OAuth / 埋点 / 清档</td>
+<td>¥55,000</td>
+<td>第一–二期</td>
+<td>原生 IAP、生产 OAuth、Firebase</td>
+</tr>
+<tr>
+<td>UI 设计（核心）</td>
+<td>¥40,000</td>
+<td>第一–二期</td>
+<td>Design Token + 牌桌主路径</td>
+</tr>
+<tr>
+<td>UI 落地（核心路径）</td>
+<td>¥48,000</td>
+<td>第二期</td>
+<td>大厅 + 牌桌 + 商城</td>
+</tr>
+<tr>
+<td>商店素材</td>
+<td>¥15,000</td>
+<td>第二期</td>
+<td>截图 6 张 + 简版视频</td>
+</tr>
+<tr>
+<td>法务合规（模板）</td>
+<td>¥18,000</td>
+<td>第二–三期</td>
+<td>Privacy / ToS / RG 英文三件套</td>
+</tr>
+<tr>
+<td>QA（精简）</td>
+<td>¥14,000</td>
+<td>第二–三期</td>
+<td>12 人日冒烟 + 终验</td>
+</tr>
+<tr>
+<td>DevOps + 部署配置</td>
+<td>¥18,000</td>
+<td>第一–二期</td>
+<td>Staging / Prod 部署（<strong>云账单另计</strong>）</td>
+</tr>
+<tr>
+<td>PM + 项目管理</td>
+<td>¥12,000</td>
+<td>全程</td>
+<td>10 周统筹</td>
+</tr>
+<tr>
+<td>不可预见费</td>
+<td>¥20,000</td>
+<td>全程</td>
+<td>审核驳回、联调超时等</td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td><strong>¥240,000</strong></td>
+<td></td>
+<td><strong>硬顶（技术服务）</strong></td>
+</tr>
+</tbody></table>
+<h3>3.1 创始人另行承担（基础设施参考）</h3>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>首期参考</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>云资源</td>
+<td><strong>¥12,000 – ¥18,000 / 季</strong></td>
+<td>API / Room / PG / Redis，按用量</td>
+</tr>
+<tr>
+<td>域名 + SSL + CDN</td>
+<td><strong>¥500 – ¥2,000 / 年</strong></td>
+<td>创始人注册续费</td>
+</tr>
+<tr>
+<td>开发者账号</td>
+<td><strong>¥700</strong></td>
+<td>Apple + Google 一次性</td>
+</tr>
+<tr>
+<td>监控 / 分析 SaaS</td>
+<td><strong>¥0 – ¥3,000 / 季</strong></td>
+<td>免费档为主</td>
+</tr>
+<tr>
+<td><strong>首期合计</strong></td>
+<td><strong>约 ¥13,000 – ¥22,000</strong></td>
+<td>不含 IAP 抽成</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>四、三期付款与验收</h2>
+<table>
+<thead>
+<tr>
+<th>期次</th>
+<th>金额</th>
+<th>占比</th>
+<th>验收周</th>
+<th>核心交付</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>第一期</strong></td>
+<td><strong>¥96,000</strong></td>
+<td>40%</td>
+<td>W3</td>
+<td>Gap + Scope 签字；IAP 沙盒 E2E；OAuth 生产；Staging</td>
+</tr>
+<tr>
+<td><strong>第二期</strong></td>
+<td><strong>¥96,000</strong></td>
+<td>40%</td>
+<td>W7</td>
+<td>核心 UI；100 CCU 报告；商店素材；双端提审</td>
+</tr>
+<tr>
+<td><strong>第三期</strong></td>
+<td><strong>¥48,000</strong></td>
+<td>20%</td>
+<td>W10</td>
+<td>正式上线；方案 A 迁移；QA 终验 P0=0</td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td><strong>¥240,000</strong></td>
+<td>100%</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>五、里程碑</h2>
+<table>
+<thead>
+<tr>
+<th>里程碑</th>
+<th>时间</th>
+<th>通过条件</th>
+<th>付款</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>M1 接场</td>
+<td>W1</td>
+<td>Gap + Scope 签字</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>M3 技术 Alpha</strong></td>
+<td><strong>W3</strong></td>
+<td>IAP 沙盒 + OAuth 生产</td>
+<td><strong>¥96,000</strong></td>
+</tr>
+<tr>
+<td><strong>M6 提审</strong></td>
+<td><strong>W7</strong></td>
+<td>iOS + Android 已提交</td>
+<td><strong>¥96,000</strong></td>
+</tr>
+<tr>
+<td>M7 上线</td>
+<td>W9</td>
+<td>商店可下载；私人场全开</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>M8 终验</strong></td>
+<td><strong>W10</strong></td>
+<td>QA P0=0；文档齐全</td>
+<td><strong>¥48,000</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>六、不含在本报价内</h2>
+<ul>
+<li><strong>首期云资源</strong>、<strong>域名 / SSL / CDN 及网络费用</strong>（创始人账户支付，见 §3.1）  </li>
+<li>用户买量、客服人力、52 周运营计划  </li>
+<li>v1.1.x 视觉精修、ASO 第 2 轮起  </li>
+<li>300 CCU 全量压测、30 天 Hypercare（本方案为 1 周）  </li>
+<li>IAP 流水平台抽成（15%–30%）  </li>
+<li>v1.5 可选功能（GTO Bot、好友、成就 CMS 等）</li>
+</ul>
+<hr>
+<h2>七、与 v1.1 全量方案对比</h2>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>v1.1 审慎全量</th>
+<th><strong>v2.0 精益</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>周期</td>
+<td>58 周</td>
+<td><strong>10 周</strong></td>
+</tr>
+<tr>
+<td>预算</td>
+<td>¥1,010,000</td>
+<td><strong>¥240,000</strong></td>
+</tr>
+<tr>
+<td>前期调研</td>
+<td>独立 6 周 ¥98,000</td>
+<td><strong>并入 W1（3 天）</strong></td>
+</tr>
+<tr>
+<td>UI</td>
+<td>PRD 全量拟物化</td>
+<td><strong>核心路径视觉升级</strong></td>
+</tr>
+<tr>
+<td>压测</td>
+<td>300 CCU</td>
+<td><strong>100 CCU 轻量报告</strong></td>
+</tr>
+<tr>
+<td>Hypercare</td>
+<td>30 天</td>
+<td><strong>1 周</strong></td>
+</tr>
+<tr>
+<td>运营 / 买量</td>
+<td>含 52 周计划框架</td>
+<td><strong>不含</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>八、相关文档</h2>
+<table>
+<thead>
+<tr>
+<th>文档</th>
+<th>路径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>全项目计划书 v2.0</strong></td>
+<td><code>docs/local/全项目计划书.md</code></td>
+</tr>
+<tr>
+<td>全量审慎报价 v1.1</td>
+<td><code>docs/local/全项目外包技术报价书.md</code></td>
+</tr>
+<tr>
+<td>商业化启动计划书</td>
+<td><code>docs/11-商业化启动计划书.md</code> §9.4</td>
+</tr>
+</tbody></table>
+<hr>
+<p><em>本文档 v2.0 为精益上架方案；与《全项目计划书》v2.0 配套使用。</em></p>
 </div></body></html>
