@@ -10,20 +10,21 @@ const { marked } = require('marked');
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const mdPath = join(root, 'docs/local/全项目计划书.md');
 const htmlPath = join(root, 'docs/local/全项目计划书.html');
-const pdfPath = join(root, 'docs/local/全项目计划书-v1.1-本地版.pdf');
+const pdfPath = join(root, 'docs/local/全项目计划书-v2.0-本地版.pdf');
 const tmpDir = join(root, 'docs/local/.pdf-build');
 
 const outlineHtml = `
 <div class="outline-page">
   <h1 class="doc-title">Texas Hold'em</h1>
   <h2 class="doc-subtitle">全项目计划书</h2>
-  <p class="meta">文档版本 v1.1 · 更新日期 2026-08-20 · 四期方案 · 58 周 · 含甘特图</p>
+  <p class="meta">文档版本 v2.0 · 更新日期 2026-08-24 · 三期精益方案 · 10 周 · 含甘特图</p>
   <div class="outline-banner">本 PDF 由项目计划书 Markdown 自动生成；甘特图见正文 §6.3</div>
   <table class="cover-table">
-    <tr><th>总周期</th><td>58 周（前期 6 周 + 执行 / 运营 52 周）</td></tr>
-    <tr><th>合同建议价</th><td>¥1,010,000（四期付款）</td></tr>
-    <tr><th>第零期</th><td>W-6 – W-1 · ¥98,000 · 调研 + 计划书</td></tr>
-    <tr><th>第一–三期</th><td>W1 – W12 · ¥912,000 · 接场 → 上线 → 终验</td></tr>
+    <tr><th>总周期</th><td>10 周（合同签署日起）</td></tr>
+    <tr><th>合同建议价</th><td>¥240,000（三期付款；含首季云资源）</td></tr>
+    <tr><th>第一期</th><td>W1 – W3 · ¥72,000 · 接场 + IAP/OAuth Alpha</td></tr>
+    <tr><th>第二期</th><td>W4 – W7 · ¥96,000 · 核心 UI + 压测 + 提审</td></tr>
+    <tr><th>第三期</th><td>W8 – W10 · ¥72,000 · 上线 + 迁移 + 终验</td></tr>
   </table>
 </div>
 `;
