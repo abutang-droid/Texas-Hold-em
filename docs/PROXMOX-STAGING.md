@@ -33,9 +33,9 @@
 ```text
 家庭 WiFi / 交换机
    │
-   ├── Mac mini（开发）───── http://192.168.1.50:3000  (API)
-   │                        http://192.168.1.50:3001  (Room)
-   └── LXC th-staging (192.168.1.50)
+   ├── Mac mini（开发）───── http://192.168.31.50:3000  (API)
+   │                        http://192.168.31.50:3001  (Room)
+   └── LXC th-staging (192.168.31.50)
          ├── Docker: PostgreSQL + Redis
          ├── PM2: api :3000 · room :3001 · admin :5173
          └── 无需 cloudflared
@@ -53,7 +53,7 @@ Internet → Cloudflare → cloudflared → 127.0.0.1:3000/3001/5173
 
 ### 2.1 创建 LXC
 
-同下文 **§三**；记下容器 IP，例如 `192.168.1.50`。
+同下文 **§三**；建议为 LXC 设静态 IP **`192.168.31.50`**（网关 `192.168.31.1`，掩码 `255.255.255.0`）。
 
 ### 2.2 部署（跳过 Tunnel）
 
@@ -67,7 +67,7 @@ git checkout cursor/phase4-open-beta-2fc9
 bash scripts/staging-bootstrap.sh
 
 cp infra/staging/.env.lan.example .env
-nano .env   # 把 192.168.1.50 改成你的 LXC IP，改 JWT / ADMIN 密钥
+nano .env   # 默认已填 192.168.31.50；若 IP 不同请修改，并改 JWT / ADMIN 密钥
 
 docker compose up -d
 pnpm install && pnpm build && pnpm migrate
@@ -77,16 +77,16 @@ bash scripts/staging-up.sh
 ### 2.3 Mac mini 验证
 
 ```bash
-curl http://192.168.1.50:3000/health
-curl http://192.168.1.50:3001/health
-open http://192.168.1.50:5173          # 运营后台
+curl http://192.168.31.50:3000/health
+curl http://192.168.31.50:3001/health
+open http://192.168.31.50:5173          # 运营后台
 ```
 
 Expo 开发机 `.env`：
 
 ```bash
-EXPO_PUBLIC_API_URL=http://192.168.1.50:3000
-EXPO_PUBLIC_ROOM_URL=http://192.168.1.50:3001
+EXPO_PUBLIC_API_URL=http://192.168.31.50:3000
+EXPO_PUBLIC_ROOM_URL=http://192.168.31.50:3001
 ```
 
 手机真机：**连同一 WiFi**，用 Expo Go 扫 Mac 上的二维码即可（请求会打到 LXC IP）。
@@ -126,9 +126,9 @@ cloudflared tunnel --url http://127.0.0.1:3000
    - **Unprivileged container**：可勾选（需开启 nesting，见下）
    - Cores: **4** · Memory: **8192** · Swap: **2048**
    - Root disk: **80 GB**（local-lvm）
-   - Network: `vmbr0` · DHCP 或静态 IP（如 `192.168.1.50`）
+   - Network: `vmbr0` · 建议静态 IP **`192.168.31.50`** / 网关 **`192.168.31.1`** / `255.255.255.0`
 3. **Options → Features**：勾选 **nesting=1**（容器内跑 Docker 必须）
-4. 启动 CT，SSH 登录：`ssh root@192.168.1.50`
+4. 启动 CT，SSH 登录：`ssh root@192.168.31.50`
 
 > 若 Docker 报权限错误，在 Proxmox 节点执行：  
 > `pct set <CTID> -features nesting=1,keyctl=1`
