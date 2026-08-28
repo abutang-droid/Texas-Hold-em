@@ -1,4 +1,34 @@
 /** PM2 process list for Staging — run from repo root: pm2 start infra/staging/ecosystem.config.cjs */
+const fs = require('node:fs');
+const path = require('node:path');
+
+function loadEnvFile(filePath) {
+  if (!fs.existsSync(filePath)) return {};
+  const env = {};
+  for (const line of fs.readFileSync(filePath, 'utf8').split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eq = trimmed.indexOf('=');
+    if (eq <= 0) continue;
+    const key = trimmed.slice(0, eq).trim();
+    let value = trimmed.slice(eq + 1).trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    env[key] = value;
+  }
+  return env;
+}
+
+const repoRoot = path.resolve(__dirname, '../..');
+const stagingEnv = {
+  NODE_ENV: 'staging',
+  ...loadEnvFile(path.join(repoRoot, '.env')),
+};
+
 module.exports = {
   apps: [
     {
@@ -8,9 +38,7 @@ module.exports = {
       instances: 1,
       autorestart: true,
       max_memory_restart: '512M',
-      env: {
-        NODE_ENV: 'staging',
-      },
+      env: stagingEnv,
     },
     {
       name: 'th-room',
@@ -19,9 +47,7 @@ module.exports = {
       instances: 1,
       autorestart: true,
       max_memory_restart: '1G',
-      env: {
-        NODE_ENV: 'staging',
-      },
+      env: stagingEnv,
     },
     {
       name: 'th-admin',
@@ -31,9 +57,7 @@ module.exports = {
       interpreter: 'none',
       autorestart: true,
       max_memory_restart: '512M',
-      env: {
-        NODE_ENV: 'staging',
-      },
+      env: stagingEnv,
     },
   ],
 };
