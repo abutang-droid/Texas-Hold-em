@@ -4,11 +4,10 @@
 |------|------|
 | 适用场景 | **开发 Staging**（非生产） |
 | Proxmox 主机 | 12 代 i7 · 32 GB RAM |
-| 容器类型 | **新建 LXC `th-staging`**（推荐，与 `192.168.31.52` 隔离） |
-| 已有服务器 | `192.168.31.52` 跑其他应用 · **不动它** |
-| 新 LXC IP（建议） | **`192.168.31.53`** · 网关 `192.168.31.1` |
-| 公网暴露 | **前期可选**：仅局域网 IP；后期再加 Cloudflare Tunnel + 域名 |
-| 代码分支 | `cursor/phase4-open-beta-2fc9` |
+| 部署方式 | **仅新建独立 LXC**（不使用 `192.168.31.52` 共享部署） |
+| 已有服务器 `192.168.31.52` | 跑其他应用 · **本方案不部署其上** |
+| **LXC `th-staging` IP** | **`192.168.31.53`** · 网关 `192.168.31.1` |
+| 公网 | 前期仅局域网；后期可选 Cloudflare Tunnel |
 
 ---
 
@@ -157,78 +156,16 @@ bash scripts/staging-up.sh
 
 > **结论：** 前期接场、打牌、后台、mock 充值用局域网即可；**临近提审再加域名 + Tunnel**。
 
-### 2.5 不想买域名时的过渡方案
-
-Cloudflare **Quick Tunnel**（免费随机域名，无需自有域名）：
+### 4.1 Quick Tunnel（临时外网，无域名）
 
 ```bash
-# 临时暴露 API（关掉终端即失效）
 cloudflared tunnel --url http://127.0.0.1:3000
-# 输出类似 https://xxxx.trycloudflare.com
-```
-
-适合偶尔给外人看一眼，不适合长期 Staging。
-
----
-
-## 三、（可选）新建 LXC 容器
-
-> **已有 Ubuntu `192.168.31.52` 可跳过本章。**
-
-1. **下载模板**：local → CT Templates → `ubuntu-24.04-standard`
-2. **Create CT**：
-   - Hostname: `th-staging`
-   - Password / SSH key：建议仅 SSH key
-   - **Unprivileged container**：可勾选（需开启 nesting，见下）
-   - Cores: **4** · Memory: **8192** · Swap: **2048**
-   - Root disk: **80 GB**（local-lvm）
-   - Network: `vmbr0` · 静态 IP 另选未占用地址（如 `192.168.31.50`）/ 网关 **`192.168.31.1`**
-3. **Options → Features**：勾选 **nesting=1**（容器内跑 Docker 必须）
-4. 启动 CT，SSH 登录：`ssh root@<新容器IP>`
-
-> 若 Docker 报权限错误，在 Proxmox 节点执行：  
-> `pct set <CTID> -features nesting=1,keyctl=1`
-
----
-
-## 四、LXC 一次性初始化
-
-在 **LXC 内**执行（也可用仓库脚本）：
-
-```bash
-# 从 Mac 把脚本拷进 LXC，或在 LXC 里 git clone 后执行：
-bash scripts/staging-bootstrap.sh
-```
-
-脚本会安装：Docker、Node 20、pnpm、PM2、cloudflared。
-
----
-
-## 五、部署应用（含 Tunnel 时用 .env.staging.example）
-
-```bash
-# 1. 克隆（在 LXC 内）
-git clone https://github.com/abutang-droid/Texas-Hold-em.git
-cd Texas-Hold-em
-git checkout cursor/phase4-open-beta-2fc9
-
-# 2. 环境变量
-cp infra/staging/.env.staging.example .env
-nano .env   # 改密码、JWT、域名、Tunnel token
-
-# 3. 数据库
-docker compose -f docker-compose.yml up -d
-pnpm install
-pnpm build
-pnpm migrate
-
-# 4. 启动应用 + Tunnel
-bash scripts/staging-up.sh
+# 输出 https://xxxx.trycloudflare.com
 ```
 
 ---
 
-## 六、Cloudflare Tunnel 配置（后期再加）
+## 五、Cloudflare Tunnel 配置（后期再加）
 
 ### 5.1 创建 Tunnel（Zero Trust 控制台）
 
@@ -264,7 +201,7 @@ sudo systemctl status cloudflared
 
 ---
 
-## 七、`.env` 关键项
+## 六、`.env` 关键项
 
 参考 `infra/staging/.env.lan.example`（无域名）或 `.env.staging.example`（Tunnel）。
 
@@ -293,7 +230,7 @@ CLOUDFLARE_TUNNEL_TOKEN=eyJ...
 
 ---
 
-## 八、日常运维命令
+## 七、日常运维命令
 
 ```bash
 cd ~/Texas-Hold-em
@@ -320,7 +257,7 @@ pnpm smoke   # 需 API 在 localhost:3000 可达
 
 ---
 
-## 九、备份（建议每周）
+## 八、备份（建议每周）
 
 ```bash
 # Postgres 逻辑备份
@@ -331,7 +268,7 @@ docker exec th-postgres pg_dump -U th texas_holdem | gzip > ~/backup/th-$(date +
 
 ---
 
-## 十、安全注意
+## 九、安全注意
 
 | 项 | 建议 |
 |----|------|
@@ -342,7 +279,7 @@ docker exec th-postgres pg_dump -U th texas_holdem | gzip > ~/backup/th-$(date +
 
 ---
 
-## 十一、故障排查
+## 十、故障排查
 
 | 现象 | 检查 |
 |------|------|
@@ -353,14 +290,15 @@ docker exec th-postgres pg_dump -U th texas_holdem | gzip > ~/backup/th-$(date +
 
 ---
 
-## 十二、与 Mac mini 分工
+## 十一、与 Mac mini 分工
 
 | 机器 | 角色 |
 |------|------|
 | **Mac mini** | 写代码、Expo 真机调试、指向 Staging URL |
-| **Proxmox LXC** | 7×24 内网 Staging；后期再加 Tunnel |
+| **Proxmox LXC `.53`** | Texas Hold'em 专用 Staging |
+| **`192.168.31.52`** | 原有应用，互不干扰 |
 | **Cloudflare** | HTTPS、Tunnel、可选 WAF / Access |
 
 ---
 
-*文档版本 v1.1 · 2026-08-28 · 新增局域网无域名方案*
+*文档版本 v1.2 · 2026-08-28 · 新建 LXC 192.168.31.53 推荐路径*
