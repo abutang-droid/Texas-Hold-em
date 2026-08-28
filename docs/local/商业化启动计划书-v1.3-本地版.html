@@ -1,0 +1,2327 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"/>
+<title>Texas Hold'em 商业化启动计划书</title><style>
+  @page { margin: 16mm 14mm 18mm 14mm; size: A4; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Noto Sans CJK SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 10pt; line-height: 1.5; color: #1a1a1a; margin: 0; padding: 0;
+  }
+  .outline-page { page-break-after: always; padding-top: 6mm; }
+  .doc-title { font-size: 24pt; margin: 0 0 4px; }
+  .doc-subtitle { font-size: 16pt; color: #9a7b1a; margin: 0 0 10px; }
+  .meta { color: #666; font-size: 9pt; margin-bottom: 8px; }
+  .outline-banner { background: #f5f3eb; border-left: 4px solid #c9a227; padding: 8px 12px; font-size: 9.5pt; color: #555; }
+  .content h1 { font-size: 17pt; margin: 22px 0 10px; page-break-after: avoid; border-bottom: 2px solid #c9a227; padding-bottom: 4px; }
+  .content h2 { font-size: 13pt; margin: 18px 0 8px; page-break-after: avoid; color: #222; border-bottom: 1px solid #ddd; padding-bottom: 3px; }
+  .content h3 { font-size: 11pt; margin: 12px 0 6px; page-break-after: avoid; }
+  .content h4 { font-size: 10pt; margin: 10px 0 4px; }
+  .content p, .content li { font-size: 9.5pt; }
+  .content table { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin: 8px 0 12px; page-break-inside: avoid; }
+  .content th, .content td { border: 1px solid #bbb; padding: 4px 5px; text-align: left; vertical-align: top; }
+  .content th { background: #f5f3eb; }
+  .content tr:nth-child(even) td { background: #fafafa; }
+  .content blockquote { border-left: 3px solid #c9a227; margin: 8px 0; padding: 6px 10px; background: #faf8f2; color: #444; }
+  .content pre { background: #f4f4f4; padding: 8px; font-size: 8pt; overflow-x: auto; page-break-inside: avoid; }
+  .content code { background: #eee; padding: 1px 3px; border-radius: 2px; font-size: 8.5pt; }
+  .content hr { border: none; border-top: 1px solid #ddd; margin: 14px 0; }
+  .content ul, .content ol { margin: 4px 0 8px 18px; }
+</style></head><body>
+
+<div class="outline-page">
+  <h1 class="doc-title">Texas Hold'em</h1>
+  <h2 class="doc-subtitle">商业化启动计划书</h2>
+  <p class="meta">文档版本 v1.3 · 更新日期 2026-08-20 · 报价币种：人民币（CNY）</p>
+  <div class="outline-banner">本页为纲要摘要，详细数据见正文章节</div>
+</div>
+<div class="content"><h1>Texas Hold&#39;em 商业化启动计划书</h1>
+<p><strong>文档版本</strong> v1.3 · <strong>更新日期</strong> 2026-08-20 · <strong>报价币种</strong> 人民币（CNY）</p>
+<hr>
+<h1>纲要</h1>
+<h2>一、项目定位</h2>
+<ul>
+<li>跨端社交竞技德州扑克，单向封闭筹码经济（不可提现）</li>
+<li>变现：IAP 充值（主）+ 官方场 5% / 私人场 3% rake</li>
+<li>技术阶段：v1.1 公测前约 80%</li>
+</ul>
+<h2>二、已锁定战略决策</h2>
+<table>
+<thead>
+<tr>
+<th>决策</th>
+<th>方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>首发市场</td>
+<td>全球英文区（English U.S. 主语言）</td>
+</tr>
+<tr>
+<td>团队规模</td>
+<td>精益，全年现金硬顶 <strong>¥54 万</strong></td>
+</tr>
+<tr>
+<td>私人场</td>
+<td>公测即开，强风控 + 后台熔断</td>
+</tr>
+<tr>
+<td>筹码迁移</td>
+<td><strong>方案 A</strong>：清零 + 赠 100 筹码</td>
+</tr>
+<tr>
+<td>美国买量</td>
+<td>不列入 T1，全年仅自然量</td>
+</tr>
+<tr>
+<td>研发模式</td>
+<td>创始人自研，节省 <strong>¥11.5 万</strong> 转投买量</td>
+</tr>
+</tbody></table>
+<h2>三、市场与买量</h2>
+<ul>
+<li><strong>T1 付费</strong>：加拿大、澳大利亚、新西兰</li>
+<li><strong>T2 自然量</strong>：美国、英国、爱尔兰（广告排除美国）</li>
+<li>全年买量：<strong>¥18 万</strong></li>
+</ul>
+<h2>四、年度预算摘要</h2>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>金额（人民币）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>研发（自研现金）</td>
+<td>¥72,000</td>
+</tr>
+<tr>
+<td>云基础设施</td>
+<td>¥64,800</td>
+</tr>
+<tr>
+<td>法务合规</td>
+<td>¥57,600</td>
+</tr>
+<tr>
+<td>用户获取</td>
+<td>¥180,000</td>
+</tr>
+<tr>
+<td>其他 + 储备</td>
+<td>¥165,600</td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td><strong>¥540,000</strong></td>
+</tr>
+</tbody></table>
+<h2>五、52 周时间表</h2>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>周次</th>
+<th>要点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>上架冲刺</td>
+<td>W1–W8</td>
+<td>IAP、压测、全球英文区上线</td>
+</tr>
+<tr>
+<td>软启动</td>
+<td>W9–W16</td>
+<td>自然量，不买量</td>
+</tr>
+<tr>
+<td>小预算验证</td>
+<td>W17–W28</td>
+<td>T1 买量 ¥4.3 万</td>
+</tr>
+<tr>
+<td>稳态运营</td>
+<td>W29–W52</td>
+<td>月买量上限 ¥2.3 万</td>
+</tr>
+</tbody></table>
+<h2>六、首年 KPI（基准）</h2>
+<ul>
+<li>注册 5–10 万 · MAU 8,000–15,000 · 付费率 4–5%</li>
+<li>M12 月毛流水 ¥7.2 万 – ¥14.4 万</li>
+</ul>
+<h2>七、Q1 自研交付（P0）</h2>
+<ol>
+<li>真机 IAP 联调</li>
+<li>压测 300 CCU</li>
+<li>充值漏斗埋点</li>
+<li>公测清档脚本</li>
+<li>提审上线</li>
+</ol>
+<h2>八、正文目录</h2>
+<ol>
+<li>执行摘要 · 2. 战略决策 · 3. 现状评估 · 4. 市场策略</li>
+<li>产品范围 · 6. 私人场 · 7. 经济模型 · 8. 组织分工</li>
+<li>预算表 · 10. 时间表 · 11. KPI 预测 · 12. 合规风险</li>
+<li>运营体系 · 14. 30 天行动 · 15. 待确认事项 · 附录</li>
+</ol>
+<hr>
+<h2>一、执行摘要</h2>
+<p>Texas Hold&#39;em 是一款跨端（iOS / Android / Web）社交竞技德州扑克产品，采用<strong>单向封闭筹码经济</strong>（筹码仅可通过官方充值或活动获得，不可兑换法币、不可玩家间转移）。</p>
+<p><strong>商业化核心路径</strong>：完成全球英文区 App Store / Google Play 上架 → 真实 IAP 收款 → 以私人场作为差异化留存与裂变抓手 → 精益预算验证单位经济模型 → 数据达标后再加码投放。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>产品定位</td>
+<td>社交竞技德州扑克，娱乐筹码，非真钱博彩</td>
+</tr>
+<tr>
+<td>变现模式</td>
+<td>IAP 充值（主）+ 官方场 5% / 私人场 3% rake（回收）</td>
+</tr>
+<tr>
+<td>当前技术阶段</td>
+<td>约 <strong>v1.1 公测前 80%</strong>（IAP 验单、合规、双榜、运营后台、私人场均已具备）</td>
+</tr>
+<tr>
+<td>首发市场</td>
+<td><strong>全球英文区</strong>（单一英文商店页，全球分发）</td>
+</tr>
+<tr>
+<td>团队模式</td>
+<td><strong>精益团队</strong>，首年现金预算 <strong>≤ ¥54 万</strong>（约 $75,000）</td>
+</tr>
+<tr>
+<td>私人场</td>
+<td><strong>公测即开</strong>，配合强风控与后台熔断</td>
+</tr>
+<tr>
+<td>首年目标（保守）</td>
+<td>累计注册 5–10 万，月活 8,000–15,000，付费率 3–5%</td>
+</tr>
+<tr>
+<td>首年毛流水目标</td>
+<td>¥58 万 – ¥144 万（约 $8 万 – $20 万）</td>
+</tr>
+</tbody></table>
+<p><strong>核心判断</strong>：产品经济闭环设计成熟，但「能收钱」≠「能规模化赚钱」。商业化成败取决于 <strong>商店过审、首月留存、破产转化、合规零事故</strong>，而非继续堆功能。</p>
+<hr>
+<h2>二、战略决策（已锁定）</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>决策项</th>
+<th>选定方案</th>
+<th>执行含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>首发市场</td>
+<td><strong>全球英文区</strong></td>
+<td>App Store / Google Play 以 English (U.S.) 为主语言全球发布；应用内保留 en-US（主）+ zh-CN</td>
+</tr>
+<tr>
+<td>2</td>
+<td>团队规模</td>
+<td><strong>精益（&lt; ¥58 万/年）</strong></td>
+<td>全年现金硬顶 ¥54 万；买量全年 ¥18 万（自研节省转投）；以自然量 + T1 三国付费测试为主</td>
+</tr>
+<tr>
+<td>3</td>
+<td>私人场</td>
+<td><strong>公测即开</strong></td>
+<td>v1.1 上线时私人场全开，作为差异化与社交裂变抓手；保留后台一键暂停能力</td>
+</tr>
+<tr>
+<td>4</td>
+<td>筹码迁移</td>
+<td><strong>方案 A（已确认）</strong></td>
+<td>公测全员清零，重新赠送 100 筹码；提前 7 天公告 + App 内确认弹窗</td>
+</tr>
+<tr>
+<td>5</td>
+<td>美国买量</td>
+<td><strong>不列入 T1（已确认）</strong></td>
+<td>全球可下载，但付费投放不含美国；美国仅自然量 + ASO，M12 前再评估</td>
+</tr>
+<tr>
+<td>6</td>
+<td>研发模式</td>
+<td><strong>创始人自研（已确认）</strong></td>
+<td>上架冲刺与全年维护由创始人完成；研发现金预算压缩至 ¥7.2 万，节省 ¥11.5 万转投买量与储备</td>
+</tr>
+</tbody></table>
+<h3>2.1 一句话战略</h3>
+<blockquote>
+<p>用最小成本完成全球英文区上架与真实 IAP，以私人场差异化提高时长与传播，6 个月内验证 LTV/CPI，再决定是否扩量。</p>
+</blockquote>
+<hr>
+<h2>三、现状评估</h2>
+<h3>3.1 已完成（可支撑商业化）</h3>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>状态</th>
+<th>商业价值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>官方 9 人场 + Bot 补位</td>
+<td>✅</td>
+<td>核心对局体验，P99 开局 ≤5s</td>
+</tr>
+<tr>
+<td>私人场（开房、踢人、Re-buy、解散投票）</td>
+<td>✅</td>
+<td>社交组局、差异化</td>
+</tr>
+<tr>
+<td>举报 + Chip dumping 24h 检测</td>
+<td>✅</td>
+<td>合规与风控基础</td>
+</tr>
+<tr>
+<td>OAuth（Apple / Google）+ Refresh Token</td>
+<td>✅</td>
+<td>账号体系、游客转正</td>
+</tr>
+<tr>
+<td>IAP 验单（Apple / Google）+ 商品目录</td>
+<td>✅ 沙盒可用</td>
+<td>变现基础设施</td>
+</tr>
+<tr>
+<td>首充赠送 50%、日充值限额 50,000</td>
+<td>✅ 可配置</td>
+<td>转化杠杆</td>
+</tr>
+<tr>
+<td>18+ 自声明、自我封禁</td>
+<td>✅</td>
+<td>商店审核必备</td>
+</tr>
+<tr>
+<td>双排行榜 + 隐身模式</td>
+<td>✅</td>
+<td>竞技留存</td>
+</tr>
+<tr>
+<td>运营后台（用户详情、经济看板、系统配置）</td>
+<td>✅</td>
+<td>日常运营</td>
+</tr>
+<tr>
+<td>内测 → 公测迁移确认流程</td>
+<td>✅</td>
+<td>筹码清档公告</td>
+</tr>
+</tbody></table>
+<h3>3.2 商业化缺口（Must-Have）</h3>
+<table>
+<thead>
+<tr>
+<th>缺口</th>
+<th>优先级</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>App Store / Google Play 正式上架</td>
+<td>P0</td>
+<td>开发者账号、隐私政策、审核包</td>
+</tr>
+<tr>
+<td>真机 IAP 联调（StoreKit / Play Billing）</td>
+<td>P0</td>
+<td>Web 沙盒 ≠ 真机收入</td>
+</tr>
+<tr>
+<td>生产环境 IAP 凭证与订单对账</td>
+<td>P0</td>
+<td>共享密钥、服务账号</td>
+</tr>
+<tr>
+<td>压测与容量规划（Phase 5）</td>
+<td>P0</td>
+<td>公测流量扛不住 = 收入归零</td>
+</tr>
+<tr>
+<td>数据分析体系（漏斗 / 留存 / LTV）</td>
+<td>P0</td>
+<td>无法优化 = 盲投</td>
+</tr>
+<tr>
+<td>英文法务文件（Privacy / ToS / RG）</td>
+<td>P0</td>
+<td>全球英文区审核必备</td>
+</tr>
+<tr>
+<td>英文商店素材（截图、视频、描述）</td>
+<td>P1</td>
+<td>ASO 与过审</td>
+</tr>
+<tr>
+<td>客服与客诉 SLA</td>
+<td>P1</td>
+<td>IAP 退款、封号申诉</td>
+</tr>
+<tr>
+<td>活动 CMS / Push 召回</td>
+<td>P2</td>
+<td>v1.5 前可用简易方案替代</td>
+</tr>
+</tbody></table>
+<h3>3.3 竞品与差异化</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>本产品</th>
+<th>典型竞品（Zynga Poker 等）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>经济模型</td>
+<td>单向封闭、无提现</td>
+<td>同类</td>
+</tr>
+<tr>
+<td>差异化</td>
+<td>私人场组局、双榜竞技、Bot 快速开局</td>
+<td>品牌与用户量</td>
+</tr>
+<tr>
+<td>当前弱点</td>
+<td>无好友 / 成就 / 皮肤、品牌为零</td>
+<td>社交图谱深、运营成熟</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>四、市场与上架策略</h2>
+<h3>4.1 全球英文区发布方案</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>App Store</td>
+<td>全球发布，Primary Language：<strong>English (U.S.)</strong></td>
+</tr>
+<tr>
+<td>Google Play</td>
+<td>全球发布（除无法分发地区）</td>
+</tr>
+<tr>
+<td>应用内语言</td>
+<td><code>en-US</code>（主）+ <code>zh-CN</code>（华人用户自然覆盖）</td>
+</tr>
+<tr>
+<td>定价基准</td>
+<td>美元标价（$0.99 / $4.99 / $9.99），商店自动本地化</td>
+</tr>
+</tbody></table>
+<h3>4.2 市场分层（精益投放用）</h3>
+<p>不做分国家独立运营，买量测试按 Tier 分批。<strong>美国可全球下载，但一律不进入 T1 付费投放池。</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>市场</th>
+<th>策略</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>T1 测试池（付费）</strong></td>
+<td>加拿大、澳大利亚、新西兰</td>
+<td>首波小预算 UAC / Meta</td>
+<td>监管相对清晰，CPI 低于美国</td>
+</tr>
+<tr>
+<td><strong>T2 自然量</strong></td>
+<td><strong>美国</strong>、英国、爱尔兰</td>
+<td><strong>仅 ASO + 口碑，全年不买量</strong></td>
+<td>CPI 高（约 ¥36–¥72）；合规与素材要求更严</td>
+</tr>
+<tr>
+<td><strong>T3 观察</strong></td>
+<td>印度、东南亚英文用户</td>
+<td>仅自然量</td>
+<td>ARPPU 偏低</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>美国特别说明</strong>：App Store / Google Play 仍全球发布（含美国），用户可自然搜索下载；Meta / Google UAC 等广告<strong>不得定向美国</strong>，直至 T1 市场 LTV/CPI 达标且完成美国合规专项审查（预计 M10+ 再议）。</p>
+</blockquote>
+<h3>4.3 商店与合规文案（英文区）</h3>
+<p><strong>必须使用：</strong></p>
+<ul>
+<li>Social poker / Entertainment chips</li>
+<li>No real money gambling / No cash out</li>
+<li>18+ age gate、Responsible Gaming、Self-exclusion</li>
+</ul>
+<p><strong>必须避免：</strong></p>
+<ul>
+<li>Real money、Cash prizes、Gambling、Win money</li>
+</ul>
+<p><strong>私人场表述：</strong></p>
+<ul>
+<li>Private tables with friends（社交组局）</li>
+<li>不提赌注、现金、奖金</li>
+</ul>
+<h3>4.4 必备法律文档（英文）</h3>
+<table>
+<thead>
+<tr>
+<th>文档</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Privacy Policy</td>
+<td>商店审核、GDPR / CCPA 基础</td>
+</tr>
+<tr>
+<td>Terms of Service</td>
+<td>用户协议</td>
+</tr>
+<tr>
+<td>Responsible Gaming Policy</td>
+<td>自我封禁、年龄声明说明</td>
+</tr>
+<tr>
+<td>官网 Landing Page</td>
+<td>商店链接要求，可用 GitHub Pages（成本极低）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>五、产品与功能范围</h2>
+<h3>5.1 公测版本范围（v1.1）</h3>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>范围</th>
+<th>验收标准</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>官方场</td>
+<td>9 人桌、1/2 盲注、5% rake</td>
+<td>完整一局可结算</td>
+</tr>
+<tr>
+<td>私人场</td>
+<td>2–9 人、3% rake、开房费 100 筹码</td>
+<td><strong>公测即开</strong></td>
+</tr>
+<tr>
+<td>支付</td>
+<td>Apple IAP + Google Play</td>
+<td>沙盒 / 生产到账</td>
+</tr>
+<tr>
+<td>内测迁移</td>
+<td>筹码清档 + 重新赠送 100</td>
+<td>提前 7 天公告</td>
+</tr>
+<tr>
+<td>排行榜</td>
+<td>盈利榜 + 单局最高榜，10 分钟刷新</td>
+<td>大厅 Top3 展示</td>
+</tr>
+<tr>
+<td>合规</td>
+<td>18+ 自声明、Responsible Gaming、自我封禁</td>
+<td>商店审核通过</td>
+</tr>
+<tr>
+<td>首充活动</td>
+<td>首充额外赠送 50%（可配置）</td>
+<td>独立弹窗</td>
+</tr>
+<tr>
+<td>后台</td>
+<td>用户详情、经济看板、系统配置、举报工单</td>
+<td>运营三板斧可用</td>
+</tr>
+</tbody></table>
+<h3>5.2 公测不包含（延后至 v1.5+）</h3>
+<ul>
+<li>GTO Bot 引擎</li>
+<li>好友系统</li>
+<li>成就 / 称号 CMS</li>
+<li>多盲注官方场（2/4、5/10）</li>
+<li>对局回放 UI</li>
+<li>皮肤 / VIP（v2.5）</li>
+<li>Web 支付 Stripe / USDC（v2.0）</li>
+</ul>
+<h3>5.3 技术收尾清单（上架前）</h3>
+<table>
+<thead>
+<tr>
+<th>任务</th>
+<th>优先级</th>
+<th>预估工作量</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>真机 <code>expo-iap</code> 生产联调</td>
+<td>P0</td>
+<td>1–2 人周</td>
+</tr>
+<tr>
+<td>IAP 凭证配置与对账脚本</td>
+<td>P0</td>
+<td>0.5 人周</td>
+</tr>
+<tr>
+<td>压测（300 并发连接 / 50 同桌）</td>
+<td>P0</td>
+<td>1 人周</td>
+</tr>
+<tr>
+<td>Firebase Analytics + 充值漏斗</td>
+<td>P0</td>
+<td>0.5 人周</td>
+</tr>
+<tr>
+<td>英文商店素材</td>
+<td>P0</td>
+<td>外包 1 周</td>
+</tr>
+<tr>
+<td>英文法务三件套</td>
+<td>P0</td>
+<td>外包 2–3 周</td>
+</tr>
+<tr>
+<td>Crashlytics + 基础告警</td>
+<td>P1</td>
+<td>0.5 人周</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>六、私人场公测方案</h2>
+<p>私人场是差异化，也是合规重点。采用 <strong>「全开 + 强风控 + 可熔断」</strong> 策略。</p>
+<h3>6.1 公测上线配置</h3>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>公测状态</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>开房权限费</td>
+<td><strong>开启</strong></td>
+<td>100 筹码一次性</td>
+</tr>
+<tr>
+<td>Rake</td>
+<td><strong>3%</strong></td>
+<td>低于官方场 5%</td>
+</tr>
+<tr>
+<td>2 人局限制</td>
+<td><strong>开启</strong></td>
+<td>房主需官方场 ≥10 局</td>
+</tr>
+<tr>
+<td>举报入口</td>
+<td><strong>开启</strong></td>
+<td>牌桌 + 后台工单</td>
+</tr>
+<tr>
+<td>Chip dumping 检测</td>
+<td><strong>开启</strong></td>
+<td>24h 滚动窗口</td>
+</tr>
+<tr>
+<td>全局熔断开关</td>
+<td><strong>常备</strong></td>
+<td><code>private_room_global_pause</code>，1 分钟内全关</td>
+</tr>
+<tr>
+<td>解散规则</td>
+<td><strong>≥2/3 同意</strong></td>
+<td>已实现</td>
+</tr>
+</tbody></table>
+<h3>6.2 公测首月运营规则</h3>
+<table>
+<thead>
+<tr>
+<th>规则</th>
+<th>动作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>举报 ≥3 次 / 房间 / 24h</td>
+<td>自动冻结房间 + 人工复核</td>
+</tr>
+<tr>
+<td>后台每日巡检</td>
+<td>经济看板查看私人场 rake 占比</td>
+</tr>
+<tr>
+<td>异常飙升</td>
+<td>查 dumping，必要时暂停私人场</td>
+</tr>
+<tr>
+<td>客诉话术</td>
+<td>英文 FAQ：筹码不可提现、私人场仅供娱乐</td>
+</tr>
+</tbody></table>
+<h3>6.3 私人场对收入的预期贡献</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>保守预期</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>开房率（占 DAU）</td>
+<td>5–8%</td>
+<td>PRD v1.1 目标</td>
+</tr>
+<tr>
+<td>对 IAP 贡献</td>
+<td>间接为主</td>
+<td>组局 → 消耗 → 破产 → 充值</td>
+</tr>
+<tr>
+<td>对 rake 贡献</td>
+<td>10–20% 总 rake</td>
+<td>局数少于官方场，但提高时长</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>七、变现与经济模型</h2>
+<h3>7.1 收入结构</h3>
+<table>
+<thead>
+<tr>
+<th>来源</th>
+<th>机制</th>
+<th>阶段</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>IAP 充值</strong></td>
+<td>1 USD = 1 筹码，平台抽成 15–30%</td>
+<td>v1.1 主收入</td>
+</tr>
+<tr>
+<td><strong>官方场 rake</strong></td>
+<td>5%，No Flop No Drop，向下取整</td>
+<td>持续</td>
+</tr>
+<tr>
+<td><strong>私人场 rake</strong></td>
+<td>3%</td>
+<td>公测即开</td>
+</tr>
+<tr>
+<td><strong>开房权限费</strong></td>
+<td>100 筹码一次性</td>
+<td>私人场</td>
+</tr>
+</tbody></table>
+<h3>7.2 商品定价（沿用现有目录）</h3>
+<table>
+<thead>
+<tr>
+<th>商品 ID</th>
+<th>筹码</th>
+<th>标价（USD）</th>
+<th>标价（CNY 参考）</th>
+<th>定位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>com.texasholdem.chips.100</td>
+<td>100</td>
+<td>$0.99</td>
+<td>¥7</td>
+<td>冲动消费 / 首充试探</td>
+</tr>
+<tr>
+<td>com.texasholdem.chips.500</td>
+<td>500</td>
+<td>$4.99</td>
+<td>¥36</td>
+<td>主力 SKU</td>
+</tr>
+<tr>
+<td>com.texasholdem.chips.1000</td>
+<td>1000</td>
+<td>$9.99</td>
+<td>¥72</td>
+<td>中度玩家</td>
+</tr>
+</tbody></table>
+<h3>7.3 运营杠杆（已具备配置能力）</h3>
+<table>
+<thead>
+<tr>
+<th>杠杆</th>
+<th>配置项</th>
+<th>建议（公测首月）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>首充赠送</td>
+<td><code>first_recharge_bonus_pct</code> = 50%</td>
+<td><strong>开启</strong></td>
+</tr>
+<tr>
+<td>新用户 rake 减半</td>
+<td><code>newbie_protection_enabled</code></td>
+<td><strong>建议开启</strong>（前 7 天 2.5%）</td>
+</tr>
+<tr>
+<td>日充值限额</td>
+<td><code>daily_recharge_limit</code> = 50,000</td>
+<td>保持</td>
+</tr>
+<tr>
+<td>Bot 日亏损预算</td>
+<td><code>bot_daily_budget</code> = 500,000</td>
+<td>保持，监控告警</td>
+</tr>
+</tbody></table>
+<h3>7.4 单位经济模型（基准假设）</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>保守</th>
+<th>基准</th>
+<th>乐观</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CPI（安装成本）</td>
+<td>¥18</td>
+<td>¥13</td>
+<td>¥9</td>
+</tr>
+<tr>
+<td>注册 → 付费转化</td>
+<td>2.5%</td>
+<td>4%</td>
+<td>6%</td>
+</tr>
+<tr>
+<td>ARPPU（月）</td>
+<td>¥43</td>
+<td>¥86</td>
+<td>¥144</td>
+</tr>
+<tr>
+<td>D7 留存</td>
+<td>10%</td>
+<td>15%</td>
+<td>22%</td>
+</tr>
+<tr>
+<td>平台抽成后净收入率</td>
+<td>~70%</td>
+<td>~70%</td>
+<td>~70%</td>
+</tr>
+</tbody></table>
+<h3>7.5 内测 → 公测筹码迁移</h3>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>规则</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>方案 A（推荐）</strong></td>
+<td>公测清零，重新赠送 100 筹码，提前 7 天公告</td>
+<td>✅ 全球英文区首选，纠纷最少</td>
+</tr>
+<tr>
+<td>方案 B</td>
+<td>mock 充值部分 ×0.1 折算，需用户勾选确认</td>
+<td>内测付费用户多时再考虑</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>八、组织与分工</h2>
+<h3>8.1 精益团队编制（自研版）</h3>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>投入方式</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>创始人（全栈自研）</strong></td>
+<td>全职或主力</td>
+<td>产品、后端、移动端、IAP 联调、压测、监控、发版</td>
+</tr>
+<tr>
+<td>运营</td>
+<td>创始人兼</td>
+<td>社群、客诉、数据日报、ASO</td>
+</tr>
+<tr>
+<td>增长</td>
+<td>创始人兼</td>
+<td>小预算投放（T1 三国）</td>
+</tr>
+<tr>
+<td>法务</td>
+<td>外包</td>
+<td>英文 Privacy / ToS / RG</td>
+</tr>
+<tr>
+<td>客服</td>
+<td>外包或工具</td>
+<td>工单、退款协助</td>
+</tr>
+<tr>
+<td>设计</td>
+<td>外包一次性</td>
+<td>商店截图、预览视频</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>不再安排研发外包；创始人需预留 <strong>Q1 约 6–8 人周</strong> 完成上架技术收尾（见下方自研交付清单）。</p>
+</blockquote>
+<h3>8.2 创始人自研交付清单（Q1 上架期）</h3>
+<table>
+<thead>
+<tr>
+<th>任务</th>
+<th>优先级</th>
+<th>预估工时</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>真机 IAP 生产联调（iOS + Android）</td>
+<td>P0</td>
+<td>1.5–2 周</td>
+</tr>
+<tr>
+<td>压测（300 CCU）+ 容量报告</td>
+<td>P0</td>
+<td>1 周</td>
+</tr>
+<tr>
+<td>监控告警（日志 / Uptime / 基础 Dashboard）</td>
+<td>P0</td>
+<td>0.5 周</td>
+</tr>
+<tr>
+<td>Firebase Analytics 充值漏斗</td>
+<td>P0</td>
+<td>0.5 周</td>
+</tr>
+<tr>
+<td>公测清档脚本（方案 A）</td>
+<td>P0</td>
+<td>0.5 周</td>
+</tr>
+<tr>
+<td>Crashlytics + 发版流水线</td>
+<td>P1</td>
+<td>0.5 周</td>
+</tr>
+<tr>
+<td><strong>Q1 合计</strong></td>
+<td></td>
+<td><strong>约 4–5 周净研发</strong></td>
+</tr>
+</tbody></table>
+<h3>8.3 自研现金支出（非人力）</h3>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>预算（人民币）</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>测试真机（二手 iPhone / Android）</td>
+<td>¥3,000 – ¥8,000</td>
+<td>若无现成设备</td>
+</tr>
+<tr>
+<td>Apple 开发者 + Google Play</td>
+<td>¥870</td>
+<td>账号费</td>
+</tr>
+<tr>
+<td>监控 / 日志 SaaS</td>
+<td>¥3,000 – ¥6,000/年</td>
+<td>免费档为主，按需升级</td>
+</tr>
+<tr>
+<td>域名 + 静态托管</td>
+<td>¥100 – ¥500/年</td>
+<td>官网</td>
+</tr>
+<tr>
+<td>开发者工具订阅</td>
+<td>¥0 – ¥3,000</td>
+<td>视现有工具链</td>
+</tr>
+<tr>
+<td><strong>全年研发现金合计</strong></td>
+<td><strong>约 ¥72,000</strong></td>
+<td>含 Q2–Q4 维护与小工具</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>九、预算表（人民币）</h2>
+<blockquote>
+<p><strong>已采用创始人自研版预算</strong>（v1.3）<br>全年现金硬顶：<strong>¥540,000</strong>；研发外包节省 <strong>¥115,200</strong> 已转投买量<br>汇率：1 USD = 7.20 CNY</p>
+</blockquote>
+<h3>9.1 年度总预算（自研版 · 已确认）</h3>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>Q1 上架期</th>
+<th>Q2 验证期</th>
+<th>Q3 稳态</th>
+<th>Q4 稳态</th>
+<th><strong>全年合计</strong></th>
+<th>较外包版</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>研发（工具 / 设备 / SaaS）</td>
+<td>¥28,800</td>
+<td>¥14,400</td>
+<td>¥14,400</td>
+<td>¥14,400</td>
+<td><strong>¥72,000</strong></td>
+<td><strong>-¥115,200</strong></td>
+</tr>
+<tr>
+<td>云基础设施</td>
+<td>¥10,800</td>
+<td>¥14,400</td>
+<td>¥18,000</td>
+<td>¥21,600</td>
+<td><strong>¥64,800</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td>商店账号与工具</td>
+<td>¥1,440</td>
+<td>¥2,160</td>
+<td>¥2,160</td>
+<td>¥2,160</td>
+<td><strong>¥7,920</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td>法务合规（英文）</td>
+<td>¥43,200</td>
+<td>¥7,200</td>
+<td>¥3,600</td>
+<td>¥3,600</td>
+<td><strong>¥57,600</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td>设计 / 商店素材</td>
+<td>¥21,600</td>
+<td>¥7,200</td>
+<td>¥3,600</td>
+<td>¥3,600</td>
+<td><strong>¥36,000</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td>数据分析 SaaS</td>
+<td>¥3,600</td>
+<td>¥7,200</td>
+<td>¥10,800</td>
+<td>¥10,800</td>
+<td><strong>¥32,400</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td>客服与工单工具</td>
+<td>¥3,600</td>
+<td>¥10,800</td>
+<td>¥14,400</td>
+<td>¥18,000</td>
+<td><strong>¥46,800</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>用户获取（买量）</strong></td>
+<td>¥0</td>
+<td>¥43,200</td>
+<td>¥68,400</td>
+<td>¥68,400</td>
+<td><strong>¥180,000</strong></td>
+<td><strong>+¥64,800</strong></td>
+</tr>
+<tr>
+<td>应急储备</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td><strong>¥102,480</strong></td>
+<td><strong>+¥45,600</strong></td>
+</tr>
+<tr>
+<td><strong>季度合计</strong></td>
+<td><strong>¥113,040</strong></td>
+<td><strong>¥106,560</strong></td>
+<td><strong>¥138,360</strong></td>
+<td><strong>¥138,360</strong></td>
+<td><strong>¥540,000</strong></td>
+<td>—</td>
+</tr>
+</tbody></table>
+<p><strong>节省再分配说明：</strong></p>
+<table>
+<thead>
+<tr>
+<th>去向</th>
+<th>金额（人民币）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>研发外包节省</td>
+<td>¥115,200</td>
+</tr>
+<tr>
+<td>→ 加码 T1 买量（加 / 新西兰测试）</td>
+<td>+¥64,800</td>
+</tr>
+<tr>
+<td>→ 应急储备</td>
+<td>+¥45,600</td>
+</tr>
+<tr>
+<td>→ 创始人人力</td>
+<td>不计入现金预算</td>
+</tr>
+</tbody></table>
+<h3>9.2 分项报价明细</h3>
+<h4>9.2.1 研发（创始人自研 · 仅现金支出）</h4>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>报价（人民币）</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>测试真机</td>
+<td>¥3,000 – ¥8,000</td>
+<td>一次性，若无设备</td>
+</tr>
+<tr>
+<td>监控 / 日志工具</td>
+<td>¥3,000 – ¥6,000/年</td>
+<td>免费档 + 按需升级</td>
+</tr>
+<tr>
+<td>开发者账号与域名</td>
+<td>¥1,000</td>
+<td>见 9.2.3</td>
+</tr>
+<tr>
+<td>Q2–Q4 工具与小额 SaaS</td>
+<td>¥20,000 – ¥30,000</td>
+<td>维护期</td>
+</tr>
+<tr>
+<td><strong>研发现金合计</strong></td>
+<td><strong>约 ¥72,000</strong></td>
+<td>人力由创始人承担，不计入现金</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>原外包报价（仅供参考，<strong>不再采用</strong>）：真机 IAP ¥2.5–4 万、压测 ¥1.5–2.5 万、埋点 ¥0.5–1 万。</p>
+</blockquote>
+<h4>9.2.2 云基础设施</h4>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>DAU</th>
+<th>月费（人民币）</th>
+<th>配置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>软启动 M1–M2</td>
+<td>300–1,500</td>
+<td>¥1,800 – ¥3,600</td>
+<td>1×API、1×Room、小 PG、单 Redis</td>
+</tr>
+<tr>
+<td>验证 M3–M6</td>
+<td>1,500–5,000</td>
+<td>¥3,600 – ¥8,600</td>
+<td>2×API、2×Room</td>
+</tr>
+<tr>
+<td>稳态 M7–M12</td>
+<td>5,000–15,000</td>
+<td>¥8,600 – ¥18,000</td>
+<td>按需扩容，单区域</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>云厂商参考</th>
+<th>月费</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AWS / GCP 轻量配置</td>
+<td>¥1,500 – ¥3,000</td>
+</tr>
+<tr>
+<td>数据库 RDS（小规格）</td>
+<td>¥500 – ¥1,500</td>
+</tr>
+<tr>
+<td>Redis</td>
+<td>¥300 – ¥800</td>
+</tr>
+<tr>
+<td>域名 + SSL + CDN</td>
+<td>¥100 – ¥500</td>
+</tr>
+<tr>
+<td><strong>全年云资源合计</strong></td>
+<td><strong>¥50,000 – ¥72,000</strong></td>
+</tr>
+</tbody></table>
+<h4>9.2.3 商店与账号</h4>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>报价（人民币）</th>
+<th>周期</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Apple Developer Program</td>
+<td>¥688</td>
+<td>/年</td>
+</tr>
+<tr>
+<td>Google Play 开发者</td>
+<td>¥180</td>
+<td>一次性</td>
+</tr>
+<tr>
+<td>域名（.com）</td>
+<td>¥60 – ¥100</td>
+<td>/年</td>
+</tr>
+<tr>
+<td>GitHub Pages / 静态托管</td>
+<td>¥0</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td><strong>约 ¥930 – ¥970</strong></td>
+<td>首年</td>
+</tr>
+</tbody></table>
+<h4>9.2.4 法务合规</h4>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>报价（人民币）</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Privacy Policy（英文）</td>
+<td>¥3,000 – ¥8,000</td>
+<td>含 GDPR / CCPA 基础条款</td>
+</tr>
+<tr>
+<td>Terms of Service（英文）</td>
+<td>¥3,000 – ¥8,000</td>
+<td>含筹码不可提现条款</td>
+</tr>
+<tr>
+<td>Responsible Gaming Policy</td>
+<td>¥2,000 – ¥5,000</td>
+<td>自我封禁、年龄声明</td>
+</tr>
+<tr>
+<td>合规咨询（1–2 小时）</td>
+<td>¥2,000 – ¥5,000</td>
+<td>全球英文区 gambling 边界意见</td>
+</tr>
+<tr>
+<td><strong>法务合计</strong></td>
+<td><strong>¥10,000 – ¥26,000</strong></td>
+<td>预算列支 ¥57,600，含修订</td>
+</tr>
+</tbody></table>
+<h4>9.2.5 设计 / 商店素材</h4>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>报价（人民币）</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>App 图标优化</td>
+<td>¥500 – ¥2,000</td>
+<td></td>
+</tr>
+<tr>
+<td>商店截图 6 张（含 iPad）</td>
+<td>¥2,000 – ¥5,000</td>
+<td></td>
+</tr>
+<tr>
+<td>预览视频 30s</td>
+<td>¥3,000 – ¥8,000</td>
+<td></td>
+</tr>
+<tr>
+<td>英文商店描述文案</td>
+<td>¥1,000 – ¥3,000</td>
+<td>可自写</td>
+</tr>
+<tr>
+<td><strong>设计合计</strong></td>
+<td><strong>¥6,500 – ¥18,000</strong></td>
+<td>预算列支 ¥36,000</td>
+</tr>
+</tbody></table>
+<h4>9.2.6 数据分析 SaaS</h4>
+<table>
+<thead>
+<tr>
+<th>工具</th>
+<th>月费（人民币）</th>
+<th>全年</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Firebase（免费档 → Blaze）</td>
+<td>¥0 – ¥500</td>
+<td>¥0 – ¥6,000</td>
+</tr>
+<tr>
+<td>Mixpanel / Amplitude 免费档</td>
+<td>¥0</td>
+<td>¥0</td>
+</tr>
+<tr>
+<td>付费档（MAU &gt; 5,000 后）</td>
+<td>¥1,500 – ¥3,000</td>
+<td>¥18,000 – ¥36,000</td>
+</tr>
+<tr>
+<td><strong>全年合计</strong></td>
+<td></td>
+<td><strong>¥5,000 – ¥32,000</strong></td>
+</tr>
+</tbody></table>
+<h4>9.2.7 客服与工单</h4>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>月费（人民币）</th>
+<th>全年</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>免费：邮件 + Discord</td>
+<td>¥0</td>
+<td>¥0</td>
+</tr>
+<tr>
+<td>Zendesk / Intercom 入门</td>
+<td>¥500 – ¥1,500</td>
+<td>¥6,000 – ¥18,000</td>
+</tr>
+<tr>
+<td>兼职客服（旺季）</td>
+<td>¥3,000 – ¥5,000</td>
+<td>¥12,000 – ¥20,000</td>
+</tr>
+<tr>
+<td><strong>全年合计</strong></td>
+<td></td>
+<td><strong>¥6,000 – ¥47,000</strong></td>
+</tr>
+</tbody></table>
+<h4>9.2.8 用户获取（买量）</h4>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>预算（人民币）</th>
+<th>市场</th>
+<th>目的</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Q1 软启动</td>
+<td>¥0</td>
+<td>—</td>
+<td>自然量 + 社群</td>
+</tr>
+<tr>
+<td>Q2 小预算测试</td>
+<td>¥43,200</td>
+<td>加拿大 + 澳洲 + 新西兰（<strong>不含美国</strong>）</td>
+<td>CPI、付费率基线</td>
+</tr>
+<tr>
+<td>Q3 扩量测试</td>
+<td>¥68,400</td>
+<td>T1 三国加码</td>
+<td>LTV/CPI 验证</td>
+</tr>
+<tr>
+<td>Q4 稳态</td>
+<td>¥68,400</td>
+<td>维持 ROI 正渠道</td>
+<td>视数据决策</td>
+</tr>
+<tr>
+<td><strong>全年买量合计</strong></td>
+<td><strong>¥180,000</strong></td>
+<td></td>
+<td>较外包版 <strong>+¥64,800</strong></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>买量纪律</strong>：若 LTV/CPI &lt; 0.6，立即停止 Q3–Q4 买量，预算转入产品优化或储备。</p>
+</blockquote>
+<h3>9.3 外包版预算（已废弃，仅作对照）</h3>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>外包版</th>
+<th>自研版（当前）</th>
+<th>差额</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>研发</td>
+<td>¥187,200</td>
+<td>¥72,000</td>
+<td>-¥115,200</td>
+</tr>
+<tr>
+<td>买量</td>
+<td>¥115,200</td>
+<td>¥180,000</td>
+<td>+¥64,800</td>
+</tr>
+<tr>
+<td>应急储备</td>
+<td>¥56,880</td>
+<td>¥102,480</td>
+<td>+¥45,600</td>
+</tr>
+<tr>
+<td><strong>全年合计</strong></td>
+<td>¥540,000</td>
+<td>¥540,000</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>十、时间表（52 周）</h2>
+<h3>10.1 总览</h3>
+<pre><code>W1–W8   上架冲刺 → 全球英文区提审上线（私人场全开）
+W9–W16  软启动   → 自然量验证，不买量
+W17–W28 小预算验证 → 加拿大/澳洲/新西兰买量 ¥4.3万
+W29–W52 稳态运营  → 月买量上限 ¥2.3万，筹备 v1.5
+</code></pre>
+<h3>10.2 Phase 0：全球英文上架冲刺（第 1–8 周）</h3>
+<table>
+<thead>
+<tr>
+<th>周次</th>
+<th>里程碑</th>
+<th>交付物</th>
+<th>预算消耗</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>W1</td>
+<td>开发者账号 + 法务启动</td>
+<td>Apple / Google 账号；法务合同</td>
+<td>¥1,000</td>
+</tr>
+<tr>
+<td>W1–W2</td>
+<td>真机 IAP 联调</td>
+<td>iOS / Android 生产验单 E2E</td>
+<td>创始人自研</td>
+</tr>
+<tr>
+<td>W2–W3</td>
+<td>生产环境部署</td>
+<td>IAP 凭证、监控告警</td>
+<td>创始人自研</td>
+</tr>
+<tr>
+<td>W3–W4</td>
+<td>压测</td>
+<td>300 CCU 报告</td>
+<td>创始人自研</td>
+</tr>
+<tr>
+<td>W3–W4</td>
+<td>埋点上线</td>
+<td>注册→充值漏斗</td>
+<td>创始人自研</td>
+</tr>
+<tr>
+<td>W4–W5</td>
+<td>商店素材</td>
+<td>英文截图、30s 视频</td>
+<td>¥15,000</td>
+</tr>
+<tr>
+<td>W5–W6</td>
+<td>封闭测试</td>
+<td>TestFlight / Play 内测 50 人</td>
+<td>¥0</td>
+</tr>
+<tr>
+<td>W6</td>
+<td>私人场回归</td>
+<td>举报 / 熔断 / 2 人限制全通过</td>
+<td>¥0</td>
+</tr>
+<tr>
+<td>W7</td>
+<td><strong>全球英文区提审</strong></td>
+<td>iOS + Android 并行提交</td>
+<td>¥0</td>
+</tr>
+<tr>
+<td>W8</td>
+<td><strong>正式上线</strong></td>
+<td>全球发布，私人场全开</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3>10.3 Phase 1：软启动（第 9–16 周）</h3>
+<table>
+<thead>
+<tr>
+<th>目标</th>
+<th>数值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>累计注册</td>
+<td>2,000 – 5,000</td>
+</tr>
+<tr>
+<td>付费用户</td>
+<td>60 – 150</td>
+</tr>
+<tr>
+<td>D7 留存</td>
+<td>≥ 12%</td>
+</tr>
+<tr>
+<td>Crash-free</td>
+<td>≥ 99.5%</td>
+</tr>
+<tr>
+<td>买量预算</td>
+<td><strong>¥0</strong></td>
+</tr>
+</tbody></table>
+<p><strong>动作</strong>：Reddit / Discord 德州社群、Product Hunt、英文 Twitter，KOL 零成本或 ≤ ¥3,600。</p>
+<h3>10.4 Phase 2：小预算验证（第 17–28 周）</h3>
+<table>
+<thead>
+<tr>
+<th>周次</th>
+<th>动作</th>
+<th>预算</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>W17–W20</td>
+<td>加拿大 + 澳洲 + 新西兰 UAC / Meta 测试</td>
+<td>¥21,600</td>
+</tr>
+<tr>
+<td>W21–W24</td>
+<td>分析 LTV / CPI，优化素材</td>
+<td>¥10,800</td>
+</tr>
+<tr>
+<td>W25–W28</td>
+<td>若 ROI ≥ 0.7，加码 T1 三国</td>
+<td>¥10,800</td>
+</tr>
+<tr>
+<td><strong>阶段合计</strong></td>
+<td></td>
+<td><strong>¥43,200</strong></td>
+</tr>
+</tbody></table>
+<p><strong>阶段出口标准</strong>：ARPPU ≥ ¥58（$8）、付费率 ≥ 3%、LTV/CPI ≥ 0.7。</p>
+<h3>10.5 Phase 3：稳态运营（第 29–52 周）</h3>
+<table>
+<thead>
+<tr>
+<th>月份</th>
+<th>重点</th>
+<th>月买量上限</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>M7–M9</td>
+<td>维持 ROI 正渠道，ASO 优化</td>
+<td>¥22,800 / 月</td>
+</tr>
+<tr>
+<td>M10–M12</td>
+<td>筹备 v1.5（好友、成就 CMS）</td>
+<td>¥22,800 / 月</td>
+</tr>
+<tr>
+<td>全年买量后段（Q3+Q4）</td>
+<td></td>
+<td><strong>¥136,800</strong></td>
+</tr>
+</tbody></table>
+<h3>10.6 关键里程碑图</h3>
+<pre><code class="language-mermaid">gantt
+    title 商业化 52 周路线图
+    dateFormat  YYYY-MM-DD
+    section 合规上架
+    法务与隐私政策           :a1, 2026-08-20, 21d
+    真机IAP与压测             :a2, 2026-08-20, 28d
+    商店素材与封闭测试         :a3, after a1, 21d
+    全球英文区提审上线         :milestone, a4, 2026-10-15, 0d
+    section 增长验证
+    软启动自然量              :b1, after a4, 56d
+    小预算买量测试            :b2, after b1, 84d
+    稳态运营                  :b3, after b2, 112d
+</code></pre>
+<hr>
+<h2>十一、KPI 与收入预测</h2>
+<h3>11.1 分阶段 KPI</h3>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>时间</th>
+<th>MAU</th>
+<th>月毛流水（人民币）</th>
+<th>付费率</th>
+<th>D7 留存</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>软启动</td>
+<td>M2</td>
+<td>800–1,500</td>
+<td>¥3,600 – ¥10,800</td>
+<td>2–3%</td>
+<td>≥10%</td>
+</tr>
+<tr>
+<td>验证</td>
+<td>M6</td>
+<td>3,000–6,000</td>
+<td>¥21,600 – ¥57,600</td>
+<td>3–4%</td>
+<td>≥12%</td>
+</tr>
+<tr>
+<td>稳态</td>
+<td>M12</td>
+<td>8,000–15,000</td>
+<td>¥72,000 – ¥144,000</td>
+<td>4–5%</td>
+<td>≥15%</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>毛流水按 ARPPU ¥43–¥86、平台抽成前计算。</p>
+</blockquote>
+<h3>11.2 三种情景收入预测（上线后 12 个月）</h3>
+<table>
+<thead>
+<tr>
+<th>月份</th>
+<th>保守 MAU</th>
+<th>保守月收入</th>
+<th>基准 MAU</th>
+<th>基准月收入</th>
+<th>乐观 MAU</th>
+<th>乐观月收入</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>M1</td>
+<td>800</td>
+<td>¥5,800</td>
+<td>1,500</td>
+<td>¥14,400</td>
+<td>3,000</td>
+<td>¥36,000</td>
+</tr>
+<tr>
+<td>M3</td>
+<td>2,000</td>
+<td>¥18,000</td>
+<td>5,000</td>
+<td>¥57,600</td>
+<td>12,000</td>
+<td>¥129,600</td>
+</tr>
+<tr>
+<td>M6</td>
+<td>4,000</td>
+<td>¥36,000</td>
+<td>10,000</td>
+<td>¥129,600</td>
+<td>25,000</td>
+<td>¥324,000</td>
+</tr>
+<tr>
+<td>M12</td>
+<td>6,000</td>
+<td>¥57,600</td>
+<td>15,000</td>
+<td>¥216,000</td>
+<td>40,000</td>
+<td>¥576,000</td>
+</tr>
+</tbody></table>
+<h3>11.3 M12 盈亏概览（基准情景）</h3>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>金额（人民币 / 月）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>月毛流水</td>
+<td>¥144,000</td>
+</tr>
+<tr>
+<td>平台抽成后（~70%）</td>
+<td>¥100,800</td>
+</tr>
+<tr>
+<td>云资源 + 工具 + 客服</td>
+<td>-¥14,400</td>
+</tr>
+<tr>
+<td>买量（稳态月上限）</td>
+<td>-¥22,800</td>
+</tr>
+<tr>
+<td><strong>月经营性结余（近似）</strong></td>
+<td><strong>¥79,200</strong></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>未计创始人人力成本。精益模式下 <strong>M10–M14 有望经营性盈亏平衡</strong>。</p>
+</blockquote>
+<h3>11.4 核心漏斗 KPI</h3>
+<table>
+<thead>
+<tr>
+<th>漏斗节点</th>
+<th>基准转化率</th>
+<th>优化手段</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>安装 → 注册</td>
+<td>85%</td>
+<td>简化 OAuth</td>
+</tr>
+<tr>
+<td>注册 → 18+ 确认</td>
+<td>95%</td>
+<td>已有</td>
+</tr>
+<tr>
+<td>注册 → 首局完成</td>
+<td>60%</td>
+<td>新手引导优化</td>
+</tr>
+<tr>
+<td>首局 → D1 回流</td>
+<td>30%</td>
+<td>推送、排行榜</td>
+</tr>
+<tr>
+<td>破产 → 商城浏览</td>
+<td>40%</td>
+<td>破产弹窗 CTA</td>
+</tr>
+<tr>
+<td>商城浏览 → 付费</td>
+<td>25%</td>
+<td>首充 50%、套餐优化</td>
+</tr>
+<tr>
+<td>付费 → 30 日复购</td>
+<td>25%</td>
+<td>活动、私人场组局</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>十二、合规与风险管理</h2>
+<h3>12.1 风险矩阵</h3>
+<table>
+<thead>
+<tr>
+<th>风险</th>
+<th>等级</th>
+<th>影响</th>
+<th>缓解措施</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>商店以 gambling 拒审</td>
+<td>高</td>
+<td>无法上线</td>
+<td>英文文案规范；分级选 Simulated Gambling</td>
+</tr>
+<tr>
+<td>被认定为真钱博彩</td>
+<td>高</td>
+<td>下架 / 法律风险</td>
+<td>不可提现、年龄门、法务意见书</td>
+</tr>
+<tr>
+<td>私人场 chip dumping</td>
+<td>中</td>
+<td>经济失衡、举报</td>
+<td>24h 规则 + 举报 + 日审 + 熔断</td>
+</tr>
+<tr>
+<td>IAP 退款纠纷</td>
+<td>中</td>
+<td>收入损失、差评</td>
+<td>订单去重、客服 48h SLA</td>
+</tr>
+<tr>
+<td>Bot 体验差导致差评</td>
+<td>中</td>
+<td>自然量受损</td>
+<td>真实玩家 ≥4 不补 Bot</td>
+</tr>
+<tr>
+<td>服务器宕机</td>
+<td>高</td>
+<td>收入归零</td>
+<td>压测 + 多实例 + 告警</td>
+</tr>
+<tr>
+<td>精益买量不起量</td>
+<td>中</td>
+<td>增长慢</td>
+<td>预算硬顶；转社群与 ASO</td>
+</tr>
+<tr>
+<td>内测筹码纠纷</td>
+<td>低</td>
+<td>客诉</td>
+<td>公测清零 + 7 天公告（方案 A）</td>
+</tr>
+</tbody></table>
+<h3>12.2 私人场合规要点（全球英文区）</h3>
+<ol>
+<li>筹码<strong>不可兑换法币</strong>，商店描述与 App 内均需明示  </li>
+<li>私人场文案强调 <strong>social / entertainment</strong>，避免 wager、bet real money  </li>
+<li>举报入口可见，后台 48 小时内响应  </li>
+<li>保留 <code>private_room_global_pause</code> 全局开关，应急预案就绪  </li>
+<li>2 人私人局限制（房主 ≥10 局官方场）降低对赌风险</li>
+</ol>
+<h3>12.3 内测 → 公测迁移（推荐方案 A）</h3>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>时间</th>
+<th>动作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>T-14</td>
+<td>提审前</td>
+<td>后台开启 <code>beta_migration_active</code></td>
+</tr>
+<tr>
+<td>T-7</td>
+<td>公告</td>
+<td>App 内弹窗 + 商店更新说明：筹码清零，公测重新赠送 100</td>
+</tr>
+<tr>
+<td>T-0</td>
+<td>公测日</td>
+<td>执行清档脚本，重置筹码，发放注册赠送</td>
+</tr>
+<tr>
+<td>T+7</td>
+<td>复盘</td>
+<td>统计客诉量，客服 FAQ 更新</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>十三、数据与运营体系</h2>
+<h3>13.1 必备数据看板（按周复盘）</h3>
+<table>
+<thead>
+<tr>
+<th>看板</th>
+<th>核心指标</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>增长</td>
+<td>新增、激活、渠道、CPI</td>
+</tr>
+<tr>
+<td>留存</td>
+<td>D1 / D7 / D30、首局完成率</td>
+</tr>
+<tr>
+<td>变现</td>
+<td>付费率、ARPPU、首充转化、LTV</td>
+</tr>
+<tr>
+<td>经济</td>
+<td>IAP 注入 vs rake 回收 vs Bot 净亏损</td>
+</tr>
+<tr>
+<td>健康</td>
+<td>Crash 率、开局 P99、客诉量</td>
+</tr>
+<tr>
+<td>私人场</td>
+<td>开房率、举报数、私人场 rake 占比</td>
+</tr>
+</tbody></table>
+<h3>13.2 工具栈（精益推荐）</h3>
+<table>
+<thead>
+<tr>
+<th>用途</th>
+<th>工具</th>
+<th>月费</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>崩溃监控</td>
+<td>Firebase Crashlytics</td>
+<td>免费</td>
+</tr>
+<tr>
+<td>分析漏斗</td>
+<td>Firebase Analytics + Mixpanel 免费档</td>
+<td>免费</td>
+</tr>
+<tr>
+<td>后端监控</td>
+<td>自建日志 + UptimeRobot</td>
+<td>免费 – ¥200</td>
+</tr>
+<tr>
+<td>客服</td>
+<td>邮件 + Discord，后期 Zendesk</td>
+<td>¥0 – ¥1,000</td>
+</tr>
+<tr>
+<td>运营后台</td>
+<td>已有 Admin</td>
+<td>—</td>
+</tr>
+<tr>
+<td>经济监控</td>
+<td>已有经济看板</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3>13.3 运营节奏（首 90 天）</h3>
+<table>
+<thead>
+<tr>
+<th>周期</th>
+<th>动作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>每日</td>
+<td>查看 Crash 率、充值笔数、举报工单</td>
+</tr>
+<tr>
+<td>每周</td>
+<td>复盘漏斗、调整首充 / rake 配置</td>
+</tr>
+<tr>
+<td>每两周</td>
+<td>ASO 关键词检查、商店评分回复</td>
+</tr>
+<tr>
+<td>每月</td>
+<td>经济大盘报告、买量 ROI 决策</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>十四、30 天行动清单</h2>
+<table>
+<thead>
+<tr>
+<th>优先级</th>
+<th>任务</th>
+<th>负责</th>
+<th>目标周</th>
+<th>预算（人民币）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>P0</td>
+<td>Apple / Google 开发者账号注册</td>
+<td>创始人</td>
+<td>W1</td>
+<td>¥870</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>委托英文法务三件套</td>
+<td>外包</td>
+<td>W1–W3</td>
+<td>¥15,000 – ¥26,000</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>真机 IAP 生产环境联调</td>
+<td><strong>创始人</strong></td>
+<td>W1–W3</td>
+<td>¥0（自研）</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>压测（300 CCU）并出报告</td>
+<td><strong>创始人</strong></td>
+<td>W3–W4</td>
+<td>¥0（自研）</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>英文商店截图 + 预览视频</td>
+<td>设计</td>
+<td>W4–W5</td>
+<td>¥6,500 – ¥18,000</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>私人场公测回归测试</td>
+<td><strong>创始人</strong></td>
+<td>W6</td>
+<td>—</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>全球英文区提审</td>
+<td>创始人</td>
+<td>W7</td>
+<td>—</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>Firebase Analytics 充值漏斗</td>
+<td><strong>创始人</strong></td>
+<td>W3–W4</td>
+<td>¥0（自研）</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>英文 FAQ（含私人场说明）</td>
+<td>创始人</td>
+<td>W5</td>
+<td>—</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>TestFlight / Play 封闭测试 50 人</td>
+<td>创始人</td>
+<td>W5–W6</td>
+<td>—</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>公测筹码迁移公告文案（方案 A）</td>
+<td>产品</td>
+<td>W6</td>
+<td>—</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>官网上线（Privacy / ToS 链接）</td>
+<td>创始人</td>
+<td>W5</td>
+<td>¥60 – ¥100</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>十五、待确认事项</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>事项</th>
+<th>建议</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>公测筹码迁移方案</td>
+<td><strong>方案 A：全员清零，重新赠送 100</strong></td>
+<td><strong>已确认（2026-08-20）</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td>美国是否纳入 T1 买量</td>
+<td><strong>不纳入</strong>，全年仅自然量</td>
+<td><strong>已确认（2026-08-20）</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td>新用户 7 天 rake 减半</td>
+<td>公测首月<strong>建议开启</strong></td>
+<td>待确认</td>
+</tr>
+<tr>
+<td>4</td>
+<td>创始人是否自研研发收尾</td>
+<td><strong>自研，节省 ¥11.5 万转投买量</strong></td>
+<td><strong>已确认（2026-08-20）</strong></td>
+</tr>
+</tbody></table>
+<h3>方案 A 执行摘要（已采纳）</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>清档范围</td>
+<td>所有内测账户 <code>chips_balance</code> 归零；<code>has_completed_recharge</code> 重置（首充资格恢复）</td>
+</tr>
+<tr>
+<td>重新发放</td>
+<td>每位用户一次性赠送 <strong>100 筹码</strong>（<code>EVENT_GIFT</code>，<code>reference_id=OPEN_BETA_GRANT</code>）</td>
+</tr>
+<tr>
+<td>公告节奏</td>
+<td>T-14 后台开启迁移预告；T-7 App 内弹窗；T-0 维护窗口执行脚本</td>
+</tr>
+<tr>
+<td>用户确认</td>
+<td>登录后须点击「我已知晓」(<code>beta_migration_ack_at</code>) 方可继续游戏</td>
+</tr>
+<tr>
+<td>不折算 mock 充值</td>
+<td>内测 mock / 沙盒 IAP 筹码<strong>一律不作经济补偿</strong>（公告中明确说明）</td>
+</tr>
+<tr>
+<td>英文公告要点</td>
+<td><em>Open beta reset: all test chips cleared. Every player receives 100 new chips. Previous test balances are not convertible.</em></td>
+</tr>
+</tbody></table>
+<h3>美国买量策略执行摘要（已采纳）</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>商店分发</td>
+<td><strong>含美国</strong>，全球英文区正常上架</td>
+</tr>
+<tr>
+<td>T1 付费投放</td>
+<td><strong>仅加拿大、澳大利亚、新西兰</strong></td>
+</tr>
+<tr>
+<td>美国获客</td>
+<td>ASO、Reddit/Discord、Product Hunt、口碑裂变</td>
+</tr>
+<tr>
+<td>广告后台</td>
+<td>UAC / Meta _campaign 国家定向<strong>排除 US</strong></td>
+</tr>
+<tr>
+<td>复盘节点</td>
+<td>M6 看 T1 的 LTV/CPI；M10+ 再评估是否开放美国买量</td>
+</tr>
+<tr>
+<td>预算影响</td>
+<td>T1 买量池仍<strong>不含美国</strong>；全年总买量预算 <strong>¥18 万</strong>（自研节省转投）</td>
+</tr>
+</tbody></table>
+<h3>研发自研执行摘要（已采纳）</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>研发主体</td>
+<td><strong>创始人全栈自研</strong>，不外包上架冲刺</td>
+</tr>
+<tr>
+<td>研发现金预算</td>
+<td><strong>¥72,000/年</strong>（设备、账号、SaaS）</td>
+</tr>
+<tr>
+<td>节省再分配</td>
+<td>外包预算节省 ¥115,200 → 买量 <strong>+¥64,800</strong>（全年 ¥18 万）+ 储备 <strong>+¥45,600</strong></td>
+</tr>
+<tr>
+<td>Q1 交付</td>
+<td>IAP 真机、压测、埋点、清档脚本、监控（约 4–5 周）</td>
+</tr>
+<tr>
+<td>风险</td>
+<td>创始人单点瓶颈 → 上架前冻结新功能，仅做 P0 收尾</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>附录 A：版本路线图对照</h2>
+<table>
+<thead>
+<tr>
+<th>版本</th>
+<th>定位</th>
+<th>商业化相关范围</th>
+<th>本计划覆盖</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>v1.0 内测</td>
+<td>核心循环</td>
+<td>模拟支付</td>
+<td>已完成</td>
+</tr>
+<tr>
+<td>v1.0.5</td>
+<td>私人场</td>
+<td>组局 UX、举报</td>
+<td>已完成</td>
+</tr>
+<tr>
+<td><strong>v1.1 公测</strong></td>
+<td><strong>商业化</strong></td>
+<td>IAP、双榜、合规、私人场全开</td>
+<td><strong>本计划主体</strong></td>
+</tr>
+<tr>
+<td>v1.5</td>
+<td>品质留存</td>
+<td>好友、成就、多盲注</td>
+<td>M7+ 规划</td>
+</tr>
+<tr>
+<td>v2.0</td>
+<td>Web 支付</td>
+<td>Stripe / USDC</td>
+<td>暂不执行</td>
+</tr>
+<tr>
+<td>v2.5</td>
+<td>商业化扩展</td>
+<td>皮肤、VIP</td>
+<td>暂不执行</td>
+</tr>
+</tbody></table>
+<h2>附录 B：相关文档索引</h2>
+<table>
+<thead>
+<tr>
+<th>文档</th>
+<th>路径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>产品 PRD</td>
+<td><code>docs/PRD-完整版-v2.0.md</code></td>
+</tr>
+<tr>
+<td>版本范围规划</td>
+<td><code>docs/10-版本范围规划.md</code></td>
+</tr>
+<tr>
+<td>运营评审报告</td>
+<td><code>docs/09-产品运营评审报告.md</code></td>
+</tr>
+<tr>
+<td>本机开发指南</td>
+<td><code>docs/LOCAL_DEV.md</code></td>
+</tr>
+<tr>
+<td>开发里程碑</td>
+<td><code>docs/07-开发里程碑与任务拆分.md</code></td>
+</tr>
+</tbody></table>
+<hr>
+<p><em>本文档为商业化执行单一参考；产品规则以 PRD v2.0 为准，技术实现以代码仓库当前分支为准。</em></p>
+</div></body></html>

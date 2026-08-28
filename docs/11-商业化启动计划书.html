@@ -1,0 +1,3310 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"/>
+<title>Texas Hold'em 商业化启动计划书</title><style>
+  @page { margin: 16mm 14mm 18mm 14mm; size: A4; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Noto Sans CJK SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 10pt; line-height: 1.5; color: #1a1a1a; margin: 0; padding: 0;
+  }
+  .outline-page { page-break-after: always; padding-top: 6mm; }
+  .doc-title { font-size: 24pt; margin: 0 0 4px; }
+  .doc-subtitle { font-size: 16pt; color: #9a7b1a; margin: 0 0 10px; }
+  .meta { color: #666; font-size: 9pt; margin-bottom: 8px; }
+  .outline-banner { background: #f5f3eb; border-left: 4px solid #c9a227; padding: 8px 12px; font-size: 9.5pt; color: #555; }
+  .content h1 { font-size: 17pt; margin: 22px 0 10px; page-break-after: avoid; border-bottom: 2px solid #c9a227; padding-bottom: 4px; }
+  .content h2 { font-size: 13pt; margin: 18px 0 8px; page-break-after: avoid; color: #222; border-bottom: 1px solid #ddd; padding-bottom: 3px; }
+  .content h3 { font-size: 11pt; margin: 12px 0 6px; page-break-after: avoid; }
+  .content h4 { font-size: 10pt; margin: 10px 0 4px; }
+  .content p, .content li { font-size: 9.5pt; }
+  .content table { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin: 8px 0 12px; page-break-inside: avoid; }
+  .content th, .content td { border: 1px solid #bbb; padding: 4px 5px; text-align: left; vertical-align: top; }
+  .content th { background: #f5f3eb; }
+  .content tr:nth-child(even) td { background: #fafafa; }
+  .content blockquote { border-left: 3px solid #c9a227; margin: 8px 0; padding: 6px 10px; background: #faf8f2; color: #444; }
+  .content pre { background: #f4f4f4; padding: 8px; font-size: 8pt; overflow-x: auto; page-break-inside: avoid; }
+  .content code { background: #eee; padding: 1px 3px; border-radius: 2px; font-size: 8.5pt; }
+  .content hr { border: none; border-top: 1px solid #ddd; margin: 14px 0; }
+  .content ul, .content ol { margin: 4px 0 8px 18px; }
+</style></head><body>
+
+<div class="outline-page">
+  <h1 class="doc-title">Texas Hold'em</h1>
+  <h2 class="doc-subtitle">商业化启动计划书</h2>
+  <p class="meta">文档版本 v1.7 · 更新日期 2026-08-20 · 报价币种：人民币（CNY）· 不含合规章节</p>
+  <div class="outline-banner">本页为纲要摘要，详细数据见正文章节</div>
+</div>
+<div class="content"><h1>Texas Hold&#39;em 商业化启动计划书</h1>
+<p><strong>文档版本</strong> v1.7 · <strong>更新日期</strong> 2026-08-20 · <strong>报价币种</strong> 人民币（CNY）· 不含合规章节</p>
+<hr>
+<h1>纲要</h1>
+<h2>一、项目定位</h2>
+<ul>
+<li>跨端社交竞技德州扑克，单向封闭筹码经济（不可提现）</li>
+<li>变现：IAP 充值（主）+ 官方场 5% / 私人场 3% rake</li>
+<li>技术阶段：v1.1 公测前约 80%</li>
+</ul>
+<h2>二、已锁定战略决策</h2>
+<table>
+<thead>
+<tr>
+<th>决策</th>
+<th>方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>首发市场</td>
+<td>全球英文区（English U.S. 主语言）</td>
+</tr>
+<tr>
+<td>团队规模</td>
+<td>精益，技术现金 <strong>¥36.4 万</strong>（不含买量 / 法务）</td>
+</tr>
+<tr>
+<td>私人场</td>
+<td>公测即开，强风控 + 后台熔断</td>
+</tr>
+<tr>
+<td>筹码迁移</td>
+<td><strong>方案 A</strong>：清零 + 赠 100 筹码</td>
+</tr>
+<tr>
+<td>美国买量</td>
+<td>不列入 T1，全年仅自然量</td>
+</tr>
+<tr>
+<td>研发模式</td>
+<td>创始人自研，节省转投买量</td>
+</tr>
+</tbody></table>
+<h2>三、市场与买量</h2>
+<ul>
+<li><strong>T1 付费</strong>：加拿大、澳大利亚、新西兰</li>
+<li><strong>T2 自然量</strong>：美国、英国、爱尔兰（广告排除美国）</li>
+<li>全年买量：<strong>¥18 万</strong>（另计）</li>
+</ul>
+<h2>四、技术与开发预算摘要</h2>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>金额（人民币）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>开发费（自研现金 + 商店素材 + <strong>APP UI 设计</strong>）</td>
+<td>¥180,000</td>
+</tr>
+<tr>
+<td>云基础设施</td>
+<td>¥64,800</td>
+</tr>
+<tr>
+<td>软件注册及 SaaS</td>
+<td>¥119,520</td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td><strong>¥364,320</strong></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>说明</strong>：商店素材 ¥36,000 与 APP UI/UX 设计 ¥72,000 分列；后者覆盖大厅、牌桌、商城等应用内界面。</p>
+</blockquote>
+<h2>五、52 周时间表</h2>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>周次</th>
+<th>要点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>上架冲刺</td>
+<td>W1–W8</td>
+<td>IAP、压测、全球英文区上线</td>
+</tr>
+<tr>
+<td>软启动</td>
+<td>W9–W16</td>
+<td>自然量，不买量</td>
+</tr>
+<tr>
+<td>小预算验证</td>
+<td>W17–W28</td>
+<td>T1 买量 ¥4.3 万</td>
+</tr>
+<tr>
+<td>稳态运营</td>
+<td>W29–W52</td>
+<td>月买量上限 ¥2.3 万</td>
+</tr>
+</tbody></table>
+<h2>六、首年 KPI（基准）</h2>
+<ul>
+<li>注册 5–10 万 · MAU 8,000–15,000 · 付费率 4–5%</li>
+<li>M12 月毛流水 ¥7.2 万 – ¥14.4 万</li>
+</ul>
+<h2>七、Q1 自研交付（P0）</h2>
+<ol>
+<li>真机 IAP 联调 · 2. 压测 300 CCU · 3. 充值漏斗埋点</li>
+<li>公测清档脚本 · 5. 提审上线</li>
+</ol>
+<h2>八、正文目录</h2>
+<ol>
+<li>执行摘要 · 2. 战略决策 · 3. 现状评估 · 4. 市场策略</li>
+<li>产品范围 · 6. 私人场 · 7. 经济模型 · 8. 组织分工</li>
+<li>预算表 · 10. 时间表 · 11. KPI 预测</li>
+<li>运营体系 · 13. 30 天行动 · 14. 待确认事项</li>
+<li><strong>附录：开发费与服务器 / 软件费用明细</strong></li>
+</ol>
+<hr>
+<h2>一、执行摘要</h2>
+<p>Texas Hold&#39;em 是一款跨端（iOS / Android / Web）社交竞技德州扑克产品，采用<strong>单向封闭筹码经济</strong>（筹码仅可通过官方充值或活动获得，不可兑换法币、不可玩家间转移）。</p>
+<p><strong>商业化核心路径</strong>：完成全球英文区 App Store / Google Play 上架 → 真实 IAP 收款 → 以私人场作为差异化留存与裂变抓手 → 精益预算验证单位经济模型 → 数据达标后再加码投放。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>产品定位</td>
+<td>社交竞技德州扑克，娱乐筹码，非真钱博彩</td>
+</tr>
+<tr>
+<td>变现模式</td>
+<td>IAP 充值（主）+ 官方场 5% / 私人场 3% rake（回收）</td>
+</tr>
+<tr>
+<td>当前技术阶段</td>
+<td>约 <strong>v1.1 公测前 80%</strong>（IAP 验单、双榜、运营后台、私人场均已具备）</td>
+</tr>
+<tr>
+<td>首发市场</td>
+<td><strong>全球英文区</strong>（单一英文商店页，全球分发）</td>
+</tr>
+<tr>
+<td>团队模式</td>
+<td><strong>精益团队</strong>，首年现金预算 <strong>≤ ¥61.2 万</strong>（约 $85,000，含 APP UI 设计）</td>
+</tr>
+<tr>
+<td>私人场</td>
+<td><strong>公测即开</strong>，配合强风控与后台熔断</td>
+</tr>
+<tr>
+<td>首年目标（保守）</td>
+<td>累计注册 5–10 万，月活 8,000–15,000，付费率 3–5%</td>
+</tr>
+<tr>
+<td>首年毛流水目标</td>
+<td>¥58 万 – ¥144 万（约 $8 万 – $20 万）</td>
+</tr>
+</tbody></table>
+<p><strong>核心判断</strong>：产品经济闭环设计成熟，但「能收钱」≠「能规模化赚钱」。商业化成败取决于 <strong>商店过审、首月留存、破产转化</strong>，而非继续堆功能。</p>
+<hr>
+<h2>二、战略决策（已锁定）</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>决策项</th>
+<th>选定方案</th>
+<th>执行含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>首发市场</td>
+<td><strong>全球英文区</strong></td>
+<td>App Store / Google Play 以 English (U.S.) 为主语言全球发布；应用内保留 en-US（主）+ zh-CN</td>
+</tr>
+<tr>
+<td>2</td>
+<td>团队规模</td>
+<td><strong>精益（&lt; ¥65 万/年）</strong></td>
+<td>全年现金硬顶 ¥61.2 万（含 UI 设计 ¥7.2 万）；买量全年 ¥18 万；以自然量 + T1 三国付费测试为主</td>
+</tr>
+<tr>
+<td>3</td>
+<td>私人场</td>
+<td><strong>公测即开</strong></td>
+<td>v1.1 上线时私人场全开，作为差异化与社交裂变抓手；保留后台一键暂停能力</td>
+</tr>
+<tr>
+<td>4</td>
+<td>筹码迁移</td>
+<td><strong>方案 A（已确认）</strong></td>
+<td>公测全员清零，重新赠送 100 筹码；提前 7 天公告 + App 内确认弹窗</td>
+</tr>
+<tr>
+<td>5</td>
+<td>美国买量</td>
+<td><strong>不列入 T1（已确认）</strong></td>
+<td>全球可下载，但付费投放不含美国；美国仅自然量 + ASO，M12 前再评估</td>
+</tr>
+<tr>
+<td>6</td>
+<td>研发模式</td>
+<td><strong>创始人自研（已确认）</strong></td>
+<td>上架冲刺与全年维护由创始人完成；研发现金预算压缩至 ¥7.2 万，节省 ¥11.5 万转投买量与储备</td>
+</tr>
+</tbody></table>
+<h3>2.1 一句话战略</h3>
+<blockquote>
+<p>用最小成本完成全球英文区上架与真实 IAP，以私人场差异化提高时长与传播，6 个月内验证 LTV/CPI，再决定是否扩量。</p>
+</blockquote>
+<hr>
+<h2>三、现状评估</h2>
+<h3>3.1 已完成（可支撑商业化）</h3>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>状态</th>
+<th>商业价值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>官方 9 人场 + Bot 补位</td>
+<td>✅</td>
+<td>核心对局体验，P99 开局 ≤5s</td>
+</tr>
+<tr>
+<td>私人场（开房、踢人、Re-buy、解散投票）</td>
+<td>✅</td>
+<td>社交组局、差异化</td>
+</tr>
+<tr>
+<td>举报 + Chip dumping 24h 检测</td>
+<td>✅</td>
+<td>风控基础</td>
+</tr>
+<tr>
+<td>OAuth（Apple / Google）+ Refresh Token</td>
+<td>✅</td>
+<td>账号体系、游客转正</td>
+</tr>
+<tr>
+<td>IAP 验单（Apple / Google）+ 商品目录</td>
+<td>✅ 沙盒可用</td>
+<td>变现基础设施</td>
+</tr>
+<tr>
+<td>首充赠送 50%、日充值限额 50,000</td>
+<td>✅ 可配置</td>
+<td>转化杠杆</td>
+</tr>
+<tr>
+<td>18+ 自声明、自我封禁</td>
+<td>✅</td>
+<td>商店审核必备</td>
+</tr>
+<tr>
+<td>双排行榜 + 隐身模式</td>
+<td>✅</td>
+<td>竞技留存</td>
+</tr>
+<tr>
+<td>运营后台（用户详情、经济看板、系统配置）</td>
+<td>✅</td>
+<td>日常运营</td>
+</tr>
+</tbody></table>
+<h3>3.2 商业化缺口（Must-Have）</h3>
+<table>
+<thead>
+<tr>
+<th>缺口</th>
+<th>优先级</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>App Store / Google Play 正式上架</td>
+<td>P0</td>
+<td>开发者账号、隐私政策、审核包</td>
+</tr>
+<tr>
+<td>真机 IAP 联调（StoreKit / Play Billing）</td>
+<td>P0</td>
+<td>Web 沙盒 ≠ 真机收入</td>
+</tr>
+<tr>
+<td>生产环境 IAP 凭证与订单对账</td>
+<td>P0</td>
+<td>共享密钥、服务账号</td>
+</tr>
+<tr>
+<td>压测与容量规划（Phase 5）</td>
+<td>P0</td>
+<td>公测流量扛不住 = 收入归零</td>
+</tr>
+<tr>
+<td>数据分析体系（漏斗 / 留存 / LTV）</td>
+<td>P0</td>
+<td>无法优化 = 盲投</td>
+</tr>
+<tr>
+<td>英文商店素材（截图、视频、描述）</td>
+<td>P1</td>
+<td>ASO 与过审</td>
+</tr>
+<tr>
+<td>客服与客诉 SLA</td>
+<td>P1</td>
+<td>IAP 退款、封号申诉</td>
+</tr>
+<tr>
+<td>活动 CMS / Push 召回</td>
+<td>P2</td>
+<td>v1.5 前可用简易方案替代</td>
+</tr>
+</tbody></table>
+<h3>3.3 竞品与差异化</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>本产品</th>
+<th>典型竞品（Zynga Poker 等）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>经济模型</td>
+<td>单向封闭、无提现</td>
+<td>同类</td>
+</tr>
+<tr>
+<td>差异化</td>
+<td>私人场组局、双榜竞技、Bot 快速开局</td>
+<td>品牌与用户量</td>
+</tr>
+<tr>
+<td>当前弱点</td>
+<td>无好友 / 成就 / 皮肤、品牌为零</td>
+<td>社交图谱深、运营成熟</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>四、市场与上架策略</h2>
+<h3>4.1 全球英文区发布方案</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>App Store</td>
+<td>全球发布，Primary Language：<strong>English (U.S.)</strong></td>
+</tr>
+<tr>
+<td>Google Play</td>
+<td>全球发布（除无法分发地区）</td>
+</tr>
+<tr>
+<td>应用内语言</td>
+<td><code>en-US</code>（主）+ <code>zh-CN</code>（华人用户自然覆盖）</td>
+</tr>
+<tr>
+<td>定价基准</td>
+<td>美元标价（$0.99 / $4.99 / $9.99），商店自动本地化</td>
+</tr>
+</tbody></table>
+<h3>4.2 市场分层（精益投放用）</h3>
+<p>不做分国家独立运营，买量测试按 Tier 分批。<strong>美国可全球下载，但一律不进入 T1 付费投放池。</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>市场</th>
+<th>策略</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>T1 测试池（付费）</strong></td>
+<td>加拿大、澳大利亚、新西兰</td>
+<td>首波小预算 UAC / Meta</td>
+<td>监管相对清晰，CPI 低于美国</td>
+</tr>
+<tr>
+<td><strong>T2 自然量</strong></td>
+<td><strong>美国</strong>、英国、爱尔兰</td>
+<td><strong>仅 ASO + 口碑，全年不买量</strong></td>
+<td>CPI 高（约 ¥36–¥72）；CPI 较高</td>
+</tr>
+<tr>
+<td><strong>T3 观察</strong></td>
+<td>印度、东南亚英文用户</td>
+<td>仅自然量</td>
+<td>ARPPU 偏低</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>美国特别说明</strong>：App Store / Google Play 仍全球发布（含美国），用户可自然搜索下载；Meta / Google UAC 等广告<strong>不得定向美国</strong>，直至 T1 市场 LTV/CPI 达标后再评估是否开放美国买量。</p>
+</blockquote>
+<h2>五、产品与功能范围</h2>
+<h3>5.1 公测版本范围（v1.1）</h3>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>范围</th>
+<th>验收标准</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>官方场</td>
+<td>9 人桌、1/2 盲注、5% rake</td>
+<td>完整一局可结算</td>
+</tr>
+<tr>
+<td>私人场</td>
+<td>2–9 人、3% rake、开房费 100 筹码</td>
+<td><strong>公测即开</strong></td>
+</tr>
+<tr>
+<td>支付</td>
+<td>Apple IAP + Google Play</td>
+<td>沙盒 / 生产到账</td>
+</tr>
+<tr>
+<td>内测迁移</td>
+<td>筹码清档 + 重新赠送 100</td>
+<td>提前 7 天公告</td>
+</tr>
+<tr>
+<td>排行榜</td>
+<td>盈利榜 + 单局最高榜，10 分钟刷新</td>
+<td>大厅 Top3 展示</td>
+</tr>
+<tr>
+<td>首充活动</td>
+<td>首充额外赠送 50%（可配置）</td>
+<td>独立弹窗</td>
+</tr>
+<tr>
+<td>后台</td>
+<td>用户详情、经济看板、系统配置、举报工单</td>
+<td>运营三板斧可用</td>
+</tr>
+</tbody></table>
+<h3>5.2 公测不包含（延后至 v1.5+）</h3>
+<ul>
+<li>GTO Bot 引擎</li>
+<li>好友系统</li>
+<li>成就 / 称号 CMS</li>
+<li>多盲注官方场（2/4、5/10）</li>
+<li>对局回放 UI</li>
+<li>皮肤 / VIP（v2.5）</li>
+<li>Web 支付 Stripe / USDC（v2.0）</li>
+</ul>
+<h3>5.3 技术收尾清单（上架前）</h3>
+<table>
+<thead>
+<tr>
+<th>任务</th>
+<th>优先级</th>
+<th>预估工作量</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>真机 <code>expo-iap</code> 生产联调</td>
+<td>P0</td>
+<td>1–2 人周</td>
+</tr>
+<tr>
+<td>IAP 凭证配置与对账脚本</td>
+<td>P0</td>
+<td>0.5 人周</td>
+</tr>
+<tr>
+<td>压测（300 并发连接 / 50 同桌）</td>
+<td>P0</td>
+<td>1 人周</td>
+</tr>
+<tr>
+<td>Firebase Analytics + 充值漏斗</td>
+<td>P0</td>
+<td>0.5 人周</td>
+</tr>
+<tr>
+<td>英文商店素材</td>
+<td>P0</td>
+<td>外包 1 周</td>
+</tr>
+<tr>
+<td>Crashlytics + 基础告警</td>
+<td>P1</td>
+<td>0.5 人周</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>六、私人场公测方案</h2>
+<p>私人场是差异化。采用 <strong>「全开 + 强风控 + 可熔断」</strong> 策略。</p>
+<h3>6.1 公测上线配置</h3>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>公测状态</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>开房权限费</td>
+<td><strong>开启</strong></td>
+<td>100 筹码一次性</td>
+</tr>
+<tr>
+<td>Rake</td>
+<td><strong>3%</strong></td>
+<td>低于官方场 5%</td>
+</tr>
+<tr>
+<td>2 人局限制</td>
+<td><strong>开启</strong></td>
+<td>房主需官方场 ≥10 局</td>
+</tr>
+<tr>
+<td>举报入口</td>
+<td><strong>开启</strong></td>
+<td>牌桌 + 后台工单</td>
+</tr>
+<tr>
+<td>Chip dumping 检测</td>
+<td><strong>开启</strong></td>
+<td>24h 滚动窗口</td>
+</tr>
+<tr>
+<td>全局熔断开关</td>
+<td><strong>常备</strong></td>
+<td><code>private_room_global_pause</code>，1 分钟内全关</td>
+</tr>
+<tr>
+<td>解散规则</td>
+<td><strong>≥2/3 同意</strong></td>
+<td>已实现</td>
+</tr>
+</tbody></table>
+<h3>6.2 公测首月运营规则</h3>
+<table>
+<thead>
+<tr>
+<th>规则</th>
+<th>动作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>举报 ≥3 次 / 房间 / 24h</td>
+<td>自动冻结房间 + 人工复核</td>
+</tr>
+<tr>
+<td>后台每日巡检</td>
+<td>经济看板查看私人场 rake 占比</td>
+</tr>
+<tr>
+<td>异常飙升</td>
+<td>查 dumping，必要时暂停私人场</td>
+</tr>
+<tr>
+<td>客诉话术</td>
+<td>英文 FAQ：筹码不可提现、私人场仅供娱乐</td>
+</tr>
+</tbody></table>
+<h3>6.3 私人场对收入的预期贡献</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>保守预期</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>开房率（占 DAU）</td>
+<td>5–8%</td>
+<td>PRD v1.1 目标</td>
+</tr>
+<tr>
+<td>对 IAP 贡献</td>
+<td>间接为主</td>
+<td>组局 → 消耗 → 破产 → 充值</td>
+</tr>
+<tr>
+<td>对 rake 贡献</td>
+<td>10–20% 总 rake</td>
+<td>局数少于官方场，但提高时长</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>七、变现与经济模型</h2>
+<h3>7.1 收入结构</h3>
+<table>
+<thead>
+<tr>
+<th>来源</th>
+<th>机制</th>
+<th>阶段</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>IAP 充值</strong></td>
+<td>1 USD = 1 筹码，平台抽成 15–30%</td>
+<td>v1.1 主收入</td>
+</tr>
+<tr>
+<td><strong>官方场 rake</strong></td>
+<td>5%，No Flop No Drop，向下取整</td>
+<td>持续</td>
+</tr>
+<tr>
+<td><strong>私人场 rake</strong></td>
+<td>3%</td>
+<td>公测即开</td>
+</tr>
+<tr>
+<td><strong>开房权限费</strong></td>
+<td>100 筹码一次性</td>
+<td>私人场</td>
+</tr>
+</tbody></table>
+<h3>7.2 商品定价（沿用现有目录）</h3>
+<table>
+<thead>
+<tr>
+<th>商品 ID</th>
+<th>筹码</th>
+<th>标价（USD）</th>
+<th>标价（CNY 参考）</th>
+<th>定位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>com.texasholdem.chips.100</td>
+<td>100</td>
+<td>$0.99</td>
+<td>¥7</td>
+<td>冲动消费 / 首充试探</td>
+</tr>
+<tr>
+<td>com.texasholdem.chips.500</td>
+<td>500</td>
+<td>$4.99</td>
+<td>¥36</td>
+<td>主力 SKU</td>
+</tr>
+<tr>
+<td>com.texasholdem.chips.1000</td>
+<td>1000</td>
+<td>$9.99</td>
+<td>¥72</td>
+<td>中度玩家</td>
+</tr>
+</tbody></table>
+<h3>7.3 运营杠杆（已具备配置能力）</h3>
+<table>
+<thead>
+<tr>
+<th>杠杆</th>
+<th>配置项</th>
+<th>建议（公测首月）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>首充赠送</td>
+<td><code>first_recharge_bonus_pct</code> = 50%</td>
+<td><strong>开启</strong></td>
+</tr>
+<tr>
+<td>新用户 rake 减半</td>
+<td><code>newbie_protection_enabled</code></td>
+<td><strong>建议开启</strong>（前 7 天 2.5%）</td>
+</tr>
+<tr>
+<td>日充值限额</td>
+<td><code>daily_recharge_limit</code> = 50,000</td>
+<td>保持</td>
+</tr>
+<tr>
+<td>Bot 日亏损预算</td>
+<td><code>bot_daily_budget</code> = 500,000</td>
+<td>保持，监控告警</td>
+</tr>
+</tbody></table>
+<h3>7.4 单位经济模型（基准假设）</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>保守</th>
+<th>基准</th>
+<th>乐观</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CPI（安装成本）</td>
+<td>¥18</td>
+<td>¥13</td>
+<td>¥9</td>
+</tr>
+<tr>
+<td>注册 → 付费转化</td>
+<td>2.5%</td>
+<td>4%</td>
+<td>6%</td>
+</tr>
+<tr>
+<td>ARPPU（月）</td>
+<td>¥43</td>
+<td>¥86</td>
+<td>¥144</td>
+</tr>
+<tr>
+<td>D7 留存</td>
+<td>10%</td>
+<td>15%</td>
+<td>22%</td>
+</tr>
+<tr>
+<td>平台抽成后净收入率</td>
+<td>~70%</td>
+<td>~70%</td>
+<td>~70%</td>
+</tr>
+</tbody></table>
+<h3>7.5 内测 → 公测筹码迁移</h3>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>规则</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>方案 A（推荐）</strong></td>
+<td>公测清零，重新赠送 100 筹码，提前 7 天公告</td>
+<td>✅ 全球英文区首选，纠纷最少</td>
+</tr>
+<tr>
+<td>方案 B</td>
+<td>mock 充值部分 ×0.1 折算，需用户勾选确认</td>
+<td>内测付费用户多时再考虑</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>八、组织与分工</h2>
+<h3>8.1 精益团队编制（自研版）</h3>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>投入方式</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>创始人（全栈自研）</strong></td>
+<td>全职或主力</td>
+<td>产品、后端、移动端、IAP 联调、压测、监控、发版</td>
+</tr>
+<tr>
+<td>运营</td>
+<td>创始人兼</td>
+<td>社群、客诉、数据日报、ASO</td>
+</tr>
+<tr>
+<td>增长</td>
+<td>创始人兼</td>
+<td>小预算投放（T1 三国）</td>
+</tr>
+<tr>
+<td>客服</td>
+<td>外包或工具</td>
+<td>工单、退款协助</td>
+</tr>
+<tr>
+<td>设计（商店素材 + UI）</td>
+<td>外包一次性</td>
+<td>商店截图 / 视频 + App 内界面；<strong>三期合同 ¥10.8 万</strong></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>不再安排研发外包；创始人需预留 <strong>Q1 约 6–8 人周</strong> 完成上架技术收尾（见下方自研交付清单）。</p>
+</blockquote>
+<h3>8.2 创始人自研交付清单（Q1 上架期）</h3>
+<table>
+<thead>
+<tr>
+<th>任务</th>
+<th>优先级</th>
+<th>预估工时</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>真机 IAP 生产联调（iOS + Android）</td>
+<td>P0</td>
+<td>1.5–2 周</td>
+</tr>
+<tr>
+<td>压测（300 CCU）+ 容量报告</td>
+<td>P0</td>
+<td>1 周</td>
+</tr>
+<tr>
+<td>监控告警（日志 / Uptime / 基础 Dashboard）</td>
+<td>P0</td>
+<td>0.5 周</td>
+</tr>
+<tr>
+<td>Firebase Analytics 充值漏斗</td>
+<td>P0</td>
+<td>0.5 周</td>
+</tr>
+<tr>
+<td>公测清档脚本（方案 A）</td>
+<td>P0</td>
+<td>0.5 周</td>
+</tr>
+<tr>
+<td>Crashlytics + 发版流水线</td>
+<td>P1</td>
+<td>0.5 周</td>
+</tr>
+<tr>
+<td><strong>Q1 合计</strong></td>
+<td></td>
+<td><strong>约 4–5 周净研发</strong></td>
+</tr>
+</tbody></table>
+<h3>8.3 自研现金支出（非人力）</h3>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>预算（人民币）</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>测试真机（二手 iPhone / Android）</td>
+<td>¥3,000 – ¥8,000</td>
+<td>若无现成设备</td>
+</tr>
+<tr>
+<td>Apple 开发者 + Google Play</td>
+<td>¥870</td>
+<td>账号费</td>
+</tr>
+<tr>
+<td>监控 / 日志 SaaS</td>
+<td>¥3,000 – ¥6,000/年</td>
+<td>免费档为主，按需升级</td>
+</tr>
+<tr>
+<td>域名 + 静态托管</td>
+<td>¥100 – ¥500/年</td>
+<td>官网</td>
+</tr>
+<tr>
+<td>开发者工具订阅</td>
+<td>¥0 – ¥3,000</td>
+<td>视现有工具链</td>
+</tr>
+<tr>
+<td><strong>全年研发现金合计</strong></td>
+<td><strong>约 ¥72,000</strong></td>
+<td>含 Q2–Q4 维护与小工具</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>九、预算表（人民币）</h2>
+<blockquote>
+<p><strong>已采用创始人自研版预算</strong>（v1.4）<br>全年现金硬顶：<strong>¥554,400</strong>（已剔除法务合规 ¥57,600）（较 v1.3 <strong>+¥72,000</strong> APP UI 设计）；研发外包节省 <strong>¥115,200</strong> 已转投买量<br>汇率：1 USD = 7.20 CNY</p>
+</blockquote>
+<h3>9.1 年度总预算（自研版 · 已确认）</h3>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>Q1 上架期</th>
+<th>Q2 验证期</th>
+<th>Q3 稳态</th>
+<th>Q4 稳态</th>
+<th><strong>全年合计</strong></th>
+<th>较外包版</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>研发（工具 / 设备 / SaaS）</td>
+<td>¥28,800</td>
+<td>¥14,400</td>
+<td>¥14,400</td>
+<td>¥14,400</td>
+<td><strong>¥72,000</strong></td>
+<td><strong>-¥115,200</strong></td>
+</tr>
+<tr>
+<td>云基础设施</td>
+<td>¥10,800</td>
+<td>¥14,400</td>
+<td>¥18,000</td>
+<td>¥21,600</td>
+<td><strong>¥64,800</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td>商店账号与工具</td>
+<td>¥1,440</td>
+<td>¥2,160</td>
+<td>¥2,160</td>
+<td>¥2,160</td>
+<td><strong>¥7,920</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td>设计 / 商店素材</td>
+<td>¥21,600</td>
+<td>¥7,200</td>
+<td>¥3,600</td>
+<td>¥3,600</td>
+<td><strong>¥36,000</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>APP UI / UX 设计</strong></td>
+<td><strong>¥61,200</strong></td>
+<td><strong>¥7,200</strong></td>
+<td><strong>¥2,160</strong></td>
+<td><strong>¥1,440</strong></td>
+<td><strong>¥72,000</strong></td>
+<td><strong>+¥72,000</strong></td>
+</tr>
+<tr>
+<td>数据分析 SaaS</td>
+<td>¥3,600</td>
+<td>¥7,200</td>
+<td>¥10,800</td>
+<td>¥10,800</td>
+<td><strong>¥32,400</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td>客服与工单工具</td>
+<td>¥3,600</td>
+<td>¥10,800</td>
+<td>¥14,400</td>
+<td>¥18,000</td>
+<td><strong>¥46,800</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>用户获取（买量）</strong></td>
+<td>¥0</td>
+<td>¥43,200</td>
+<td>¥68,400</td>
+<td>¥68,400</td>
+<td><strong>¥180,000</strong></td>
+<td><strong>+¥64,800</strong></td>
+</tr>
+<tr>
+<td>应急储备</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td><strong>¥102,480</strong></td>
+<td><strong>+¥45,600</strong></td>
+</tr>
+<tr>
+<td><strong>季度合计</strong></td>
+<td><strong>¥174,240</strong></td>
+<td><strong>¥113,760</strong></td>
+<td><strong>¥140,520</strong></td>
+<td><strong>¥139,800</strong></td>
+<td><strong>¥612,000</strong></td>
+<td>—</td>
+</tr>
+</tbody></table>
+<p><strong>节省再分配说明：</strong></p>
+<table>
+<thead>
+<tr>
+<th>去向</th>
+<th>金额（人民币）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>研发外包节省</td>
+<td>¥115,200</td>
+</tr>
+<tr>
+<td>→ 加码 T1 买量（加 / 新西兰测试）</td>
+<td>+¥64,800</td>
+</tr>
+<tr>
+<td>→ 应急储备</td>
+<td>+¥45,600</td>
+</tr>
+<tr>
+<td>→ 创始人人力</td>
+<td>不计入现金预算</td>
+</tr>
+</tbody></table>
+<h3>9.2 分项报价明细</h3>
+<h4>9.2.1 研发（创始人自研 · 仅现金支出）</h4>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>报价（人民币）</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>测试真机</td>
+<td>¥3,000 – ¥8,000</td>
+<td>一次性，若无设备</td>
+</tr>
+<tr>
+<td>监控 / 日志工具</td>
+<td>¥3,000 – ¥6,000/年</td>
+<td>免费档 + 按需升级</td>
+</tr>
+<tr>
+<td>开发者账号与域名</td>
+<td>¥1,000</td>
+<td>见 9.2.3</td>
+</tr>
+<tr>
+<td>Q2–Q4 工具与小额 SaaS</td>
+<td>¥20,000 – ¥30,000</td>
+<td>维护期</td>
+</tr>
+<tr>
+<td><strong>研发现金合计</strong></td>
+<td><strong>约 ¥72,000</strong></td>
+<td>人力由创始人承担，不计入现金</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>原外包报价（仅供参考，<strong>不再采用</strong>）：真机 IAP ¥2.5–4 万、压测 ¥1.5–2.5 万、埋点 ¥0.5–1 万。</p>
+</blockquote>
+<h4>9.2.2 云基础设施</h4>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>DAU</th>
+<th>月费（人民币）</th>
+<th>配置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>软启动 M1–M2</td>
+<td>300–1,500</td>
+<td>¥1,800 – ¥3,600</td>
+<td>1×API、1×Room、小 PG、单 Redis</td>
+</tr>
+<tr>
+<td>验证 M3–M6</td>
+<td>1,500–5,000</td>
+<td>¥3,600 – ¥8,600</td>
+<td>2×API、2×Room</td>
+</tr>
+<tr>
+<td>稳态 M7–M12</td>
+<td>5,000–15,000</td>
+<td>¥8,600 – ¥18,000</td>
+<td>按需扩容，单区域</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>云厂商参考</th>
+<th>月费</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AWS / GCP 轻量配置</td>
+<td>¥1,500 – ¥3,000</td>
+</tr>
+<tr>
+<td>数据库 RDS（小规格）</td>
+<td>¥500 – ¥1,500</td>
+</tr>
+<tr>
+<td>Redis</td>
+<td>¥300 – ¥800</td>
+</tr>
+<tr>
+<td>域名 + SSL + CDN</td>
+<td>¥100 – ¥500</td>
+</tr>
+<tr>
+<td><strong>全年云资源合计</strong></td>
+<td><strong>¥50,000 – ¥72,000</strong></td>
+</tr>
+</tbody></table>
+<h4>9.2.3 商店与账号</h4>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>报价（人民币）</th>
+<th>周期</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Apple Developer Program</td>
+<td>¥688</td>
+<td>/年</td>
+</tr>
+<tr>
+<td>Google Play 开发者</td>
+<td>¥180</td>
+<td>一次性</td>
+</tr>
+<tr>
+<td>域名（.com）</td>
+<td>¥60 – ¥100</td>
+<td>/年</td>
+</tr>
+<tr>
+<td>GitHub Pages / 静态托管</td>
+<td>¥0</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td><strong>约 ¥930 – ¥970</strong></td>
+<td>首年</td>
+</tr>
+</tbody></table>
+<h4>9.2.5 设计外包预算明细（商店素材 + APP UI）</h4>
+<p><strong>商店素材（¥36,000）</strong></p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>报价（人民币）</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>App 图标优化</td>
+<td>¥500 – ¥2,000</td>
+<td>商店与 App 内</td>
+</tr>
+<tr>
+<td>商店截图 6 张（含 iPad）</td>
+<td>¥2,000 – ¥5,000</td>
+<td>App Store + Google Play</td>
+</tr>
+<tr>
+<td>预览视频 30s</td>
+<td>¥3,000 – ¥8,000</td>
+<td>商店审核用</td>
+</tr>
+<tr>
+<td>英文商店描述文案</td>
+<td>¥1,000 – ¥3,000</td>
+<td>可自写</td>
+</tr>
+<tr>
+<td>ASO 素材修订（2–3 轮）</td>
+<td>¥3,000 – ¥9,000</td>
+<td>Q2–Q4 迭代</td>
+</tr>
+<tr>
+<td><strong>商店素材合计</strong></td>
+<td><strong>¥6,500 – ¥18,000</strong></td>
+<td>预算列支 <strong>¥36,000</strong></td>
+</tr>
+</tbody></table>
+<p><strong>APP UI / UX 设计（¥72,000）</strong></p>
+<blockquote>
+<p>PRD 要求拟物化牌桌、大厅、商城等完整视觉；当前代码为功能骨架，公测前需专业 UI 设计 + 切图标注交付开发。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>报价（人民币）</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>设计规范 / Design Token</td>
+<td>¥8,000 – ¥15,000</td>
+<td>色彩、字体、筹码 / 卡牌样式</td>
+</tr>
+<tr>
+<td>核心页面 UI（Figma）</td>
+<td>¥25,000 – ¥45,000</td>
+<td>大厅、商城、设置、引导页</td>
+</tr>
+<tr>
+<td>牌桌对局 UI（重点）</td>
+<td>¥20,000 – ¥40,000</td>
+<td>9 人桌布局、下注区、公共牌、动效标注</td>
+</tr>
+<tr>
+<td>私人场 / 弹窗 / 空状态</td>
+<td>¥8,000 – ¥18,000</td>
+<td>开房、破产、首充、举报等</td>
+</tr>
+<tr>
+<td>切图标注 + 开发交付</td>
+<td>¥5,000 – ¥12,000</td>
+<td>Redline、@1x/@2x/@3x 资源包</td>
+</tr>
+<tr>
+<td>公测迭代修订（2–3 轮）</td>
+<td>¥10,000 – ¥24,000</td>
+<td>Q2–Q4 按反馈调整</td>
+</tr>
+<tr>
+<td><strong>UI 设计合计</strong></td>
+<td><strong>¥50,000 – ¥120,000</strong></td>
+<td>预算列支 <strong>¥72,000</strong></td>
+</tr>
+<tr>
+<td><strong>设计外包总计</strong></td>
+<td></td>
+<td><strong>¥108,000</strong></td>
+</tr>
+</tbody></table>
+<h4>9.2.6 设计外包 · 三期付款计划（UI + 商店素材 · ¥108,000）</h4>
+<blockquote>
+<p>付款节点：每期验收通过后 <strong>3 个工作日内</strong>支付；第三期最晚 <strong>W12</strong> 前结清。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>期次</th>
+<th>计划时间</th>
+<th>App UI 交付</th>
+<th>商店素材交付</th>
+<th>验收标准</th>
+<th>付款金额</th>
+<th>累计已付</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>第一期</strong></td>
+<td><strong>W1 – W2</strong></td>
+<td>Design Token；大厅 / 商城 / 设置 / 引导页高保真</td>
+<td>App 图标（商店 + App 内）</td>
+<td>设计规范 + 核心页 + 图标评审通过</td>
+<td><strong>¥30,000</strong></td>
+<td>¥30,000</td>
+</tr>
+<tr>
+<td><strong>第二期</strong></td>
+<td><strong>W3 – W5</strong></td>
+<td>9 人牌桌 UI；私人场 / 弹窗 / 空状态；切图标注 + 资源包</td>
+<td>商店截图 6 张；预览视频 30s；英文商店描述</td>
+<td>牌桌 UI + Redline 完整；截图 / 视频可用于提审</td>
+<td><strong>¥42,900</strong></td>
+<td>¥72,900</td>
+</tr>
+<tr>
+<td><strong>第三期</strong></td>
+<td><strong>W5 – W12</strong></td>
+<td>开发联调修订 1 轮；公测反馈 UI 迭代 ≤2 轮；源文件归档</td>
+<td>ASO 素材修订（2–3 轮）；提审 / 上架反馈调整</td>
+<td>创始人终验签字；无 P0 视觉阻塞项</td>
+<td><strong>¥35,100</strong></td>
+<td><strong>¥108,000</strong></td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>子项</th>
+<th>第一期</th>
+<th>第二期</th>
+<th>第三期</th>
+<th>合计</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>APP UI / UX</td>
+<td>¥28,800</td>
+<td>¥32,400</td>
+<td>¥10,800</td>
+<td><strong>¥72,000</strong></td>
+</tr>
+<tr>
+<td>商店素材</td>
+<td>¥1,200</td>
+<td>¥10,500</td>
+<td>¥24,300</td>
+<td><strong>¥36,000</strong></td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td><strong>¥30,000</strong></td>
+<td><strong>¥42,900</strong></td>
+<td><strong>¥35,100</strong></td>
+<td><strong>¥108,000</strong></td>
+</tr>
+</tbody></table>
+<h4>9.2.7 数据分析 SaaS</h4>
+<table>
+<thead>
+<tr>
+<th>工具</th>
+<th>月费（人民币）</th>
+<th>全年</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Firebase（免费档 → Blaze）</td>
+<td>¥0 – ¥500</td>
+<td>¥0 – ¥6,000</td>
+</tr>
+<tr>
+<td>Mixpanel / Amplitude 免费档</td>
+<td>¥0</td>
+<td>¥0</td>
+</tr>
+<tr>
+<td>付费档（MAU &gt; 5,000 后）</td>
+<td>¥1,500 – ¥3,000</td>
+<td>¥18,000 – ¥36,000</td>
+</tr>
+<tr>
+<td><strong>全年合计</strong></td>
+<td></td>
+<td><strong>¥5,000 – ¥32,000</strong></td>
+</tr>
+</tbody></table>
+<h4>9.2.8 客服与工单</h4>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>月费（人民币）</th>
+<th>全年</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>免费：邮件 + Discord</td>
+<td>¥0</td>
+<td>¥0</td>
+</tr>
+<tr>
+<td>Zendesk / Intercom 入门</td>
+<td>¥500 – ¥1,500</td>
+<td>¥6,000 – ¥18,000</td>
+</tr>
+<tr>
+<td>兼职客服（旺季）</td>
+<td>¥3,000 – ¥5,000</td>
+<td>¥12,000 – ¥20,000</td>
+</tr>
+<tr>
+<td><strong>全年合计</strong></td>
+<td></td>
+<td><strong>¥6,000 – ¥47,000</strong></td>
+</tr>
+</tbody></table>
+<h4>9.2.9 用户获取（买量）</h4>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>预算（人民币）</th>
+<th>市场</th>
+<th>目的</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Q1 软启动</td>
+<td>¥0</td>
+<td>—</td>
+<td>自然量 + 社群</td>
+</tr>
+<tr>
+<td>Q2 小预算测试</td>
+<td>¥43,200</td>
+<td>加拿大 + 澳洲 + 新西兰（<strong>不含美国</strong>）</td>
+<td>CPI、付费率基线</td>
+</tr>
+<tr>
+<td>Q3 扩量测试</td>
+<td>¥68,400</td>
+<td>T1 三国加码</td>
+<td>LTV/CPI 验证</td>
+</tr>
+<tr>
+<td>Q4 稳态</td>
+<td>¥68,400</td>
+<td>维持 ROI 正渠道</td>
+<td>视数据决策</td>
+</tr>
+<tr>
+<td><strong>全年买量合计</strong></td>
+<td><strong>¥180,000</strong></td>
+<td></td>
+<td>较外包版 <strong>+¥64,800</strong></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>买量纪律</strong>：若 LTV/CPI &lt; 0.6，立即停止 Q3–Q4 买量，预算转入产品优化或储备。</p>
+</blockquote>
+<h3>9.3 外包版预算（已废弃，仅作对照）</h3>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>外包版</th>
+<th>自研版（v1.3）</th>
+<th>自研版（v1.4 · 当前）</th>
+<th>差额</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>研发</td>
+<td>¥187,200</td>
+<td>¥72,000</td>
+<td>¥72,000</td>
+<td>-¥115,200</td>
+</tr>
+<tr>
+<td>APP UI 设计</td>
+<td>—</td>
+<td>—</td>
+<td>¥72,000</td>
+<td>+¥72,000</td>
+</tr>
+<tr>
+<td>买量</td>
+<td>¥115,200</td>
+<td>¥180,000</td>
+<td>¥180,000</td>
+<td>+¥64,800</td>
+</tr>
+<tr>
+<td>应急储备</td>
+<td>¥56,880</td>
+<td>¥102,480</td>
+<td>¥102,480</td>
+<td>+¥45,600</td>
+</tr>
+<tr>
+<td><strong>全年合计</strong></td>
+<td>¥540,000</td>
+<td>¥540,000</td>
+<td><strong>¥612,000</strong></td>
+<td><strong>+¥72,000</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>十、时间表（52 周）</h2>
+<h3>10.1 总览</h3>
+<pre><code>W1–W8   上架冲刺 → 全球英文区提审上线（私人场全开）
+W9–W16  软启动   → 自然量验证，不买量
+W17–W28 小预算验证 → 加拿大/澳洲/新西兰买量 ¥4.3万
+W29–W52 稳态运营  → 月买量上限 ¥2.3万，筹备 v1.5
+</code></pre>
+<h3>10.2 Phase 0：全球英文上架冲刺（第 1–8 周）</h3>
+<table>
+<thead>
+<tr>
+<th>周次</th>
+<th>里程碑</th>
+<th>交付物</th>
+<th>预算消耗</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>W1–W2</td>
+<td>真机 IAP 联调 + <strong>设计第一期</strong></td>
+<td>IAP E2E；Design Token + 核心页 UI + App 图标</td>
+<td>创始人自研 + <strong>¥30,000</strong></td>
+</tr>
+<tr>
+<td>W2–W3</td>
+<td>生产环境部署</td>
+<td>IAP 凭证、监控告警</td>
+<td>创始人自研</td>
+</tr>
+<tr>
+<td>W3–W5</td>
+<td>压测 + <strong>设计第二期</strong></td>
+<td>300 CCU 报告；牌桌 UI + 切图包 + 商店截图 / 视频</td>
+<td>创始人自研 + <strong>¥42,900</strong></td>
+</tr>
+<tr>
+<td>W3–W4</td>
+<td>埋点上线</td>
+<td>注册→充值漏斗</td>
+<td>创始人自研</td>
+</tr>
+<tr>
+<td>W5–W8</td>
+<td><strong>设计第三期</strong>（公测前）</td>
+<td>UI 联调修订 + 商店 ASO 迭代</td>
+<td><strong>¥35,100</strong></td>
+</tr>
+<tr>
+<td>W5–W6</td>
+<td>封闭测试</td>
+<td>TestFlight / Play 内测 50 人</td>
+<td>¥0</td>
+</tr>
+<tr>
+<td>W6</td>
+<td>私人场回归</td>
+<td>举报 / 熔断 / 2 人限制全通过</td>
+<td>¥0</td>
+</tr>
+<tr>
+<td>W7</td>
+<td><strong>全球英文区提审</strong></td>
+<td>iOS + Android 并行提交</td>
+<td>¥0</td>
+</tr>
+<tr>
+<td>W8</td>
+<td><strong>正式上线</strong></td>
+<td>全球发布，私人场全开</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3>10.3 Phase 1：软启动（第 9–16 周）</h3>
+<table>
+<thead>
+<tr>
+<th>目标</th>
+<th>数值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>累计注册</td>
+<td>2,000 – 5,000</td>
+</tr>
+<tr>
+<td>付费用户</td>
+<td>60 – 150</td>
+</tr>
+<tr>
+<td>D7 留存</td>
+<td>≥ 12%</td>
+</tr>
+<tr>
+<td>Crash-free</td>
+<td>≥ 99.5%</td>
+</tr>
+<tr>
+<td>买量预算</td>
+<td><strong>¥0</strong></td>
+</tr>
+</tbody></table>
+<p><strong>动作</strong>：Reddit / Discord 德州社群、Product Hunt、英文 Twitter，KOL 零成本或 ≤ ¥3,600。</p>
+<h3>10.4 Phase 2：小预算验证（第 17–28 周）</h3>
+<table>
+<thead>
+<tr>
+<th>周次</th>
+<th>动作</th>
+<th>预算</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>W17–W20</td>
+<td>加拿大 + 澳洲 + 新西兰 UAC / Meta 测试</td>
+<td>¥21,600</td>
+</tr>
+<tr>
+<td>W21–W24</td>
+<td>分析 LTV / CPI，优化素材</td>
+<td>¥10,800</td>
+</tr>
+<tr>
+<td>W25–W28</td>
+<td>若 ROI ≥ 0.7，加码 T1 三国</td>
+<td>¥10,800</td>
+</tr>
+<tr>
+<td><strong>阶段合计</strong></td>
+<td></td>
+<td><strong>¥43,200</strong></td>
+</tr>
+</tbody></table>
+<p><strong>阶段出口标准</strong>：ARPPU ≥ ¥58（$8）、付费率 ≥ 3%、LTV/CPI ≥ 0.7。</p>
+<h3>10.5 Phase 3：稳态运营（第 29–52 周）</h3>
+<table>
+<thead>
+<tr>
+<th>月份</th>
+<th>重点</th>
+<th>月买量上限</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>M7–M9</td>
+<td>维持 ROI 正渠道，ASO 优化</td>
+<td>¥22,800 / 月</td>
+</tr>
+<tr>
+<td>M10–M12</td>
+<td>筹备 v1.5（好友、成就 CMS）</td>
+<td>¥22,800 / 月</td>
+</tr>
+<tr>
+<td>全年买量后段（Q3+Q4）</td>
+<td></td>
+<td><strong>¥136,800</strong></td>
+</tr>
+</tbody></table>
+<h3>10.6 关键里程碑图</h3>
+<hr>
+<h2>十一、KPI 与收入预测</h2>
+<h3>11.1 分阶段 KPI</h3>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>时间</th>
+<th>MAU</th>
+<th>月毛流水（人民币）</th>
+<th>付费率</th>
+<th>D7 留存</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>软启动</td>
+<td>M2</td>
+<td>800–1,500</td>
+<td>¥3,600 – ¥10,800</td>
+<td>2–3%</td>
+<td>≥10%</td>
+</tr>
+<tr>
+<td>验证</td>
+<td>M6</td>
+<td>3,000–6,000</td>
+<td>¥21,600 – ¥57,600</td>
+<td>3–4%</td>
+<td>≥12%</td>
+</tr>
+<tr>
+<td>稳态</td>
+<td>M12</td>
+<td>8,000–15,000</td>
+<td>¥72,000 – ¥144,000</td>
+<td>4–5%</td>
+<td>≥15%</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>毛流水按 ARPPU ¥43–¥86、平台抽成前计算。</p>
+</blockquote>
+<h3>11.2 三种情景收入预测（上线后 12 个月）</h3>
+<table>
+<thead>
+<tr>
+<th>月份</th>
+<th>保守 MAU</th>
+<th>保守月收入</th>
+<th>基准 MAU</th>
+<th>基准月收入</th>
+<th>乐观 MAU</th>
+<th>乐观月收入</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>M1</td>
+<td>800</td>
+<td>¥5,800</td>
+<td>1,500</td>
+<td>¥14,400</td>
+<td>3,000</td>
+<td>¥36,000</td>
+</tr>
+<tr>
+<td>M3</td>
+<td>2,000</td>
+<td>¥18,000</td>
+<td>5,000</td>
+<td>¥57,600</td>
+<td>12,000</td>
+<td>¥129,600</td>
+</tr>
+<tr>
+<td>M6</td>
+<td>4,000</td>
+<td>¥36,000</td>
+<td>10,000</td>
+<td>¥129,600</td>
+<td>25,000</td>
+<td>¥324,000</td>
+</tr>
+<tr>
+<td>M12</td>
+<td>6,000</td>
+<td>¥57,600</td>
+<td>15,000</td>
+<td>¥216,000</td>
+<td>40,000</td>
+<td>¥576,000</td>
+</tr>
+</tbody></table>
+<h3>11.3 M12 盈亏概览（基准情景）</h3>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>金额（人民币 / 月）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>月毛流水</td>
+<td>¥144,000</td>
+</tr>
+<tr>
+<td>平台抽成后（~70%）</td>
+<td>¥100,800</td>
+</tr>
+<tr>
+<td>云资源 + 工具 + 客服</td>
+<td>-¥14,400</td>
+</tr>
+<tr>
+<td>买量（稳态月上限）</td>
+<td>-¥22,800</td>
+</tr>
+<tr>
+<td><strong>月经营性结余（近似）</strong></td>
+<td><strong>¥79,200</strong></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>未计创始人人力成本。精益模式下 <strong>M10–M14 有望经营性盈亏平衡</strong>。</p>
+</blockquote>
+<h3>11.4 核心漏斗 KPI</h3>
+<table>
+<thead>
+<tr>
+<th>漏斗节点</th>
+<th>基准转化率</th>
+<th>优化手段</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>安装 → 注册</td>
+<td>85%</td>
+<td>简化 OAuth</td>
+</tr>
+<tr>
+<td></td>
+<td>注册 → 首局完成</td>
+<td>60%</td>
+</tr>
+<tr>
+<td>首局 → D1 回流</td>
+<td>30%</td>
+<td>推送、排行榜</td>
+</tr>
+<tr>
+<td>破产 → 商城浏览</td>
+<td>40%</td>
+<td>破产弹窗 CTA</td>
+</tr>
+<tr>
+<td>商城浏览 → 付费</td>
+<td>25%</td>
+<td>首充 50%、套餐优化</td>
+</tr>
+<tr>
+<td>付费 → 30 日复购</td>
+<td>25%</td>
+<td>活动、私人场组局</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>十三、数据与运营体系</h2>
+<h3>13.1 必备数据看板（按周复盘）</h3>
+<table>
+<thead>
+<tr>
+<th>看板</th>
+<th>核心指标</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>增长</td>
+<td>新增、激活、渠道、CPI</td>
+</tr>
+<tr>
+<td>留存</td>
+<td>D1 / D7 / D30、首局完成率</td>
+</tr>
+<tr>
+<td>变现</td>
+<td>付费率、ARPPU、首充转化、LTV</td>
+</tr>
+<tr>
+<td>经济</td>
+<td>IAP 注入 vs rake 回收 vs Bot 净亏损</td>
+</tr>
+<tr>
+<td>健康</td>
+<td>Crash 率、开局 P99、客诉量</td>
+</tr>
+<tr>
+<td>私人场</td>
+<td>开房率、举报数、私人场 rake 占比</td>
+</tr>
+</tbody></table>
+<h3>13.2 工具栈（精益推荐）</h3>
+<table>
+<thead>
+<tr>
+<th>用途</th>
+<th>工具</th>
+<th>月费</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>崩溃监控</td>
+<td>Firebase Crashlytics</td>
+<td>免费</td>
+</tr>
+<tr>
+<td>分析漏斗</td>
+<td>Firebase Analytics + Mixpanel 免费档</td>
+<td>免费</td>
+</tr>
+<tr>
+<td>后端监控</td>
+<td>自建日志 + UptimeRobot</td>
+<td>免费 – ¥200</td>
+</tr>
+<tr>
+<td>客服</td>
+<td>邮件 + Discord，后期 Zendesk</td>
+<td>¥0 – ¥1,000</td>
+</tr>
+<tr>
+<td>运营后台</td>
+<td>已有 Admin</td>
+<td>—</td>
+</tr>
+<tr>
+<td>经济监控</td>
+<td>已有经济看板</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3>13.3 运营节奏（首 90 天）</h3>
+<table>
+<thead>
+<tr>
+<th>周期</th>
+<th>动作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>每日</td>
+<td>查看 Crash 率、充值笔数、举报工单</td>
+</tr>
+<tr>
+<td>每周</td>
+<td>复盘漏斗、调整首充 / rake 配置</td>
+</tr>
+<tr>
+<td>每两周</td>
+<td>ASO 关键词检查、商店评分回复</td>
+</tr>
+<tr>
+<td>每月</td>
+<td>经济大盘报告、买量 ROI 决策</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>十四、30 天行动清单</h2>
+<table>
+<thead>
+<tr>
+<th>优先级</th>
+<th>任务</th>
+<th>负责</th>
+<th>目标周</th>
+<th>预算（人民币）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>P0</td>
+<td>Apple / Google 开发者账号注册</td>
+<td>创始人</td>
+<td>W1</td>
+<td>¥870</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>真机 IAP 生产环境联调</td>
+<td><strong>创始人</strong></td>
+<td>W1–W3</td>
+<td>¥0（自研）</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>压测（300 CCU）并出报告</td>
+<td><strong>创始人</strong></td>
+<td>W3–W4</td>
+<td>¥0（自研）</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>委托设计外包（UI + 商店素材，签三期合同）</td>
+<td>外包</td>
+<td>W1</td>
+<td>合同总额 <strong>¥108,000</strong></td>
+</tr>
+<tr>
+<td>P0</td>
+<td>设计第一期：Design Token + 核心页 + 图标</td>
+<td>外包</td>
+<td>W1–W2</td>
+<td><strong>¥30,000</strong></td>
+</tr>
+<tr>
+<td>P0</td>
+<td>设计第二期：牌桌 UI + 切图包 + 商店截图 / 视频</td>
+<td>外包</td>
+<td>W3–W5</td>
+<td><strong>¥42,900</strong></td>
+</tr>
+<tr>
+<td>P0</td>
+<td>私人场公测回归测试</td>
+<td><strong>创始人</strong></td>
+<td>W6</td>
+<td>—</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>全球英文区提审</td>
+<td>创始人</td>
+<td>W7</td>
+<td>—</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>Firebase Analytics 充值漏斗</td>
+<td><strong>创始人</strong></td>
+<td>W3–W4</td>
+<td>¥0（自研）</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>设计第三期：UI 联调 + 商店 ASO 迭代</td>
+<td>外包</td>
+<td>W5–W12</td>
+<td><strong>¥35,100</strong></td>
+</tr>
+<tr>
+<td>P1</td>
+<td>英文 FAQ（含私人场说明）</td>
+<td>创始人</td>
+<td>W5</td>
+<td>—</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>TestFlight / Play 封闭测试 50 人</td>
+<td>创始人</td>
+<td>W5–W6</td>
+<td>—</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>公测筹码迁移公告文案（方案 A）</td>
+<td>产品</td>
+<td>W6</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>十五、待确认事项</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>事项</th>
+<th>建议</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>公测筹码迁移方案</td>
+<td><strong>方案 A：全员清零，重新赠送 100</strong></td>
+<td><strong>已确认（2026-08-20）</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td>美国是否纳入 T1 买量</td>
+<td><strong>不纳入</strong>，全年仅自然量</td>
+<td><strong>已确认（2026-08-20）</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td>新用户 7 天 rake 减半</td>
+<td>公测首月<strong>建议开启</strong></td>
+<td>待确认</td>
+</tr>
+<tr>
+<td>4</td>
+<td>创始人是否自研研发收尾</td>
+<td><strong>自研，节省 ¥11.5 万转投买量</strong></td>
+<td><strong>已确认（2026-08-20）</strong></td>
+</tr>
+</tbody></table>
+<h3>方案 A 执行摘要（已采纳）</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>清档范围</td>
+<td>所有内测账户 <code>chips_balance</code> 归零；<code>has_completed_recharge</code> 重置（首充资格恢复）</td>
+</tr>
+<tr>
+<td>重新发放</td>
+<td>每位用户一次性赠送 <strong>100 筹码</strong>（<code>EVENT_GIFT</code>，<code>reference_id=OPEN_BETA_GRANT</code>）</td>
+</tr>
+<tr>
+<td>公告节奏</td>
+<td>T-14 后台开启迁移预告；T-7 App 内弹窗；T-0 维护窗口执行脚本</td>
+</tr>
+<tr>
+<td>用户确认</td>
+<td>登录后须点击「我已知晓」(<code>beta_migration_ack_at</code>) 方可继续游戏</td>
+</tr>
+<tr>
+<td>不折算 mock 充值</td>
+<td>内测 mock / 沙盒 IAP 筹码<strong>一律不作经济补偿</strong>（公告中明确说明）</td>
+</tr>
+<tr>
+<td>英文公告要点</td>
+<td><em>Open beta reset: all test chips cleared. Every player receives 100 new chips. Previous test balances are not convertible.</em></td>
+</tr>
+</tbody></table>
+<h3>美国买量策略执行摘要（已采纳）</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>商店分发</td>
+<td><strong>含美国</strong>，全球英文区正常上架</td>
+</tr>
+<tr>
+<td>T1 付费投放</td>
+<td><strong>仅加拿大、澳大利亚、新西兰</strong></td>
+</tr>
+<tr>
+<td>美国获客</td>
+<td>ASO、Reddit/Discord、Product Hunt、口碑裂变</td>
+</tr>
+<tr>
+<td>广告后台</td>
+<td>UAC / Meta _campaign 国家定向<strong>排除 US</strong></td>
+</tr>
+<tr>
+<td>复盘节点</td>
+<td>M6 看 T1 的 LTV/CPI；M10+ 再评估是否开放美国买量</td>
+</tr>
+<tr>
+<td>预算影响</td>
+<td>T1 买量池仍<strong>不含美国</strong>；全年总买量预算 <strong>¥18 万</strong>（自研节省转投）</td>
+</tr>
+</tbody></table>
+<h3>研发自研执行摘要（已采纳）</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>研发主体</td>
+<td><strong>创始人全栈自研</strong>，不外包上架冲刺</td>
+</tr>
+<tr>
+<td>研发现金预算</td>
+<td><strong>¥72,000/年</strong>（设备、账号、SaaS）</td>
+</tr>
+<tr>
+<td>节省再分配</td>
+<td>外包预算节省 ¥115,200 → 买量 <strong>+¥64,800</strong>（全年 ¥18 万）+ 储备 <strong>+¥45,600</strong></td>
+</tr>
+<tr>
+<td>Q1 交付</td>
+<td>IAP 真机、压测、埋点、清档脚本、监控（约 4–5 周）</td>
+</tr>
+<tr>
+<td>风险</td>
+<td>创始人单点瓶颈 → 上架前冻结新功能，仅做 P0 收尾</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>附录 A：版本路线图对照</h2>
+<table>
+<thead>
+<tr>
+<th>版本</th>
+<th>定位</th>
+<th>商业化相关范围</th>
+<th>本计划覆盖</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>v1.0 内测</td>
+<td>核心循环</td>
+<td>模拟支付</td>
+<td>已完成</td>
+</tr>
+<tr>
+<td>v1.0.5</td>
+<td>私人场</td>
+<td>组局 UX、举报</td>
+<td>已完成</td>
+</tr>
+<tr>
+<td><strong>v1.1 公测</strong></td>
+<td><strong>商业化</strong></td>
+<td>IAP、双榜、私人场全开</td>
+<td><strong>本计划主体</strong></td>
+</tr>
+<tr>
+<td>v1.5</td>
+<td>品质留存</td>
+<td>好友、成就、多盲注</td>
+<td>M7+ 规划</td>
+</tr>
+<tr>
+<td>v2.0</td>
+<td>Web 支付</td>
+<td>Stripe / USDC</td>
+<td>暂不执行</td>
+</tr>
+<tr>
+<td>v2.5</td>
+<td>商业化扩展</td>
+<td>皮肤、VIP</td>
+<td>暂不执行</td>
+</tr>
+</tbody></table>
+<h2>附录 B：相关文档索引</h2>
+<table>
+<thead>
+<tr>
+<th>文档</th>
+<th>路径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>产品 PRD</td>
+<td><code>docs/PRD-完整版-v2.0.md</code></td>
+</tr>
+<tr>
+<td>版本范围规划</td>
+<td><code>docs/10-版本范围规划.md</code></td>
+</tr>
+<tr>
+<td>运营评审报告</td>
+<td><code>docs/09-产品运营评审报告.md</code></td>
+</tr>
+<tr>
+<td>本机开发指南</td>
+<td><code>docs/LOCAL_DEV.md</code></td>
+</tr>
+<tr>
+<td>开发里程碑</td>
+<td><code>docs/07-开发里程碑与任务拆分.md</code></td>
+</tr>
+</tbody></table>
+<hr>
+<p><em>本文档为商业化执行单一参考；产品规则以 PRD v2.0 为准，技术实现以代码仓库当前分支为准。</em></p>
+<hr>
+<h1>附录：开发费与服务器 / 软件费用明细</h1>
+<h2>一、费用总览</h2>
+<table>
+<thead>
+<tr>
+<th>大类</th>
+<th>首年预算（计划列支）</th>
+<th>市场询价区间</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>A. 开发费（现金）</strong></td>
+<td><strong>¥180,000</strong></td>
+<td>¥138,500 – ¥251,000</td>
+<td>含商店素材、APP UI 设计；人力自研不计入</td>
+</tr>
+<tr>
+<td><strong>B. 服务器及云服务</strong></td>
+<td><strong>¥64,800</strong></td>
+<td>¥50,000 – ¥72,000</td>
+<td>单区域部署</td>
+</tr>
+<tr>
+<td><strong>C. 软件注册及 SaaS</strong></td>
+<td><strong>¥119,520</strong></td>
+<td>¥22,930 – ¥153,970</td>
+<td>含账号、监控、数据、客服工具</td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td><strong>¥364,320</strong></td>
+<td><strong>¥253,430 – ¥436,520</strong></td>
+<td>首年技术与基础设施（不含法务）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>二、A. 开发费明细</h2>
+<h3>A1. 研发现金支出（创始人自研，仅工具与设备）</h3>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>费用项</th>
+<th>类型</th>
+<th>单价 / 区间</th>
+<th>数量</th>
+<th>首年合计（计划）</th>
+<th>发生时间</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A1-01</td>
+<td>测试真机（二手 iPhone）</td>
+<td>一次性</td>
+<td>¥2,000 – ¥5,000</td>
+<td>1 台</td>
+<td>¥3,500</td>
+<td>Q1</td>
+<td>IAP / StoreKit 真机联调</td>
+</tr>
+<tr>
+<td>A1-02</td>
+<td>测试真机（二手 Android）</td>
+<td>一次性</td>
+<td>¥1,000 – ¥3,000</td>
+<td>1 台</td>
+<td>¥2,000</td>
+<td>Q1</td>
+<td>Play Billing 真机联调</td>
+</tr>
+<tr>
+<td>A1-03</td>
+<td>监控 / 日志 SaaS</td>
+<td>年付</td>
+<td>¥3,000 – ¥6,000/年</td>
+<td>1 年</td>
+<td>¥4,500</td>
+<td>全年</td>
+<td>UptimeRobot、日志存储等</td>
+</tr>
+<tr>
+<td>A1-04</td>
+<td>开发者工具订阅</td>
+<td>年付</td>
+<td>¥0 – ¥3,000/年</td>
+<td>1 年</td>
+<td>¥1,500</td>
+<td>全年</td>
+<td>IDE 插件、API 调试工具等</td>
+</tr>
+<tr>
+<td>A1-05</td>
+<td>Q2–Q4 维护期小额工具</td>
+<td>年付</td>
+<td>—</td>
+<td>—</td>
+<td>¥25,000</td>
+<td>Q2–Q4</td>
+<td>发版、依赖、临时 SaaS</td>
+</tr>
+<tr>
+<td>A1-06</td>
+<td>域名（技术用）</td>
+<td>年付</td>
+<td>¥60 – ¥100/年</td>
+<td>1 个</td>
+<td>¥80</td>
+<td>Q1</td>
+<td>官网 / API 文档（可与 C 类合并）</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>A1 小计</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td><strong>¥36,580</strong></td>
+<td></td>
+<td>计划列支 <strong>¥72,000</strong>（含缓冲）</td>
+</tr>
+</tbody></table>
+<h3>A2. 研发人力（创始人自研 · 不计入现金预算）</h3>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>工作项</th>
+<th>预估工时</th>
+<th>市场外包参考价</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A2-01</td>
+<td>真机 IAP 生产联调（iOS + Android）</td>
+<td>1.5 – 2 周</td>
+<td>¥25,000 – ¥40,000</td>
+<td>自研，现金 ¥0</td>
+</tr>
+<tr>
+<td>A2-02</td>
+<td>压测（300 CCU）+ 容量报告</td>
+<td>1 周</td>
+<td>¥15,000 – ¥25,000</td>
+<td>自研，现金 ¥0</td>
+</tr>
+<tr>
+<td>A2-03</td>
+<td>监控告警搭建</td>
+<td>0.5 周</td>
+<td>¥8,000 – ¥15,000</td>
+<td>自研，现金 ¥0</td>
+</tr>
+<tr>
+<td>A2-04</td>
+<td>Firebase 充值漏斗埋点</td>
+<td>0.5 周</td>
+<td>¥5,000 – ¥10,000</td>
+<td>自研，现金 ¥0</td>
+</tr>
+<tr>
+<td>A2-05</td>
+<td>公测清档脚本（方案 A）</td>
+<td>0.5 周</td>
+<td>¥3,000 – ¥5,000</td>
+<td>自研，现金 ¥0</td>
+</tr>
+<tr>
+<td>A2-06</td>
+<td>Crashlytics + 发版流水线</td>
+<td>0.5 周</td>
+<td>¥5,000 – ¥8,000</td>
+<td>自研，现金 ¥0</td>
+</tr>
+<tr>
+<td>A2-07</td>
+<td>全年维护（Bug 修复、小版本）</td>
+<td>约 3 人月/年</td>
+<td>¥30,000 – ¥50,000</td>
+<td>自研，现金 ¥0</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>外包等价合计（参考）</strong></td>
+<td><strong>约 4 – 5 人周 + 维护</strong></td>
+<td><strong>¥91,000 – ¥153,000</strong></td>
+<td><strong>已确认不自研外包</strong></td>
+</tr>
+</tbody></table>
+<h3>A3. 商店素材（ASO / 上架配图）</h3>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>费用项</th>
+<th>类型</th>
+<th>单价 / 区间</th>
+<th>首年合计（计划）</th>
+<th>发生时间</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A3-01</td>
+<td>App 图标优化</td>
+<td>一次性</td>
+<td>¥500 – ¥2,000</td>
+<td>¥1,200</td>
+<td>Q1</td>
+<td>商店与 App 内</td>
+</tr>
+<tr>
+<td>A3-02</td>
+<td>商店截图 6 张（含 iPad）</td>
+<td>一次性</td>
+<td>¥2,000 – ¥5,000</td>
+<td>¥3,500</td>
+<td>Q1</td>
+<td>App Store + Google Play</td>
+</tr>
+<tr>
+<td>A3-03</td>
+<td>预览视频 30 秒</td>
+<td>一次性</td>
+<td>¥3,000 – ¥8,000</td>
+<td>¥5,000</td>
+<td>Q1</td>
+<td>商店审核用</td>
+</tr>
+<tr>
+<td>A3-04</td>
+<td>英文商店描述文案</td>
+<td>一次性</td>
+<td>¥1,000 – ¥3,000</td>
+<td>¥0 – ¥2,000</td>
+<td>Q1</td>
+<td>可创始人自写</td>
+</tr>
+<tr>
+<td>A3-05</td>
+<td>素材修订（Q2–Q4）</td>
+<td>按需</td>
+<td>¥1,000 – ¥3,000/次</td>
+<td>¥7,200</td>
+<td>Q2–Q4</td>
+<td>ASO 优化迭代</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>A3 小计</strong></td>
+<td></td>
+<td><strong>¥6,500 – ¥18,000</strong></td>
+<td><strong>¥36,000</strong></td>
+<td></td>
+<td>仅商店配图，<strong>不含 App 内 UI</strong></td>
+</tr>
+</tbody></table>
+<h3>A4. APP UI / UX 设计（应用内界面）</h3>
+<blockquote>
+<p>PRD 要求拟物化牌桌、大厅、商城等完整视觉；当前代码为功能骨架，公测前需专业 UI 设计 + 切图标注交付开发。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>费用项</th>
+<th>类型</th>
+<th>单价 / 区间</th>
+<th>首年合计（计划）</th>
+<th>发生时间</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A4-01</td>
+<td>设计规范 / Design Token</td>
+<td>一次性</td>
+<td>¥8,000 – ¥15,000</td>
+<td>¥12,000</td>
+<td>Q1</td>
+<td>色彩、字体、筹码/卡牌样式</td>
+</tr>
+<tr>
+<td>A4-02</td>
+<td>核心页面 UI（Figma）</td>
+<td>一次性</td>
+<td>¥25,000 – ¥45,000</td>
+<td>¥28,800</td>
+<td>Q1</td>
+<td>大厅、商城、设置、引导页</td>
+</tr>
+<tr>
+<td>A4-03</td>
+<td>牌桌对局 UI（重点）</td>
+<td>一次性</td>
+<td>¥20,000 – ¥40,000</td>
+<td>¥21,600</td>
+<td>Q1</td>
+<td>9 人桌布局、下注区、公共牌、动效标注</td>
+</tr>
+<tr>
+<td>A4-04</td>
+<td>私人场 / 弹窗 / 空状态</td>
+<td>一次性</td>
+<td>¥8,000 – ¥18,000</td>
+<td>¥7,200</td>
+<td>Q1</td>
+<td>开房、破产、首充、举报等</td>
+</tr>
+<tr>
+<td>A4-05</td>
+<td>切图标注 + 开发交付</td>
+<td>一次性</td>
+<td>¥5,000 – ¥12,000</td>
+<td>¥5,400</td>
+<td>Q1</td>
+<td>Redline、@1x/@2x/@3x 资源包</td>
+</tr>
+<tr>
+<td>A4-06</td>
+<td>公测迭代修订</td>
+<td>按需</td>
+<td>¥3,000 – ¥8,000/轮</td>
+<td>¥10,800</td>
+<td>Q2–Q4</td>
+<td>根据测试反馈 2–3 轮</td>
+</tr>
+<tr>
+<td>A4-07</td>
+<td>Figma 专业版（可选）</td>
+<td>年付</td>
+<td>¥1,200 – ¥2,000/年</td>
+<td>¥1,200</td>
+<td>全年</td>
+<td>外包设计师协作账号</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>A4 小计</strong></td>
+<td></td>
+<td><strong>¥50,000 – ¥120,000</strong></td>
+<td><strong>¥72,000</strong></td>
+<td></td>
+<td><strong>App 内 UI 设计专项</strong></td>
+</tr>
+</tbody></table>
+<h3>A3/A4 设计外包 · 三期付款计划（UI + 商店素材 · ¥108,000）</h3>
+<blockquote>
+<p><strong>合同总额</strong> = 商店素材 <strong>¥36,000</strong> + APP UI <strong>¥72,000</strong>。付款节点：<strong>每期验收通过后 3 个工作日内</strong>支付；第三期最晚 <strong>W12</strong> 前结清。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>期次</th>
+<th>计划时间</th>
+<th>App UI 交付</th>
+<th>商店素材交付</th>
+<th>验收标准</th>
+<th>付款金额</th>
+<th>累计已付</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>第一期</strong></td>
+<td><strong>W1 – W2</strong></td>
+<td>Design Token；大厅 / 商城 / 设置 / 引导页高保真</td>
+<td>App 图标（商店 + App 内）</td>
+<td>设计规范 + 核心页 + 图标评审通过</td>
+<td><strong>¥30,000</strong></td>
+<td>¥30,000</td>
+</tr>
+<tr>
+<td><strong>第二期</strong></td>
+<td><strong>W3 – W5</strong></td>
+<td>9 人牌桌 UI；私人场 / 弹窗 / 空状态；切图标注 + @1x/@2x/@3x 资源包</td>
+<td>商店截图 6 张（含 iPad）；预览视频 30s；英文商店描述文案</td>
+<td>牌桌 UI + Redline 完整；截图 / 视频可用于提审</td>
+<td><strong>¥42,900</strong></td>
+<td>¥72,900</td>
+</tr>
+<tr>
+<td><strong>第三期</strong></td>
+<td><strong>W5 – W12</strong></td>
+<td>开发联调修订 1 轮；公测反馈 UI 迭代 ≤2 轮；Figma 源文件归档</td>
+<td>ASO 素材修订（2–3 轮）；提审 / 上架反馈调整</td>
+<td>创始人终验签字；商店页与 App 视觉无 P0 阻塞</td>
+<td><strong>¥35,100</strong></td>
+<td><strong>¥108,000</strong></td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>子项</th>
+<th>第一期</th>
+<th>第二期</th>
+<th>第三期</th>
+<th>合计</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>APP UI / UX</td>
+<td>¥28,800</td>
+<td>¥32,400</td>
+<td>¥10,800</td>
+<td><strong>¥72,000</strong></td>
+</tr>
+<tr>
+<td>商店素材</td>
+<td>¥1,200</td>
+<td>¥10,500</td>
+<td>¥24,300</td>
+<td><strong>¥36,000</strong></td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td><strong>¥30,000</strong></td>
+<td><strong>¥42,900</strong></td>
+<td><strong>¥35,100</strong></td>
+<td><strong>¥108,000</strong></td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>付款节奏摘要</th>
+<th>金额</th>
+<th>占比</th>
+<th>对应周次</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>第一期</td>
+<td>¥30,000</td>
+<td>28%</td>
+<td>W2 末</td>
+</tr>
+<tr>
+<td>第二期</td>
+<td>¥42,900</td>
+<td>40%</td>
+<td>W5 末（提审前）</td>
+</tr>
+<tr>
+<td>第三期</td>
+<td>¥35,100</td>
+<td>32%</td>
+<td>W8 – W12</td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td><strong>¥108,000</strong></td>
+<td>100%</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3>A. 开发费合计</h3>
+<table>
+<thead>
+<tr>
+<th>子类</th>
+<th>计划列支</th>
+<th>询价区间</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A1 研发现金</td>
+<td>¥72,000</td>
+<td>¥7,580 – ¥17,100</td>
+</tr>
+<tr>
+<td>A2 研发人力（自研）</td>
+<td>¥0（现金）</td>
+<td>外包参考 ¥91,000 – ¥153,000</td>
+</tr>
+<tr>
+<td>A3 商店素材</td>
+<td>¥36,000</td>
+<td>¥6,500 – ¥18,000</td>
+</tr>
+<tr>
+<td>A4 <strong>APP UI / UX 设计</strong></td>
+<td><strong>¥72,000</strong></td>
+<td><strong>¥50,000 – ¥120,000</strong></td>
+</tr>
+<tr>
+<td><strong>开发费现金合计</strong></td>
+<td><strong>¥180,000</strong></td>
+<td><strong>¥138,500 – ¥251,000</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>三、B. 服务器及云服务明细</h2>
+<blockquote>
+<p>部署方案：单区域（建议 <code>us-east-1</code> 或 <code>eu-west-1</code>），全球英文区首年不上多活。</p>
+</blockquote>
+<h3>B1. 按资源项拆分（月均 → 全年）</h3>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>资源项</th>
+<th>规格参考</th>
+<th>月费（人民币）</th>
+<th>首年合计（计划）</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>B1-01</td>
+<td>应用服务器（API）</td>
+<td>2 vCPU / 4 GB × 1–2 台</td>
+<td>¥500 – ¥1,200</td>
+<td>¥14,400</td>
+<td>NestJS REST API</td>
+</tr>
+<tr>
+<td>B1-02</td>
+<td>应用服务器（Room WS）</td>
+<td>2 vCPU / 4 GB × 1–2 台</td>
+<td>¥500 – ¥1,200</td>
+<td>¥14,400</td>
+<td>WebSocket 牌桌服务</td>
+</tr>
+<tr>
+<td>B1-03</td>
+<td>PostgreSQL（RDS / 托管）</td>
+<td>小规格，20–50 GB</td>
+<td>¥500 – ¥1,500</td>
+<td>¥12,000</td>
+<td>用户、订单、手牌</td>
+</tr>
+<tr>
+<td>B1-04</td>
+<td>Redis（托管）</td>
+<td>1 GB – 2 GB</td>
+<td>¥300 – ¥800</td>
+<td>¥6,000</td>
+<td>会话、排行榜缓存</td>
+</tr>
+<tr>
+<td>B1-05</td>
+<td>负载均衡 / 公网 IP</td>
+<td>按需</td>
+<td>¥100 – ¥300</td>
+<td>¥2,400</td>
+<td>ALB 或等价服务</td>
+</tr>
+<tr>
+<td>B1-06</td>
+<td>对象存储 + 备份</td>
+<td>手牌日志、备份</td>
+<td>¥50 – ¥200</td>
+<td>¥1,200</td>
+<td>S3 / GCS 等价</td>
+</tr>
+<tr>
+<td>B1-07</td>
+<td>带宽 / 流量费</td>
+<td>按量</td>
+<td>¥200 – ¥800</td>
+<td>¥6,000</td>
+<td>随 DAU 增长</td>
+</tr>
+<tr>
+<td>B1-08</td>
+<td>SSL 证书</td>
+<td>免费 Let&#39;s Encrypt 或云厂商</td>
+<td>¥0 – ¥100</td>
+<td>¥0 – ¥500</td>
+<td>首年可 ¥0</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>B1 小计</strong></td>
+<td></td>
+<td><strong>¥2,150 – ¥6,100/月</strong></td>
+<td><strong>¥64,800</strong></td>
+<td>计划列支均值 <strong>¥5,400/月</strong></td>
+</tr>
+</tbody></table>
+<h3>B2. 按业务阶段（月费区间）</h3>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>时间</th>
+<th>DAU</th>
+<th>月费区间</th>
+<th>阶段合计</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>软启动</td>
+<td>M1 – M2</td>
+<td>300 – 1,500</td>
+<td>¥1,800 – ¥3,600</td>
+<td>¥3,600 – ¥7,200</td>
+</tr>
+<tr>
+<td>验证期</td>
+<td>M3 – M6</td>
+<td>1,500 – 5,000</td>
+<td>¥3,600 – ¥8,600</td>
+<td>¥14,400 – ¥34,400</td>
+</tr>
+<tr>
+<td>稳态</td>
+<td>M7 – M12</td>
+<td>5,000 – 15,000</td>
+<td>¥8,600 – ¥18,000</td>
+<td>¥51,600 – ¥108,000</td>
+</tr>
+<tr>
+<td><strong>首年（计划）</strong></td>
+<td></td>
+<td></td>
+<td>均值 ¥5,400/月</td>
+<td><strong>¥64,800</strong></td>
+</tr>
+</tbody></table>
+<h3>B3. 云厂商参考（三选一）</h3>
+<table>
+<thead>
+<tr>
+<th>厂商</th>
+<th>软启动月费</th>
+<th>稳态月费</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AWS（Lightsail / EC2 + RDS）</td>
+<td>¥1,800 – ¥3,000</td>
+<td>¥8,000 – ¥15,000</td>
+<td>生态成熟，文档多</td>
+</tr>
+<tr>
+<td>GCP（Compute + Cloud SQL）</td>
+<td>¥1,800 – ¥3,200</td>
+<td>¥8,000 – ¥16,000</td>
+<td>Firebase 同生态</td>
+</tr>
+<tr>
+<td>国内云出海节点（如阿里云国际）</td>
+<td>¥1,500 – ¥2,800</td>
+<td>¥7,000 – ¥14,000</td>
+<td>华人团队友好</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>四、C. 软件注册及 SaaS 明细</h2>
+<h3>C1. 平台账号与注册费（必选）</h3>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>软件 / 服务</th>
+<th>类型</th>
+<th>官方价格（USD）</th>
+<th>人民币参考</th>
+<th>周期</th>
+<th>首年合计</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>C1-01</td>
+<td><strong>Apple Developer Program</strong></td>
+<td>注册</td>
+<td>$99/年</td>
+<td><strong>¥688</strong></td>
+<td>年付</td>
+<td>¥688</td>
+<td>iOS 上架、IAP、TestFlight</td>
+</tr>
+<tr>
+<td>C1-02</td>
+<td><strong>Google Play 开发者</strong></td>
+<td>注册</td>
+<td>$25（一次性）</td>
+<td><strong>¥180</strong></td>
+<td>一次性</td>
+<td>¥180</td>
+<td>Android 上架、Play Billing</td>
+</tr>
+<tr>
+<td>C1-04</td>
+<td><strong>GitHub</strong></td>
+<td>注册</td>
+<td>免费 / Pro $4/月</td>
+<td>¥0 – ¥350</td>
+<td>月/年</td>
+<td>¥0 – ¥350</td>
+<td>代码托管；Pages 免费</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>C1 小计</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><strong>¥948 – ¥1,298</strong></td>
+<td>计划列支 <strong>¥7,920</strong>（含缓冲与续费）</td>
+</tr>
+</tbody></table>
+<h3>C2. 支付与 IAP 相关（无额外平台注册费）</h3>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>服务</th>
+<th>注册费</th>
+<th>交易费用</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>C2-01</td>
+<td>Apple IAP</td>
+<td>¥0</td>
+<td>销售额 15% – 30%</td>
+<td>需 Apple Developer；Shared Secret 免费配置</td>
+</tr>
+<tr>
+<td>C2-02</td>
+<td>Google Play Billing</td>
+<td>¥0</td>
+<td>销售额 15% – 30%</td>
+<td>需 Play 开发者；服务账号免费</td>
+</tr>
+<tr>
+<td>C2-03</td>
+<td>App Store Connect / Play Console</td>
+<td>含在 C1</td>
+<td>—</td>
+<td>商品配置、沙盒测试</td>
+</tr>
+</tbody></table>
+<h3>C3. 运维与监控 SaaS</h3>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>软件</th>
+<th>免费档</th>
+<th>付费档（月）</th>
+<th>首年合计（计划）</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>C3-01</td>
+<td><strong>Firebase Crashlytics</strong></td>
+<td>免费</td>
+<td>—</td>
+<td>¥0</td>
+<td>崩溃监控</td>
+</tr>
+<tr>
+<td>C3-02</td>
+<td><strong>Firebase Analytics</strong></td>
+<td>免费</td>
+<td>—</td>
+<td>¥0</td>
+<td>基础分析</td>
+</tr>
+<tr>
+<td>C3-03</td>
+<td><strong>Firebase Blaze（按量）</strong></td>
+<td>有免费额度</td>
+<td>¥0 – ¥500/月</td>
+<td>¥3,600</td>
+<td>推送、超额流量</td>
+</tr>
+<tr>
+<td>C3-04</td>
+<td><strong>UptimeRobot</strong></td>
+<td>50 监控免费</td>
+<td>¥60 – ¥200/月</td>
+<td>¥1,200</td>
+<td>API / Room 存活探测</td>
+</tr>
+<tr>
+<td>C3-05</td>
+<td><strong>Sentry</strong>（可选）</td>
+<td>5K 事件/月免费</td>
+<td>¥200 – ¥800/月</td>
+<td>¥0 – ¥4,800</td>
+<td>后端错误追踪</td>
+</tr>
+<tr>
+<td>C3-06</td>
+<td><strong>Grafana Cloud</strong>（可选）</td>
+<td>免费档</td>
+<td>¥150 – ¥500/月</td>
+<td>¥0 – ¥3,600</td>
+<td>指标 Dashboard</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>C3 小计</strong></td>
+<td></td>
+<td></td>
+<td><strong>¥4,800 – ¥12,000</strong></td>
+<td>含在研发 ¥72,000 与数据分析预算</td>
+</tr>
+</tbody></table>
+<h3>C4. 数据分析 SaaS</h3>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>软件</th>
+<th>免费档</th>
+<th>付费档（月）</th>
+<th>首年合计（计划）</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>C4-01</td>
+<td><strong>Mixpanel</strong></td>
+<td>20M 事件/月免费</td>
+<td>¥1,500 – ¥3,000/月</td>
+<td>¥0 – ¥18,000</td>
+<td>漏斗、留存（MAU 低时免费）</td>
+</tr>
+<tr>
+<td>C4-02</td>
+<td><strong>Amplitude</strong></td>
+<td>免费档</td>
+<td>¥1,500 – ¥3,000/月</td>
+<td>¥0 – ¥18,000</td>
+<td>与 Mixpanel 二选一</td>
+</tr>
+<tr>
+<td>C4-03</td>
+<td><strong>Google Analytics 4</strong></td>
+<td>免费</td>
+<td>—</td>
+<td>¥0</td>
+<td>Web / 补充分析</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>C4 小计（计划列支）</strong></td>
+<td></td>
+<td></td>
+<td><strong>¥32,400</strong></td>
+<td>M6 后 MAU 上升可能触发付费</td>
+</tr>
+</tbody></table>
+<h3>C5. 客服与工单 SaaS</h3>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>软件</th>
+<th>免费档</th>
+<th>付费档（月）</th>
+<th>首年合计（计划）</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>C5-01</td>
+<td>邮件 + Discord</td>
+<td>免费</td>
+<td>—</td>
+<td>¥0</td>
+<td>早期客诉</td>
+</tr>
+<tr>
+<td>C5-02</td>
+<td><strong>Zendesk Suite</strong></td>
+<td>无</td>
+<td>¥500 – ¥1,500/月</td>
+<td>¥6,000 – ¥18,000</td>
+<td>工单、FAQ</td>
+</tr>
+<tr>
+<td>C5-03</td>
+<td><strong>Intercom</strong></td>
+<td>无</td>
+<td>¥600 – ¥2,000/月</td>
+<td>¥7,200 – ¥24,000</td>
+<td>应用内客服（可选）</td>
+</tr>
+<tr>
+<td>C5-04</td>
+<td>兼职客服人力</td>
+<td>—</td>
+<td>¥3,000 – ¥5,000/月</td>
+<td>¥12,000 – ¥20,000</td>
+<td>旺季外包</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>C5 小计（计划列支）</strong></td>
+<td></td>
+<td></td>
+<td><strong>¥46,800</strong></td>
+<td>Q1 免费，Q2 起逐步付费</td>
+</tr>
+</tbody></table>
+<h3>C6. 其他可能涉及的软件</h3>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>软件</th>
+<th>费用</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>C6-01</td>
+<td>Expo EAS Build</td>
+<td>免费档 / $29/月起</td>
+<td>移动端云构建；可用本地构建 ¥0</td>
+</tr>
+<tr>
+<td>C6-02</td>
+<td>企业邮箱（Google Workspace）</td>
+<td>¥40 – ¥60/人/月</td>
+<td>客服邮箱 <code>@yourdomain.com</code></td>
+</tr>
+<tr>
+<td>C6-03</td>
+<td>1Password / 密钥管理</td>
+<td>¥0 – ¥300/月</td>
+<td>IAP 凭证、API Key 管理</td>
+</tr>
+<tr>
+<td>C6-04</td>
+<td>Figma</td>
+<td>免费档 / ¥100 – ¥150/人/月</td>
+<td>设计协作（若自研设计可 ¥0）</td>
+</tr>
+</tbody></table>
+<h3>C. 软件注册及 SaaS 合计</h3>
+<table>
+<thead>
+<tr>
+<th>子类</th>
+<th>首年计划列支</th>
+<th>询价区间</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>C1 平台账号注册</td>
+<td>¥7,920</td>
+<td>¥948 – ¥1,298</td>
+</tr>
+<tr>
+<td>C3 运维监控</td>
+<td>（含在 A1 / 研发）</td>
+<td>¥4,800 – ¥12,000</td>
+</tr>
+<tr>
+<td>C4 数据分析</td>
+<td>¥32,400</td>
+<td>¥5,000 – ¥36,000</td>
+</tr>
+<tr>
+<td>C5 客服工单</td>
+<td>¥46,800</td>
+<td>¥6,000 – ¥47,000</td>
+</tr>
+<tr>
+<td><strong>软件注册及 SaaS 合计</strong></td>
+<td><strong>¥87,120 – ¥119,520</strong>¹</td>
+<td><strong>¥22,930 – ¥96,298</strong></td>
+</tr>
+</tbody></table>
+<p>¹ C1 账号费 ¥7,920 + C4 ¥32,400 + C5 ¥46,800 = ¥87,120；含 C3 缓冲后计划总盘约 <strong>¥119,520</strong>（与主计划书「研发 ¥72,000 + 账号 ¥7,920 + 数据 ¥32,400 + 客服 ¥46,800」对齐）。</p>
+<hr>
+<h2>五、按季度付款节奏（开发 + 服务器 + 软件）</h2>
+<table>
+<thead>
+<tr>
+<th>季度</th>
+<th>开发费</th>
+<th>服务器</th>
+<th>软件注册 / SaaS</th>
+<th><strong>季度小计</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Q1 上架期</strong></td>
+<td>¥154,800¹</td>
+<td>¥10,800</td>
+<td>¥7,920 + ¥3,600</td>
+<td><strong>¥177,120</strong></td>
+</tr>
+<tr>
+<td><strong>Q2 验证期</strong></td>
+<td>¥36,000</td>
+<td>¥14,400</td>
+<td>¥7,200 + ¥10,800 + ¥3,600</td>
+<td><strong>¥72,000</strong></td>
+</tr>
+<tr>
+<td><strong>Q3 稳态</strong></td>
+<td>¥23,760</td>
+<td>¥18,000</td>
+<td>¥14,400 + ¥10,800 + ¥2,160</td>
+<td><strong>¥69,120</strong></td>
+</tr>
+<tr>
+<td><strong>Q4 稳态</strong></td>
+<td>¥23,040</td>
+<td>¥21,600</td>
+<td>¥14,400 + ¥10,800 + ¥2,160</td>
+<td><strong>¥72,000</strong></td>
+</tr>
+<tr>
+<td><strong>全年</strong></td>
+<td><strong>¥237,600</strong></td>
+<td><strong>¥64,800</strong></td>
+<td><strong>¥119,520</strong></td>
+<td><strong>¥421,920</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>首年预算</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>用户获取（买量）</td>
+<td>¥180,000</td>
+<td>市场营销，非开发/基础设施</td>
+</tr>
+<tr>
+<td>应急储备</td>
+<td>¥102,480</td>
+<td>风险缓冲</td>
+</tr>
+<tr>
+<td>IAP / 支付流水抽成</td>
+<td>按销售额 15% – 30%</td>
+<td>非预付注册费</td>
+</tr>
+<tr>
+<td>创始人人力薪酬</td>
+<td>未计入</td>
+<td>自研模式</td>
+</tr>
+</tbody></table>
+<hr>
+<p><em>本清单为 <code>docs/11-商业化启动计划书.md</code> v1.6 的费用拆分附录；报价以实际签约 / 账单为准。</em></p>
+</div></body></html>

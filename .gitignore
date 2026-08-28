@@ -1,4 +1,5 @@
 node_modules/
+<<<<<<< HEAD
 dist/
 coverage/
 .env
@@ -7,3 +8,8 @@ coverage/
 .DS_Store
 .turbo
 dump.rdb
+=======
+scripts/node_modules/
+dump.rdb
+*.log
+>>>>>>> origin/cursor/doc-review-refinement-2fc9
