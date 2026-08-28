@@ -1,0 +1,11 @@
+# 与宿主机上已有 Postgres/Redis 等共存：只映射到高位端口，不占用 5432/6379
+services:
+  postgres:
+    container_name: th-postgres
+    ports:
+      - '15432:5432'
+
+  redis:
+    container_name: th-redis
+    ports:
+      - '16379:6379'

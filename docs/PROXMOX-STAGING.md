@@ -54,9 +54,13 @@ Internet → Cloudflare → cloudflared → 127.0.0.1:3000/3001/5173
 
 ## 二、前期快速开始（无域名 · 局域网）
 
-### 2.1 创建 LXC
+### 2.1 登录已有服务器
 
-同下文 **§三**；建议为 LXC 设静态 IP **`192.168.31.52`**（网关 `192.168.31.1`，掩码 `255.255.255.0`）。
+```bash
+ssh <你的用户>@192.168.31.52
+```
+
+当前环境：**Ubuntu 已在 `192.168.31.52` 运行**，无需新建 LXC，直接 §2.2 部署。
 
 ### 2.2 部署（跳过 Tunnel）
 
@@ -92,7 +96,7 @@ EXPO_PUBLIC_API_URL=http://192.168.31.52:3000
 EXPO_PUBLIC_ROOM_URL=http://192.168.31.52:3001
 ```
 
-手机真机：**连同一 WiFi**，用 Expo Go 扫 Mac 上的二维码即可（请求会打到 LXC IP）。
+手机真机：**连同一 WiFi**，用 Expo Go 扫 Mac 上的二维码即可（请求会打到 `192.168.31.52`）。
 
 ### 2.4 局域网模式的限制
 
@@ -131,9 +135,9 @@ cloudflared tunnel --url http://127.0.0.1:3000
    - **Unprivileged container**：可勾选（需开启 nesting，见下）
    - Cores: **4** · Memory: **8192** · Swap: **2048**
    - Root disk: **80 GB**（local-lvm）
-   - Network: `vmbr0` · 建议静态 IP **`192.168.31.52`** / 网关 **`192.168.31.1`** / `255.255.255.0`
+   - Network: `vmbr0` · 静态 IP 另选未占用地址（如 `192.168.31.50`）/ 网关 **`192.168.31.1`**
 3. **Options → Features**：勾选 **nesting=1**（容器内跑 Docker 必须）
-4. 启动 CT，SSH 登录：`ssh root@192.168.31.52`
+4. 启动 CT，SSH 登录：`ssh root@<新容器IP>`
 
 > 若 Docker 报权限错误，在 Proxmox 节点执行：  
 > `pct set <CTID> -features nesting=1,keyctl=1`
