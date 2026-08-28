@@ -12,7 +12,7 @@
 
 ```bash
 cd ~/Texas-Hold-em
-git checkout cursor/admin-ui-phase3-2fc9   # 完整代码在此分支，main 仅有 README
+git checkout cursor/phase4-open-beta-2fc9   # 完整代码 + Staging 脚本
 pnpm install
 pnpm build                                  # 必须：编译 poker-engine / db 等
 cp .env.example .env                        # 若不存在
@@ -86,7 +86,16 @@ brew services stop postgresql@16 redis   # Homebrew 方式
 
 **Expo Web 500 / MIME type json**：在项目根执行 `pnpm install && pnpm build`，然后在 `apps/mobile` 运行 `npx expo start --web --clear`。
 
-**`No package.json` 或只有 README**：确认在 `~/Texas-Hold-em` 且分支为 `cursor/admin-ui-phase3-2fc9`。
+**`No package.json` 或只有 README**：确认分支为 `cursor/phase4-open-beta-2fc9`。
+
+## Mac mini 连 Staging 服务器（192.168.31.53）
+
+仅跑客户端、后端在 LXC 上时，见 **`docs/MAC-MINI-STAGING.md`**：
+
+```bash
+bash scripts/mac-staging-check.sh
+bash scripts/mac-staging-mobile.sh
+```
 
 **PostgreSQL 连接失败**：`brew services list` 确认 postgresql@16 为 started。
 
