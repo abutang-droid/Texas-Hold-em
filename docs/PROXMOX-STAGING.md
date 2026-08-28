@@ -4,8 +4,9 @@
 |------|------|
 | 适用场景 | **开发 Staging**（非生产） |
 | Proxmox 主机 | 12 代 i7 · 32 GB RAM |
-| 容器类型 | **LXC**（或复用已有 Ubuntu VM/物理机） |
-| 当前服务器 | **已有 Ubuntu · `192.168.31.52`**（网关 `192.168.31.1`） |
+| 容器类型 | **新建 LXC `th-staging`**（推荐，与 `192.168.31.52` 隔离） |
+| 已有服务器 | `192.168.31.52` 跑其他应用 · **不动它** |
+| 新 LXC IP（建议） | **`192.168.31.53`** · 网关 `192.168.31.1` |
 | 公网暴露 | **前期可选**：仅局域网 IP；后期再加 Cloudflare Tunnel + 域名 |
 | 代码分支 | `cursor/phase4-open-beta-2fc9` |
 
@@ -29,20 +30,22 @@
 | **A. 局域网（推荐前期）** | Mac / 手机与 LXC 同一 WiFi，内网联调 | **不需要** |
 | **B. Cloudflare Tunnel** | 外出测试、TestFlight、给他人远程访问 | 需要（或用 `trycloudflare.com` 临时域名） |
 
-### 1.3 模式 A · 局域网拓扑（无公网域名）
+### 1.3 推荐拓扑 · 新建 LXC（`th-staging`）
 
 ```text
 家庭 WiFi（网关 192.168.31.1）
    │
-   ├── Mac mini（开发）───── http://192.168.31.52:3000  (API)
-   │                        http://192.168.31.52:3001  (Room)
-   └── Ubuntu 服务器 (192.168.31.52)  ← 已有，直接部署
+   ├── Mac mini ─────────── http://192.168.31.53:3000  (API)
+   │                        http://192.168.31.53:3001  (Room)
+   │
+   ├── Ubuntu 192.168.31.52  ← 原有应用，不改动
+   │
+   └── LXC th-staging 192.168.31.53  ← Texas Hold'em 专用
          ├── Docker: PostgreSQL + Redis
-         ├── PM2: api :3000 · room :3001 · admin :5173
-         └── 无需 cloudflared
+         └── PM2: api · room · admin
 ```
 
-> **若已有 Ubuntu（如 192.168.31.52）**：跳过 §三「新建 LXC」，直接在该机执行 §二部署即可。
+> **`.52` 已有其他应用** → 新建 LXC，用 **`.53`**（或 DHCP 后固定 IP），用默认端口 **3000/3001/5173** 即可。
 
 ### 1.4 模式 B · Cloudflare Tunnel 拓扑
 
@@ -52,53 +55,97 @@ Internet → Cloudflare → cloudflared → 127.0.0.1:3000/3001/5173
 
 ---
 
-## 二、前期快速开始（无域名 · 局域网）
+## 二、新建 LXC 并部署（推荐路径）
 
-### 2.1 登录已有服务器
+### 2.1 在 Proxmox 创建 LXC
+
+Web UI → **Create CT**：
+
+| 项 | 值 |
+|----|-----|
+| Hostname | `th-staging` |
+| Template | `ubuntu-24.04-standard` |
+| CPU / RAM | **4 核 · 8192 MB**（Swap 2048） |
+| Disk | **80 GB** |
+| IPv4 | **Static `192.168.31.53/24`** |
+| Gateway | **`192.168.31.1`** |
+| DNS | `192.168.31.1` 或 `223.5.5.5` |
+| Features | ✅ **nesting=1**（Docker 必须） |
+
+创建后若 Docker 报错，在 Proxmox 节点执行：
 
 ```bash
-ssh <你的用户>@192.168.31.52
+pct set <CTID> -features nesting=1,keyctl=1
+pct start <CTID>
 ```
 
-当前环境：**Ubuntu 已在 `192.168.31.52` 运行**，无需新建 LXC，直接 §2.2 部署。
+SSH 登录：
 
-### 2.2 部署（跳过 Tunnel）
+```bash
+ssh root@192.168.31.53
+```
+
+### 2.2 LXC 内一键初始化
 
 ```bash
 git clone https://github.com/abutang-droid/Texas-Hold-em.git
 cd Texas-Hold-em
 git checkout cursor/phase4-open-beta-2fc9
-# 部署脚本在 doc 分支，见仓库 infra/staging/
+# 合并 doc 分支以获取 scripts/staging-* 与 infra/staging/
 
-# 仅安装 Docker / Node / pnpm / PM2（可不装 cloudflared）
-bash scripts/staging-bootstrap.sh
+sudo bash scripts/staging-bootstrap.sh
+```
 
+### 2.3 配置并启动（默认端口，无需 131xx）
+
+```bash
 cp infra/staging/.env.lan.example .env
-nano .env   # 默认已填 192.168.31.52；若 IP 不同请修改，并改 JWT / ADMIN 密钥
+nano .env   # 改 JWT_SECRET、ADMIN_API_KEY；IP 默认 192.168.31.53
 
 docker compose up -d
 pnpm install && pnpm build && pnpm migrate
 bash scripts/staging-up.sh
 ```
 
-### 2.3 Mac mini 验证
+### 2.4 Mac mini 验证
 
 ```bash
-curl http://192.168.31.52:3000/health
-curl http://192.168.31.52:3001/health
-open http://192.168.31.52:5173          # 运营后台
+curl http://192.168.31.53:3000/health
+curl http://192.168.31.53:3001/health
+open http://192.168.31.53:5173
 ```
 
-Expo 开发机 `.env`：
+Expo `.env`：
 
 ```bash
-EXPO_PUBLIC_API_URL=http://192.168.31.52:3000
-EXPO_PUBLIC_ROOM_URL=http://192.168.31.52:3001
+EXPO_PUBLIC_API_URL=http://192.168.31.53:3000
+EXPO_PUBLIC_ROOM_URL=http://192.168.31.53:3001
 ```
 
-手机真机：**连同一 WiFi**，用 Expo Go 扫 Mac 上的二维码即可（请求会打到 `192.168.31.52`）。
+---
 
-### 2.4 局域网模式的限制
+## 三、备选 · 复用 192.168.31.52（与其他应用共存）
+
+> 若**不建 LXC**、坚持在现有 Ubuntu 上跑，才用本章。已决定新建 LXC 可**跳过**。
+
+### 3.1 共享端口 `131xx`
+
+```bash
+ssh <用户>@192.168.31.52
+cp infra/staging/.env.lan.shared.example .env
+docker compose -f docker-compose.yml -f infra/staging/docker-compose.shared.yml up -d
+bash scripts/staging-up.sh
+```
+
+| 服务 | 端口 |
+|------|------|
+| API | 13100 |
+| Room | 13101 |
+| Admin | 13180 |
+
+---
+
+## 四、局域网限制 & Quick Tunnel
 
 | 能力 | 局域网 | 说明 |
 |------|--------|------|
