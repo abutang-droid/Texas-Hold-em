@@ -5,6 +5,8 @@ import { query, withTransaction } from './pool.js';
 export interface UserRow {
   id: number;
   account_type: string;
+  oauth_provider?: string | null;
+  oauth_sub?: string | null;
   nickname: string;
   avatar_url: string | null;
   chips_balance: string;
@@ -14,6 +16,12 @@ export interface UserRow {
   device_id: string | null;
   private_room_permission: boolean;
   status: string;
+  settings_json?: Record<string, unknown> | null;
+  age_verified_at?: Date | null;
+  self_excluded_until?: Date | null;
+  admin_remark?: string | null;
+  has_completed_recharge?: boolean;
+  created_at?: Date;
 }
 
 const REGISTER_BONUS = 100;

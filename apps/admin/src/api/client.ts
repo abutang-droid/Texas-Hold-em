@@ -52,6 +52,16 @@ export interface AdminHand {
 export interface SystemConfig {
   privateRoomEnabled: boolean;
   privateRoomGlobalPause: boolean;
+  officialRakeRate: number;
+  privateRakeRate: number;
+  botDailyBudget: number;
+  newbieProtectionEnabled: boolean;
+  firstRechargeBonusEnabled: boolean;
+  firstRechargeBonusPct: number;
+  dailyRechargeLimit: number;
+  leaderboardRefreshMinutes: number;
+  betaMigrationActive: boolean;
+  betaMigrationMessage: Record<string, string>;
 }
 
 export interface ReportTicket {
@@ -81,6 +91,8 @@ export interface EconomyStats {
   totalRakeCollected: number;
   handsPlayed: number;
   privateRoomsActive: number;
+  botNetLoss: number;
+  rechargeVolumeToday: number;
 }
 
 export const adminApi = {
@@ -94,6 +106,24 @@ export const adminApi = {
     request<{ chipsBalance: number }>(`/api/v1/admin/users/${id}/adjust-chips`, {
       method: 'POST',
       body: JSON.stringify({ amount, reason }),
+    }),
+  getUserDetail: (id: number) =>
+    request<{
+      user: AdminUser & { adminRemark?: string; deviceId?: string };
+      transactions: Array<{
+        id: number;
+        amount: number;
+        balanceAfter: number;
+        type: string;
+        referenceId: string;
+        createdAt: string;
+      }>;
+      recentHands: AdminHand[];
+    }>(`/api/v1/admin/users/${id}`),
+  setUserRemark: (id: number, remark: string) =>
+    request<{ ok: boolean }>(`/api/v1/admin/users/${id}/remark`, {
+      method: 'POST',
+      body: JSON.stringify({ remark }),
     }),
   listHands: (roomId?: string) =>
     request<{ list: AdminHand[] }>(

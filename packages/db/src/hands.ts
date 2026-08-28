@@ -62,11 +62,21 @@ export async function getHandById(handId: string): Promise<HandHistoryRow | null
 
 export async function listHandHistories(opts: {
   roomId?: string;
+  userId?: number;
   limit?: number;
   offset?: number;
 }): Promise<HandHistoryRow[]> {
   const limit = Math.min(opts.limit ?? 20, 100);
   const offset = opts.offset ?? 0;
+  if (opts.userId) {
+    const res = await query<HandHistoryRow>(
+      `SELECT * FROM hand_histories
+       WHERE player_snapshot ? $1
+       ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
+      [String(opts.userId), limit, offset],
+    );
+    return res.rows;
+  }
   if (opts.roomId) {
     const res = await query<HandHistoryRow>(
       `SELECT * FROM hand_histories WHERE room_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,

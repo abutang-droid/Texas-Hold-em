@@ -1,0 +1,1323 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"/>
+<title>Texas Hold'em 全项目计划书</title><style>
+  @page { margin: 14mm 12mm 16mm 12mm; size: A4; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Noto Sans CJK SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 10pt; line-height: 1.5; color: #1a1a1a; margin: 0; padding: 0;
+  }
+  .outline-page { page-break-after: always; padding-top: 4mm; }
+  .doc-title { font-size: 24pt; margin: 0 0 4px; }
+  .doc-subtitle { font-size: 16pt; color: #1a5276; margin: 0 0 10px; }
+  .meta { color: #666; font-size: 9pt; margin-bottom: 8px; }
+  .outline-banner { background: #eaf2f8; border-left: 4px solid #1a5276; padding: 8px 12px; font-size: 9.5pt; color: #555; margin-bottom: 12px; }
+  .cover-table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin-top: 16px; }
+  .cover-table th, .cover-table td { border: 1px solid #bbb; padding: 6px 8px; text-align: left; }
+  .cover-table th { background: #eaf2f8; width: 28%; }
+  .content h1 { font-size: 16pt; margin: 20px 0 8px; page-break-after: avoid; border-bottom: 2px solid #1a5276; padding-bottom: 4px; }
+  .content h2 { font-size: 12.5pt; margin: 16px 0 6px; page-break-after: avoid; color: #222; border-bottom: 1px solid #ddd; padding-bottom: 3px; }
+  .content h3 { font-size: 10.5pt; margin: 10px 0 5px; page-break-after: avoid; }
+  .content h4 { font-size: 10pt; margin: 8px 0 4px; }
+  .content p, .content li { font-size: 9.5pt; }
+  .content table { width: 100%; border-collapse: collapse; font-size: 8pt; margin: 6px 0 10px; page-break-inside: avoid; }
+  .content th, .content td { border: 1px solid #bbb; padding: 3px 4px; text-align: left; vertical-align: top; }
+  .content th { background: #eaf2f8; }
+  .content tr:nth-child(even) td { background: #fafafa; }
+  .content blockquote { border-left: 3px solid #1a5276; margin: 6px 0; padding: 5px 10px; background: #f4f9fc; color: #444; font-size: 9pt; }
+  .content pre { background: #f4f4f4; padding: 6px; font-size: 7.5pt; overflow-x: auto; page-break-inside: avoid; white-space: pre-wrap; word-break: break-all; }
+  .content code { background: #eee; padding: 1px 3px; border-radius: 2px; font-size: 8pt; }
+  .content hr { border: none; border-top: 1px solid #ddd; margin: 12px 0; }
+  .content ul, .content ol { margin: 4px 0 8px 16px; }
+  .mermaid-diagram { margin: 10px 0 14px; page-break-inside: avoid; text-align: center; }
+  .mermaid-diagram svg { max-width: 100%; height: auto; }
+  .diagram-caption { font-size: 8.5pt; color: #555; text-align: center; margin: -6px 0 12px; }
+</style></head><body>
+
+<div class="outline-page">
+  <h1 class="doc-title">Texas Hold'em</h1>
+  <h2 class="doc-subtitle">全项目计划书</h2>
+  <p class="meta">文档版本 v2.0 · 更新日期 2026-08-24 · 三期精益方案 · 10 周 · 含甘特图</p>
+  <div class="outline-banner">本 PDF 由项目计划书 Markdown 自动生成；甘特图见正文 §6.3</div>
+  <table class="cover-table">
+    <tr><th>总周期</th><td>10 周（合同签署日起）</td></tr>
+    <tr><th>合同建议价</th><td>¥240,000（三期付款 4:4:2；纯技术服务费）</td></tr>
+    <tr><th>第一期</th><td>W1 – W3 · ¥96,000（40%）· 接场 + IAP/OAuth Alpha</td></tr>
+    <tr><th>第二期</th><td>W4 – W7 · ¥96,000（40%）· 核心 UI + 压测 + 提审</td></tr>
+    <tr><th>第三期</th><td>W8 – W10 · ¥48,000（20%）· 上线 + 迁移 + 终验</td></tr>
+  </table>
+</div>
+<div class="content"><h1>Texas Hold&#39;em 全项目计划书</h1>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>文档版本</td>
+<td>v2.0</td>
+</tr>
+<tr>
+<td>更新日期</td>
+<td>2026-08-24</td>
+</tr>
+<tr>
+<td>项目名称</td>
+<td>Texas Hold&#39;em 全球英文区公测上架（v1.1 · 精益版）</td>
+</tr>
+<tr>
+<td>交付模式</td>
+<td><strong>全项目外包</strong>（接场现有代码约 80%）</td>
+</tr>
+<tr>
+<td><strong>总周期</strong></td>
+<td><strong>10 周</strong>（合同签署日起）</td>
+</tr>
+<tr>
+<td><strong>项目预算</strong></td>
+<td><strong>¥240,000</strong>（三期付款 <strong>4:4:2</strong>；<strong>纯技术服务费</strong>）</td>
+</tr>
+<tr>
+<td>时间基准</td>
+<td>合同签署日 = <strong>T0</strong>；W1 = 签约后第 1 周</td>
+</tr>
+<tr>
+<td>代码基线</td>
+<td><code>cursor/phase4-open-beta-2fc9</code></td>
+</tr>
+<tr>
+<td>权威规格</td>
+<td><code>PRD-完整版-v2.0.md</code>、<code>10-版本范围规划.md</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>目录</h2>
+<ol>
+<li><a href="#%E4%B8%80%E6%89%A7%E8%A1%8C%E6%91%98%E8%A6%81">执行摘要</a></li>
+<li><a href="#%E4%BA%8C%E9%A1%B9%E7%9B%AE%E8%83%8C%E6%99%AF%E4%B8%8E%E7%9B%AE%E6%A0%87">项目背景与目标</a></li>
+<li><a href="#%E4%B8%89%E6%88%98%E7%95%A5%E5%86%B3%E7%AD%96%E5%B7%B2%E9%94%81%E5%AE%9A">战略决策（已锁定）</a></li>
+<li><a href="#%E5%9B%9B%E9%A1%B9%E7%9B%AE%E8%8C%83%E5%9B%B4%E7%B2%BE%E7%9B%8A">项目范围（精益）</a></li>
+<li><a href="#%E4%BA%94%E7%BB%84%E7%BB%87%E4%B8%8E%E8%B5%84%E6%BA%90">组织与资源</a></li>
+<li><a href="#%E5%85%AD%E4%B8%89%E6%9C%9F%E6%80%BB%E4%BD%93%E8%AE%A1%E5%88%92">三期总体计划</a></li>
+<li><a href="#%E4%B8%83%E7%AC%AC%E4%B8%80%E6%9C%9F%E6%8E%A5%E5%9C%BA%E4%B8%8E%E6%8A%80%E6%9C%AF%E5%90%AF%E5%8A%A8w1--w3">第一期：接场与技术启动（W1 – W3）</a></li>
+<li><a href="#%E5%85%AB%E7%AC%AC%E4%BA%8C%E6%9C%9Fui-%E4%B8%8E%E4%B8%8A%E6%9E%B6%E5%86%B2%E5%88%BAw4--w7">第二期：UI 与上架冲刺（W4 – W7）</a></li>
+<li><a href="#%E4%B9%9D%E7%AC%AC%E4%B8%89%E6%9C%9F%E4%B8%8A%E7%BA%BF%E4%B8%8E%E7%BB%88%E9%AA%8Cw8--w10">第三期：上线与终验（W8 – W10）</a></li>
+<li><a href="#%E5%8D%81wbs-%E5%B7%A5%E4%BD%9C%E5%88%86%E8%A7%A3%E7%BB%93%E6%9E%84">WBS 工作分解结构</a></li>
+<li><a href="#%E5%8D%81%E4%B8%80%E9%87%8C%E7%A8%8B%E7%A2%91%E4%B8%8E%E9%AA%8C%E6%94%B6%E6%A0%87%E5%87%86">里程碑与验收标准</a></li>
+<li><a href="#%E5%8D%81%E4%BA%8C%E4%B8%89%E6%9C%9F%E4%BB%98%E6%AC%BE%E4%B8%8E%E4%BA%A4%E4%BB%98%E5%AF%B9%E7%85%A7">三期付款与交付对照</a></li>
+<li><a href="#%E5%8D%81%E4%B8%89%E9%A2%84%E7%AE%97%E6%80%BB%E8%A7%88">预算总览</a></li>
+<li><a href="#%E5%8D%81%E5%9B%9B%E9%A3%8E%E9%99%A9%E7%99%BB%E8%AE%B0%E5%86%8C">风险登记册</a></li>
+<li><a href="#%E5%8D%81%E4%BA%94kpi-%E4%B8%8E%E6%88%90%E5%8A%9F%E6%A0%87%E5%87%86">KPI 与成功标准</a></li>
+<li><a href="#%E5%8D%81%E5%85%AD%E5%81%87%E8%AE%BE%E4%B8%8E%E7%BA%A6%E6%9D%9F">假设与约束</a></li>
+<li><a href="#%E5%8D%81%E4%B8%83%E9%99%84%E5%BD%95">附录</a></li>
+</ol>
+<hr>
+<h2>一、执行摘要</h2>
+<p>Texas Hold&#39;em 是一款跨端社交竞技德州扑克产品。在 <strong>¥24 万 / 10 周</strong> 精益预算下，本项目目标单一明确：</p>
+<blockquote>
+<p><strong>10 周内完成全球英文区双端上架、真实 IAP 收款、私人场公测全开。</strong></p>
+</blockquote>
+<h3>1.1 三期方案一览</h3>
+<table>
+<thead>
+<tr>
+<th>期次</th>
+<th>时间</th>
+<th>核心目标</th>
+<th>付款</th>
+<th>累计</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>第一期</strong></td>
+<td>W1 – W3</td>
+<td>接场、Scope 锁定、Design Token、IAP/OAuth Alpha</td>
+<td><strong>¥96,000</strong></td>
+<td>¥96,000</td>
+</tr>
+<tr>
+<td><strong>第二期</strong></td>
+<td>W4 – W7</td>
+<td>核心 UI 落地、商店素材、压测、<strong>提审</strong></td>
+<td><strong>¥96,000</strong></td>
+<td>¥192,000</td>
+</tr>
+<tr>
+<td><strong>第三期</strong></td>
+<td>W8 – W10</td>
+<td><strong>正式上线</strong>、筹码迁移、终验</td>
+<td><strong>¥48,000</strong></td>
+<td><strong>¥240,000</strong></td>
+</tr>
+</tbody></table>
+<h3>1.2 与全量方案对比（v1.1 → v2.0）</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>v1.1 全量</th>
+<th><strong>v2.0 精益</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>周期</td>
+<td>58 周</td>
+<td><strong>10 周</strong></td>
+</tr>
+<tr>
+<td>预算</td>
+<td>¥101 万</td>
+<td><strong>¥24 万</strong></td>
+</tr>
+<tr>
+<td>前期调研</td>
+<td>独立 6 周</td>
+<td><strong>并入 W1（3 天）</strong></td>
+</tr>
+<tr>
+<td>UI</td>
+<td>PRD 全量拟物化</td>
+<td><strong>核心路径视觉升级</strong></td>
+</tr>
+<tr>
+<td>压测</td>
+<td>300 CCU</td>
+<td><strong>100 CCU 轻量报告</strong></td>
+</tr>
+<tr>
+<td>QA</td>
+<td>28 人日双轮</td>
+<td><strong>12 人日单轮 + 终验</strong></td>
+</tr>
+<tr>
+<td>Hypercare</td>
+<td>30 天</td>
+<td><strong>1 周</strong></td>
+</tr>
+<tr>
+<td>运营 / 买量</td>
+<td>含 52 周计划</td>
+<td><strong>不含</strong>（上架后另议）</td>
+</tr>
+</tbody></table>
+<h3>1.3 关键判断</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>可行性前提</td>
+<td>代码基线 <strong>80%</strong> 已完成；预算用于 <strong>上架 P0 缺口</strong> 而非从零开发</td>
+</tr>
+<tr>
+<td>首发市场</td>
+<td>全球英文区</td>
+</tr>
+<tr>
+<td>私人场</td>
+<td>公测即开</td>
+</tr>
+<tr>
+<td>筹码迁移</td>
+<td>方案 A（清零 + 赠 100）</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>Gate 规则：</strong> W1 末 Scope Matrix 签字 → 设计 / 研发并行启动。</p>
+</blockquote>
+<hr>
+<h2>二、项目背景与目标</h2>
+<h3>2.1 背景</h3>
+<ul>
+<li>PRD 与核心代码已就绪；缺口集中在 <strong>原生 IAP、生产 OAuth、核心 UI、商店上架、轻量压测</strong>。  </li>
+<li>¥24 万 / 10 周要求 <strong>范围做减法</strong>：优先保上架与收款，视觉与运营精细化延后至 v1.1.x 迭代。</li>
+</ul>
+<h3>2.2 项目目标</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>目标</th>
+<th>衡量标准</th>
+<th>目标周</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>G1</td>
+<td>范围锁定</td>
+<td>Scope Matrix 签字</td>
+<td>W1</td>
+</tr>
+<tr>
+<td>G2</td>
+<td>技术 Alpha</td>
+<td>IAP 沙盒 + OAuth 生产</td>
+<td>W3</td>
+</tr>
+<tr>
+<td>G3</td>
+<td>核心 UI 可用</td>
+<td>大厅 + 牌桌 + 商城主路径</td>
+<td>W6</td>
+</tr>
+<tr>
+<td>G4</td>
+<td>商店提审</td>
+<td>双端提交</td>
+<td>W7</td>
+</tr>
+<tr>
+<td>G5</td>
+<td>正式上线</td>
+<td>全球英文区可下载</td>
+<td>W9</td>
+</tr>
+<tr>
+<td>G6</td>
+<td>IAP 生产到账</td>
+<td>首笔真实充值</td>
+<td>W9</td>
+</tr>
+<tr>
+<td>G7</td>
+<td>筹码迁移</td>
+<td>方案 A 执行完成</td>
+<td>W9</td>
+</tr>
+<tr>
+<td>G8</td>
+<td>项目终验</td>
+<td>QA P0=0；付款结清</td>
+<td>W10</td>
+</tr>
+</tbody></table>
+<h3>2.3 不在本项目范围（Won&#39;t）</h3>
+<ul>
+<li>独立前期调研周（&gt;3 天）  </li>
+<li>PRD 全量拟物化动效 / 全屏精细化  </li>
+<li>300 CCU 压测、多区域部署  </li>
+<li>v1.5+ 新功能  </li>
+<li>买量、客服人力、52 周运营计划  </li>
+<li>ASO 多轮迭代（仅 1 轮修订）</li>
+</ul>
+<hr>
+<h2>三、战略决策（已锁定）</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>决策</th>
+<th>方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>首发市场</td>
+<td>全球英文区</td>
+</tr>
+<tr>
+<td>2</td>
+<td>私人场</td>
+<td>公测即开（W9）</td>
+</tr>
+<tr>
+<td>3</td>
+<td>筹码迁移</td>
+<td>方案 A</td>
+</tr>
+<tr>
+<td>4</td>
+<td>美国买量</td>
+<td>不列入 T1（上架后另议）</td>
+</tr>
+<tr>
+<td>5</td>
+<td>交付模式</td>
+<td>外包接场；<strong>三期付款</strong></td>
+</tr>
+<tr>
+<td>6</td>
+<td>预算纪律</td>
+<td><strong>¥24 万硬顶</strong>；超范围走 CR 另计费</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>四、项目范围（精益）</h2>
+<h3>4.1 Scope Matrix v1.1 · 精益版</h3>
+<table>
+<thead>
+<tr>
+<th>优先级</th>
+<th>模块</th>
+<th>精益范围</th>
+<th>验收</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Must</strong></td>
+<td>接场审计</td>
+<td>Gap 矩阵；P0 清单</td>
+<td>W1 签字</td>
+</tr>
+<tr>
+<td><strong>Must</strong></td>
+<td>原生 IAP</td>
+<td>iOS + Android 生产联调</td>
+<td>真机到账</td>
+</tr>
+<tr>
+<td><strong>Must</strong></td>
+<td>生产 OAuth</td>
+<td>Apple / Google 真 token</td>
+<td>非 dev-mode</td>
+</tr>
+<tr>
+<td><strong>Must</strong></td>
+<td>核心 UI</td>
+<td>大厅、牌桌、商城、引导（<strong>非全量拟物化</strong>）</td>
+<td>主路径可用</td>
+</tr>
+<tr>
+<td><strong>Must</strong></td>
+<td>商店上架</td>
+<td>截图 6 张 + 简版视频；英文文案</td>
+<td>可提审</td>
+</tr>
+<tr>
+<td><strong>Must</strong></td>
+<td>法务</td>
+<td>Privacy / ToS / RG（模板 + 修订）</td>
+<td>链接可访问</td>
+</tr>
+<tr>
+<td><strong>Must</strong></td>
+<td>轻量压测</td>
+<td><strong>100 CCU</strong>；基础容量结论</td>
+<td>W6 报告</td>
+</tr>
+<tr>
+<td><strong>Must</strong></td>
+<td>公测迁移</td>
+<td>方案 A 脚本 + 公告</td>
+<td>W9 执行</td>
+</tr>
+<tr>
+<td><strong>Must</strong></td>
+<td>私人场</td>
+<td>公测全开 + 冒烟回归</td>
+<td>W9</td>
+</tr>
+<tr>
+<td><strong>Should</strong></td>
+<td>Firebase 漏斗</td>
+<td>注册 → 充值 3 事件</td>
+<td>W4</td>
+</tr>
+<tr>
+<td><strong>Should</strong></td>
+<td>Crashlytics</td>
+<td>崩溃监控</td>
+<td>W3</td>
+</tr>
+<tr>
+<td><strong>Won&#39;t</strong></td>
+<td>全量 PRD 视觉 / 动效</td>
+<td>v1.1.x 迭代</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Won&#39;t</strong></td>
+<td>300 CCU / 多活</td>
+<td>不做</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3>4.2 接场基线（已完成 · 不重复计费）</h3>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>完成度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>扑克引擎、官方场、私人场、后台、双榜、合规 API</td>
+<td>90–100%</td>
+</tr>
+<tr>
+<td>IAP 服务端验单</td>
+<td>90%</td>
+</tr>
+<tr>
+<td>移动端 UI</td>
+<td>功能骨架（需视觉升级）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>五、组织与资源</h2>
+<h3>5.1 精简团队</h3>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>投入</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>创始人</td>
+<td>兼职审批</td>
+<td>Sponsor；48h 内签字</td>
+</tr>
+<tr>
+<td>PM</td>
+<td>0.3 FTE × 10 周</td>
+<td>排期、验收、风险</td>
+</tr>
+<tr>
+<td>高级研发</td>
+<td>1 人 × 8 周</td>
+<td>IAP、OAuth、UI 落地、部署</td>
+</tr>
+<tr>
+<td>UI 设计</td>
+<td>外包</td>
+<td>Design Token + 核心页 + 牌桌</td>
+</tr>
+<tr>
+<td>QA</td>
+<td>0.5 FTE × 4 周</td>
+<td>冒烟 + 终验</td>
+</tr>
+<tr>
+<td>法务</td>
+<td>外包模板</td>
+<td>英文三件套</td>
+</tr>
+</tbody></table>
+<h3>5.2 人力合计（精益）</h3>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>人日</th>
+<th>预算占比</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>研发</td>
+<td>~55</td>
+<td>38%</td>
+</tr>
+<tr>
+<td>设计 + 商店</td>
+<td>~25</td>
+<td>22%</td>
+</tr>
+<tr>
+<td>QA</td>
+<td>~12</td>
+<td>6%</td>
+</tr>
+<tr>
+<td>法务</td>
+<td>~5</td>
+<td>8%</td>
+</tr>
+<tr>
+<td>DevOps / 云</td>
+<td>—</td>
+<td>21%</td>
+</tr>
+<tr>
+<td>PM + 缓冲</td>
+<td>~10</td>
+<td>13%</td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td><strong>~107 人日</strong></td>
+<td><strong>100%</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>六、三期总体计划</h2>
+<h3>6.1 10 周路线图</h3>
+<pre><code>W1────W3      W4────W7      W8─W10
+┃ 第一期 ┃    ┃ 第二期 ┃    ┃第三期┃
+ 接场/IAP       UI/提审        上线
+ ¥7.2万        ¥9.6万        ¥7.2万
+</code></pre>
+<h3>6.2 三期对照总表</h3>
+<table>
+<thead>
+<tr>
+<th>期次</th>
+<th>周次</th>
+<th>周期</th>
+<th>核心交付</th>
+<th>里程碑</th>
+<th>付款</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>第一期</strong></td>
+<td>W1 – W3</td>
+<td>3 周</td>
+<td>Gap 矩阵、Design Token、IAP/OAuth、Staging</td>
+<td>M1–M3</td>
+<td>¥96,000</td>
+</tr>
+<tr>
+<td><strong>第二期</strong></td>
+<td>W4 – W7</td>
+<td>4 周</td>
+<td>核心 UI、商店素材、100 CCU 压测、<strong>提审</strong></td>
+<td>M4–M6</td>
+<td>¥96,000</td>
+</tr>
+<tr>
+<td><strong>第三期</strong></td>
+<td>W8 – W10</td>
+<td>3 周</td>
+<td><strong>上线</strong>、迁移、终验</td>
+<td>M7–M8</td>
+<td>¥48,000</td>
+</tr>
+</tbody></table>
+<h3>6.3 甘特图</h3>
+<blockquote>
+<p>时间基准：<strong>T0 = 2026-08-24</strong>（合同签署日）。</p>
+</blockquote>
+<p><strong>图 1 · 10 周项目总路线图</strong></p>
+<div class="mermaid-diagram"><svg id="my-svg" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 784 364" style="max-width: 784px; background-color: transparent;" role="graphics-document document" aria-roledescription="gantt"><style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#my-svg .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#my-svg .error-icon{fill:#552222;}#my-svg .error-text{fill:#552222;stroke:#552222;}#my-svg .edge-thickness-normal{stroke-width:1px;}#my-svg .edge-thickness-thick{stroke-width:3.5px;}#my-svg .edge-pattern-solid{stroke-dasharray:0;}#my-svg .edge-thickness-invisible{stroke-width:0;fill:none;}#my-svg .edge-pattern-dashed{stroke-dasharray:3;}#my-svg .edge-pattern-dotted{stroke-dasharray:2;}#my-svg .marker{fill:#333333;stroke:#333333;}#my-svg .marker.cross{stroke:#333333;}#my-svg svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#my-svg p{margin:0;}#my-svg .mermaid-main-font{font-family:"trebuchet ms",verdana,arial,sans-serif;}#my-svg .exclude-range{fill:#eeeeee;}#my-svg .section{stroke:none;opacity:0.2;}#my-svg .section0{fill:rgba(102, 102, 255, 0.49);}#my-svg .section2{fill:#fff400;}#my-svg .section1,#my-svg .section3{fill:white;opacity:0.2;}#my-svg .sectionTitle0{fill:#333;}#my-svg .sectionTitle1{fill:#333;}#my-svg .sectionTitle2{fill:#333;}#my-svg .sectionTitle3{fill:#333;}#my-svg .sectionTitle{text-anchor:start;font-family:"trebuchet ms",verdana,arial,sans-serif;}#my-svg .grid .tick{stroke:lightgrey;opacity:0.8;shape-rendering:crispEdges;}#my-svg .grid .tick text{font-family:"trebuchet ms",verdana,arial,sans-serif;fill:#333;}#my-svg .grid path{stroke-width:0;}#my-svg .today{fill:none;stroke:red;stroke-width:2px;}#my-svg .task{stroke-width:2;}#my-svg .taskText{text-anchor:middle;font-family:"trebuchet ms",verdana,arial,sans-serif;}#my-svg .taskTextOutsideRight{fill:black;text-anchor:start;font-family:"trebuchet ms",verdana,arial,sans-serif;}#my-svg .taskTextOutsideLeft{fill:black;text-anchor:end;}#my-svg .task.clickable{cursor:pointer;}#my-svg .taskText.clickable{cursor:pointer;fill:#003163!important;font-weight:bold;}#my-svg .taskTextOutsideLeft.clickable{cursor:pointer;fill:#003163!important;font-weight:bold;}#my-svg .taskTextOutsideRight.clickable{cursor:pointer;fill:#003163!important;font-weight:bold;}#my-svg .taskText0,#my-svg .taskText1,#my-svg .taskText2,#my-svg .taskText3{fill:white;}#my-svg .task0,#my-svg .task1,#my-svg .task2,#my-svg .task3{fill:#8a90dd;stroke:#534fbc;}#my-svg .taskTextOutside0,#my-svg .taskTextOutside2{fill:black;}#my-svg .taskTextOutside1,#my-svg .taskTextOutside3{fill:black;}#my-svg .active0,#my-svg .active1,#my-svg .active2,#my-svg .active3{fill:#bfc7ff;stroke:#534fbc;}#my-svg .activeText0,#my-svg .activeText1,#my-svg .activeText2,#my-svg .activeText3{fill:black!important;}#my-svg .done0,#my-svg .done1,#my-svg .done2,#my-svg .done3{stroke:grey;fill:lightgrey;stroke-width:2;}#my-svg .doneText0,#my-svg .doneText1,#my-svg .doneText2,#my-svg .doneText3{fill:black!important;}#my-svg .doneText0.taskTextOutsideLeft,#my-svg .doneText0.taskTextOutsideRight,#my-svg .doneText1.taskTextOutsideLeft,#my-svg .doneText1.taskTextOutsideRight,#my-svg .doneText2.taskTextOutsideLeft,#my-svg .doneText2.taskTextOutsideRight,#my-svg .doneText3.taskTextOutsideLeft,#my-svg .doneText3.taskTextOutsideRight{fill:black!important;}#my-svg .crit0,#my-svg .crit1,#my-svg .crit2,#my-svg .crit3{stroke:#ff8888;fill:red;stroke-width:2;}#my-svg .activeCrit0,#my-svg .activeCrit1,#my-svg .activeCrit2,#my-svg .activeCrit3{stroke:#ff8888;fill:#bfc7ff;stroke-width:2;}#my-svg .doneCrit0,#my-svg .doneCrit1,#my-svg .doneCrit2,#my-svg .doneCrit3{stroke:#ff8888;fill:lightgrey;stroke-width:2;cursor:pointer;shape-rendering:crispEdges;}#my-svg .milestone{transform:rotate(45deg) scale(0.8,0.8);}#my-svg .milestoneText{font-style:italic;}#my-svg .doneCritText0,#my-svg .doneCritText1,#my-svg .doneCritText2,#my-svg .doneCritText3{fill:black!important;}#my-svg .doneCritText0.taskTextOutsideLeft,#my-svg .doneCritText0.taskTextOutsideRight,#my-svg .doneCritText1.taskTextOutsideLeft,#my-svg .doneCritText1.taskTextOutsideRight,#my-svg .doneCritText2.taskTextOutsideLeft,#my-svg .doneCritText2.taskTextOutsideRight,#my-svg .doneCritText3.taskTextOutsideLeft,#my-svg .doneCritText3.taskTextOutsideRight{fill:black!important;}#my-svg .vert{stroke:navy;}#my-svg .vertText{font-size:15px;text-anchor:middle;fill:navy!important;}#my-svg .activeCritText0,#my-svg .activeCritText1,#my-svg .activeCritText2,#my-svg .activeCritText3{fill:black!important;}#my-svg .titleText{text-anchor:middle;font-size:18px;fill:#333;font-family:"trebuchet ms",verdana,arial,sans-serif;}#my-svg .node .neo-node{stroke:#9370DB;}#my-svg [data-look="neo"].node rect,#my-svg [data-look="neo"].cluster rect,#my-svg [data-look="neo"].node polygon{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].swimlane.cluster rect{filter:none;}#my-svg [data-look="neo"].node path{stroke:#9370DB;stroke-width:1px;}#my-svg [data-look="neo"].node .outer-path{filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node .neo-line path{stroke:#9370DB;filter:none;}#my-svg [data-look="neo"].node circle{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node circle .state-start{fill:#000000;}#my-svg [data-look="neo"].icon-shape .icon{fill:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].icon-shape .icon-neo path{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g/><g class="grid" transform="translate(75, 314)" fill="none" font-size="10" font-family="sans-serif" text-anchor="middle"><path class="domain" stroke="currentColor" d="M0,-279V0H634V-279"/><g class="tick" opacity="1" transform="translate(53,0)"><line stroke="currentColor" y2="-279"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">08/30</text></g><g class="tick" opacity="1" transform="translate(114,0)"><line stroke="currentColor" y2="-279"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">09/06</text></g><g class="tick" opacity="1" transform="translate(176,0)"><line stroke="currentColor" y2="-279"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">09/13</text></g><g class="tick" opacity="1" transform="translate(238,0)"><line stroke="currentColor" y2="-279"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">09/20</text></g><g class="tick" opacity="1" transform="translate(299,0)"><line stroke="currentColor" y2="-279"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">09/27</text></g><g class="tick" opacity="1" transform="translate(361,0)"><line stroke="currentColor" y2="-279"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">10/04</text></g><g class="tick" opacity="1" transform="translate(423,0)"><line stroke="currentColor" y2="-279"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">10/11</text></g><g class="tick" opacity="1" transform="translate(484,0)"><line stroke="currentColor" y2="-279"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">10/18</text></g><g class="tick" opacity="1" transform="translate(546,0)"><line stroke="currentColor" y2="-279"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">10/25</text></g><g class="tick" opacity="1" transform="translate(608,0)"><line stroke="currentColor" y2="-279"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">11/01</text></g></g><g><rect x="0" y="48" width="746.5" height="24" class="section section0"/><rect x="0" y="72" width="746.5" height="24" class="section section0"/><rect x="0" y="96" width="746.5" height="24" class="section section0"/><rect x="0" y="120" width="746.5" height="24" class="section section1"/><rect x="0" y="144" width="746.5" height="24" class="section section1"/><rect x="0" y="168" width="746.5" height="24" class="section section1"/><rect x="0" y="192" width="746.5" height="24" class="section section2"/><rect x="0" y="216" width="746.5" height="24" class="section section2"/><rect x="0" y="240" width="746.5" height="24" class="section section2"/><rect x="0" y="264" width="746.5" height="24" class="section section2"/><rect x="0" y="288" width="746.5" height="24" class="section section2"/></g><g><rect id="my-svg-p1" rx="3" ry="3" x="75" y="50" width="62" height="20" transform-origin="106px 60px" class="task crit0"/><rect id="my-svg-p1b" rx="3" ry="3" x="137" y="74" width="123" height="20" transform-origin="198.5px 84px" class="task task0"/><rect id="my-svg-m1" rx="3" ry="3" x="250" y="98" width="20" height="20" transform-origin="260px 108px" class="task milestone  task0"/><rect id="my-svg-p2" rx="3" ry="3" x="269" y="122" width="185" height="20" transform-origin="361.5px 132px" class="task crit1"/><rect id="my-svg-p2b" rx="3" ry="3" x="454" y="146" width="61" height="20" transform-origin="484.5px 156px" class="task crit1"/><rect id="my-svg-m2" rx="3" ry="3" x="505" y="170" width="20" height="20" transform-origin="515px 180px" class="task milestone  task1"/><rect id="my-svg-p3" rx="3" ry="3" x="524" y="194" width="62" height="20" transform-origin="555px 204px" class="task task2"/><rect id="my-svg-p3b" rx="3" ry="3" x="586" y="218" width="61" height="20" transform-origin="616.5px 228px" class="task crit2"/><rect id="my-svg-m3" rx="3" ry="3" x="576" y="242" width="20" height="20" transform-origin="586px 252px" class="task milestone  task2"/><rect id="my-svg-p3c" rx="3" ry="3" x="647" y="266" width="62" height="20" transform-origin="678px 276px" class="task task2"/><rect id="my-svg-m4" rx="3" ry="3" x="699" y="290" width="20" height="20" transform-origin="709px 300px" class="task milestone  task2"/><text id="my-svg-p1-text" font-size="11" x="142" y="63.5" class="taskTextOutsideRight taskTextOutside0  critText0 width-86.203125">接场与Scope锁定         </text><text id="my-svg-p1b-text" font-size="11" x="198.5" y="87.5" class="taskText taskText0  width-117.1875">Design Token与IAP启动   </text><text id="my-svg-m1-text" font-size="11" x="275" y="111.5" class="taskTextOutsideRight taskTextOutside0  milestoneText width-69.35302734375">M3 技术Alpha            </text><text id="my-svg-p2-text" font-size="11" x="361.5" y="135.5" class="taskText taskText1  critText1 width-88">核心UI设计与落地        </text><text id="my-svg-p2b-text" font-size="11" x="520" y="159.5" class="taskTextOutsideRight taskTextOutside1  critText1 width-99">商店素材与压测提审      </text><text id="my-svg-m2-text" font-size="11" x="530" y="183.5" class="taskTextOutsideRight taskTextOutside1  milestoneText width-62.34375">M6 商店提审             </text><text id="my-svg-p3-text" font-size="11" x="591" y="207.5" class="taskTextOutsideRight taskTextOutside2  width-99">审核修复与上线准备      </text><text id="my-svg-p3b-text" font-size="11" x="652" y="231.5" class="taskTextOutsideRight taskTextOutside2  critText2 width-99">正式上线与筹码迁移      </text><text id="my-svg-m3-text" font-size="11" x="601" y="255.5" class="taskTextOutsideRight taskTextOutside2  milestoneText width-62.34375">M7 正式上线             </text><text id="my-svg-p3c-text" font-size="11" x="642" y="279.5" class="taskTextOutsideLeft taskTextOutside2">Hypercare与终验         </text><text id="my-svg-m4-text" font-size="11" x="694" y="303.5" class="taskTextOutsideLeft taskTextOutside2  milestoneText">M8 项目终验             </text></g><g><text dy="0em" x="10" y="86" font-size="11" class="sectionTitle sectionTitle0"><tspan alignment-baseline="central" x="10">第一期</tspan></text><text dy="0em" x="10" y="158" font-size="11" class="sectionTitle sectionTitle1"><tspan alignment-baseline="central" x="10">第二期</tspan></text><text dy="0em" x="10" y="254" font-size="11" class="sectionTitle sectionTitle2"><tspan alignment-baseline="central" x="10">第三期</tspan></text></g><g class="today"><line x1="79" x2="79" y1="25" y2="339" class="today"/></g><text x="392" y="25" class="titleText">Texas Hold'em 10周精益上架（预算 ¥24万）</text></svg></div>
+<p><strong>图 2 · 周度任务甘特（W1 – W10）</strong></p>
+<div class="mermaid-diagram"><svg id="my-svg" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 784 340" style="max-width: 784px; background-color: transparent;" role="graphics-document document" aria-roledescription="gantt"><style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#my-svg .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#my-svg .error-icon{fill:#552222;}#my-svg .error-text{fill:#552222;stroke:#552222;}#my-svg .edge-thickness-normal{stroke-width:1px;}#my-svg .edge-thickness-thick{stroke-width:3.5px;}#my-svg .edge-pattern-solid{stroke-dasharray:0;}#my-svg .edge-thickness-invisible{stroke-width:0;fill:none;}#my-svg .edge-pattern-dashed{stroke-dasharray:3;}#my-svg .edge-pattern-dotted{stroke-dasharray:2;}#my-svg .marker{fill:#333333;stroke:#333333;}#my-svg .marker.cross{stroke:#333333;}#my-svg svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#my-svg p{margin:0;}#my-svg .mermaid-main-font{font-family:"trebuchet ms",verdana,arial,sans-serif;}#my-svg .exclude-range{fill:#eeeeee;}#my-svg .section{stroke:none;opacity:0.2;}#my-svg .section0{fill:rgba(102, 102, 255, 0.49);}#my-svg .section2{fill:#fff400;}#my-svg .section1,#my-svg .section3{fill:white;opacity:0.2;}#my-svg .sectionTitle0{fill:#333;}#my-svg .sectionTitle1{fill:#333;}#my-svg .sectionTitle2{fill:#333;}#my-svg .sectionTitle3{fill:#333;}#my-svg .sectionTitle{text-anchor:start;font-family:"trebuchet ms",verdana,arial,sans-serif;}#my-svg .grid .tick{stroke:lightgrey;opacity:0.8;shape-rendering:crispEdges;}#my-svg .grid .tick text{font-family:"trebuchet ms",verdana,arial,sans-serif;fill:#333;}#my-svg .grid path{stroke-width:0;}#my-svg .today{fill:none;stroke:red;stroke-width:2px;}#my-svg .task{stroke-width:2;}#my-svg .taskText{text-anchor:middle;font-family:"trebuchet ms",verdana,arial,sans-serif;}#my-svg .taskTextOutsideRight{fill:black;text-anchor:start;font-family:"trebuchet ms",verdana,arial,sans-serif;}#my-svg .taskTextOutsideLeft{fill:black;text-anchor:end;}#my-svg .task.clickable{cursor:pointer;}#my-svg .taskText.clickable{cursor:pointer;fill:#003163!important;font-weight:bold;}#my-svg .taskTextOutsideLeft.clickable{cursor:pointer;fill:#003163!important;font-weight:bold;}#my-svg .taskTextOutsideRight.clickable{cursor:pointer;fill:#003163!important;font-weight:bold;}#my-svg .taskText0,#my-svg .taskText1,#my-svg .taskText2,#my-svg .taskText3{fill:white;}#my-svg .task0,#my-svg .task1,#my-svg .task2,#my-svg .task3{fill:#8a90dd;stroke:#534fbc;}#my-svg .taskTextOutside0,#my-svg .taskTextOutside2{fill:black;}#my-svg .taskTextOutside1,#my-svg .taskTextOutside3{fill:black;}#my-svg .active0,#my-svg .active1,#my-svg .active2,#my-svg .active3{fill:#bfc7ff;stroke:#534fbc;}#my-svg .activeText0,#my-svg .activeText1,#my-svg .activeText2,#my-svg .activeText3{fill:black!important;}#my-svg .done0,#my-svg .done1,#my-svg .done2,#my-svg .done3{stroke:grey;fill:lightgrey;stroke-width:2;}#my-svg .doneText0,#my-svg .doneText1,#my-svg .doneText2,#my-svg .doneText3{fill:black!important;}#my-svg .doneText0.taskTextOutsideLeft,#my-svg .doneText0.taskTextOutsideRight,#my-svg .doneText1.taskTextOutsideLeft,#my-svg .doneText1.taskTextOutsideRight,#my-svg .doneText2.taskTextOutsideLeft,#my-svg .doneText2.taskTextOutsideRight,#my-svg .doneText3.taskTextOutsideLeft,#my-svg .doneText3.taskTextOutsideRight{fill:black!important;}#my-svg .crit0,#my-svg .crit1,#my-svg .crit2,#my-svg .crit3{stroke:#ff8888;fill:red;stroke-width:2;}#my-svg .activeCrit0,#my-svg .activeCrit1,#my-svg .activeCrit2,#my-svg .activeCrit3{stroke:#ff8888;fill:#bfc7ff;stroke-width:2;}#my-svg .doneCrit0,#my-svg .doneCrit1,#my-svg .doneCrit2,#my-svg .doneCrit3{stroke:#ff8888;fill:lightgrey;stroke-width:2;cursor:pointer;shape-rendering:crispEdges;}#my-svg .milestone{transform:rotate(45deg) scale(0.8,0.8);}#my-svg .milestoneText{font-style:italic;}#my-svg .doneCritText0,#my-svg .doneCritText1,#my-svg .doneCritText2,#my-svg .doneCritText3{fill:black!important;}#my-svg .doneCritText0.taskTextOutsideLeft,#my-svg .doneCritText0.taskTextOutsideRight,#my-svg .doneCritText1.taskTextOutsideLeft,#my-svg .doneCritText1.taskTextOutsideRight,#my-svg .doneCritText2.taskTextOutsideLeft,#my-svg .doneCritText2.taskTextOutsideRight,#my-svg .doneCritText3.taskTextOutsideLeft,#my-svg .doneCritText3.taskTextOutsideRight{fill:black!important;}#my-svg .vert{stroke:navy;}#my-svg .vertText{font-size:15px;text-anchor:middle;fill:navy!important;}#my-svg .activeCritText0,#my-svg .activeCritText1,#my-svg .activeCritText2,#my-svg .activeCritText3{fill:black!important;}#my-svg .titleText{text-anchor:middle;font-size:18px;fill:#333;font-family:"trebuchet ms",verdana,arial,sans-serif;}#my-svg .node .neo-node{stroke:#9370DB;}#my-svg [data-look="neo"].node rect,#my-svg [data-look="neo"].cluster rect,#my-svg [data-look="neo"].node polygon{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].swimlane.cluster rect{filter:none;}#my-svg [data-look="neo"].node path{stroke:#9370DB;stroke-width:1px;}#my-svg [data-look="neo"].node .outer-path{filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node .neo-line path{stroke:#9370DB;filter:none;}#my-svg [data-look="neo"].node circle{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node circle .state-start{fill:#000000;}#my-svg [data-look="neo"].icon-shape .icon{fill:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].icon-shape .icon-neo path{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g/><g class="grid" transform="translate(75, 290)" fill="none" font-size="10" font-family="sans-serif" text-anchor="middle"><path class="domain" stroke="currentColor" d="M0,-255V0H634V-255"/><g class="tick" opacity="1" transform="translate(54,0)"><line stroke="currentColor" y2="-255"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">W34</text></g><g class="tick" opacity="1" transform="translate(118,0)"><line stroke="currentColor" y2="-255"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">W35</text></g><g class="tick" opacity="1" transform="translate(181,0)"><line stroke="currentColor" y2="-255"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">W36</text></g><g class="tick" opacity="1" transform="translate(245,0)"><line stroke="currentColor" y2="-255"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">W37</text></g><g class="tick" opacity="1" transform="translate(308,0)"><line stroke="currentColor" y2="-255"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">W38</text></g><g class="tick" opacity="1" transform="translate(371,0)"><line stroke="currentColor" y2="-255"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">W39</text></g><g class="tick" opacity="1" transform="translate(435,0)"><line stroke="currentColor" y2="-255"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">W40</text></g><g class="tick" opacity="1" transform="translate(498,0)"><line stroke="currentColor" y2="-255"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">W41</text></g><g class="tick" opacity="1" transform="translate(562,0)"><line stroke="currentColor" y2="-255"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">W42</text></g><g class="tick" opacity="1" transform="translate(625,0)"><line stroke="currentColor" y2="-255"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">W43</text></g></g><g><rect x="0" y="48" width="746.5" height="24" class="section section0"/><rect x="0" y="72" width="746.5" height="24" class="section section0"/><rect x="0" y="96" width="746.5" height="24" class="section section0"/><rect x="0" y="120" width="746.5" height="24" class="section section1"/><rect x="0" y="144" width="746.5" height="24" class="section section1"/><rect x="0" y="168" width="746.5" height="24" class="section section1"/><rect x="0" y="192" width="746.5" height="24" class="section section1"/><rect x="0" y="216" width="746.5" height="24" class="section section2"/><rect x="0" y="240" width="746.5" height="24" class="section section2"/><rect x="0" y="264" width="746.5" height="24" class="section section2"/></g><g><rect id="my-svg-w1" rx="3" ry="3" x="75" y="50" width="63" height="20" transform-origin="106.5px 60px" class="task task0"/><rect id="my-svg-w2" rx="3" ry="3" x="138" y="74" width="64" height="20" transform-origin="170px 84px" class="task task0"/><rect id="my-svg-w3" rx="3" ry="3" x="202" y="98" width="63" height="20" transform-origin="233.5px 108px" class="task task0"/><rect id="my-svg-w4" rx="3" ry="3" x="265" y="122" width="64" height="20" transform-origin="297px 132px" class="task task1"/><rect id="my-svg-w5" rx="3" ry="3" x="329" y="146" width="63" height="20" transform-origin="360.5px 156px" class="task task1"/><rect id="my-svg-w6" rx="3" ry="3" x="392" y="170" width="63" height="20" transform-origin="423.5px 180px" class="task task1"/><rect id="my-svg-w7" rx="3" ry="3" x="455" y="194" width="64" height="20" transform-origin="487px 204px" class="task crit1"/><rect id="my-svg-w8" rx="3" ry="3" x="519" y="218" width="63" height="20" transform-origin="550.5px 228px" class="task task2"/><rect id="my-svg-w9" rx="3" ry="3" x="582" y="242" width="64" height="20" transform-origin="614px 252px" class="task crit2"/><rect id="my-svg-w10" rx="3" ry="3" x="646" y="266" width="63" height="20" transform-origin="677.5px 276px" class="task task2"/><text id="my-svg-w1-text" font-size="11" x="143" y="63.5" class="taskTextOutsideRight taskTextOutside0  width-108.625">W1 接场Kickoff Scope    </text><text id="my-svg-w2-text" font-size="11" x="207" y="87.5" class="taskTextOutsideRight taskTextOutside0  width-113.703125">W2 设计Token IAP沙盒    </text><text id="my-svg-w3-text" font-size="11" x="270" y="111.5" class="taskTextOutsideRight taskTextOutside0  width-97.796875">W3 OAuth生产 埋点       </text><text id="my-svg-w4-text" font-size="11" x="334" y="135.5" class="taskTextOutsideRight taskTextOutside1  width-96.5625">W4 大厅商城UI开发       </text><text id="my-svg-w5-text" font-size="11" x="397" y="159.5" class="taskTextOutsideRight taskTextOutside1  width-74.5625">W5 牌桌UI开发           </text><text id="my-svg-w6-text" font-size="11" x="460" y="183.5" class="taskTextOutsideRight taskTextOutside1  width-130.85302734375">W6 商店素材 压测100CCU  </text><text id="my-svg-w7-text" font-size="11" x="524" y="207.5" class="taskTextOutsideRight taskTextOutside1  critText1 width-88.625">W7 提审 封闭测试        </text><text id="my-svg-w8-text" font-size="11" x="587" y="231.5" class="taskTextOutsideRight taskTextOutside2  width-110.625">W8 审核修复 迁移演练    </text><text id="my-svg-w9-text" font-size="11" x="577" y="255.5" class="taskTextOutsideLeft taskTextOutside2  critText2">W9 正式上线 迁移执行    </text><text id="my-svg-w10-text" font-size="11" x="641" y="279.5" class="taskTextOutsideLeft taskTextOutside2">W10 Hypercare 终验      </text></g><g><text dy="0em" x="10" y="86" font-size="11" class="sectionTitle sectionTitle0"><tspan alignment-baseline="central" x="10">W1-W3</tspan></text><text dy="0em" x="10" y="170" font-size="11" class="sectionTitle sectionTitle1"><tspan alignment-baseline="central" x="10">W4-W7</tspan></text><text dy="0em" x="10" y="254" font-size="11" class="sectionTitle sectionTitle2"><tspan alignment-baseline="central" x="10">W8-W10</tspan></text></g><g class="today"><line x1="79" x2="79" y1="25" y2="315" class="today"/></g><text x="392" y="25" class="titleText">周度执行计划</text></svg></div>
+<p><strong>图 3 · 三期付款节点</strong></p>
+<div class="mermaid-diagram"><svg id="my-svg" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 784 172" style="max-width: 784px; background-color: transparent;" role="graphics-document document" aria-roledescription="gantt"><style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#my-svg .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#my-svg .error-icon{fill:#552222;}#my-svg .error-text{fill:#552222;stroke:#552222;}#my-svg .edge-thickness-normal{stroke-width:1px;}#my-svg .edge-thickness-thick{stroke-width:3.5px;}#my-svg .edge-pattern-solid{stroke-dasharray:0;}#my-svg .edge-thickness-invisible{stroke-width:0;fill:none;}#my-svg .edge-pattern-dashed{stroke-dasharray:3;}#my-svg .edge-pattern-dotted{stroke-dasharray:2;}#my-svg .marker{fill:#333333;stroke:#333333;}#my-svg .marker.cross{stroke:#333333;}#my-svg svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#my-svg p{margin:0;}#my-svg .mermaid-main-font{font-family:"trebuchet ms",verdana,arial,sans-serif;}#my-svg .exclude-range{fill:#eeeeee;}#my-svg .section{stroke:none;opacity:0.2;}#my-svg .section0{fill:rgba(102, 102, 255, 0.49);}#my-svg .section2{fill:#fff400;}#my-svg .section1,#my-svg .section3{fill:white;opacity:0.2;}#my-svg .sectionTitle0{fill:#333;}#my-svg .sectionTitle1{fill:#333;}#my-svg .sectionTitle2{fill:#333;}#my-svg .sectionTitle3{fill:#333;}#my-svg .sectionTitle{text-anchor:start;font-family:"trebuchet ms",verdana,arial,sans-serif;}#my-svg .grid .tick{stroke:lightgrey;opacity:0.8;shape-rendering:crispEdges;}#my-svg .grid .tick text{font-family:"trebuchet ms",verdana,arial,sans-serif;fill:#333;}#my-svg .grid path{stroke-width:0;}#my-svg .today{fill:none;stroke:red;stroke-width:2px;}#my-svg .task{stroke-width:2;}#my-svg .taskText{text-anchor:middle;font-family:"trebuchet ms",verdana,arial,sans-serif;}#my-svg .taskTextOutsideRight{fill:black;text-anchor:start;font-family:"trebuchet ms",verdana,arial,sans-serif;}#my-svg .taskTextOutsideLeft{fill:black;text-anchor:end;}#my-svg .task.clickable{cursor:pointer;}#my-svg .taskText.clickable{cursor:pointer;fill:#003163!important;font-weight:bold;}#my-svg .taskTextOutsideLeft.clickable{cursor:pointer;fill:#003163!important;font-weight:bold;}#my-svg .taskTextOutsideRight.clickable{cursor:pointer;fill:#003163!important;font-weight:bold;}#my-svg .taskText0,#my-svg .taskText1,#my-svg .taskText2,#my-svg .taskText3{fill:white;}#my-svg .task0,#my-svg .task1,#my-svg .task2,#my-svg .task3{fill:#8a90dd;stroke:#534fbc;}#my-svg .taskTextOutside0,#my-svg .taskTextOutside2{fill:black;}#my-svg .taskTextOutside1,#my-svg .taskTextOutside3{fill:black;}#my-svg .active0,#my-svg .active1,#my-svg .active2,#my-svg .active3{fill:#bfc7ff;stroke:#534fbc;}#my-svg .activeText0,#my-svg .activeText1,#my-svg .activeText2,#my-svg .activeText3{fill:black!important;}#my-svg .done0,#my-svg .done1,#my-svg .done2,#my-svg .done3{stroke:grey;fill:lightgrey;stroke-width:2;}#my-svg .doneText0,#my-svg .doneText1,#my-svg .doneText2,#my-svg .doneText3{fill:black!important;}#my-svg .doneText0.taskTextOutsideLeft,#my-svg .doneText0.taskTextOutsideRight,#my-svg .doneText1.taskTextOutsideLeft,#my-svg .doneText1.taskTextOutsideRight,#my-svg .doneText2.taskTextOutsideLeft,#my-svg .doneText2.taskTextOutsideRight,#my-svg .doneText3.taskTextOutsideLeft,#my-svg .doneText3.taskTextOutsideRight{fill:black!important;}#my-svg .crit0,#my-svg .crit1,#my-svg .crit2,#my-svg .crit3{stroke:#ff8888;fill:red;stroke-width:2;}#my-svg .activeCrit0,#my-svg .activeCrit1,#my-svg .activeCrit2,#my-svg .activeCrit3{stroke:#ff8888;fill:#bfc7ff;stroke-width:2;}#my-svg .doneCrit0,#my-svg .doneCrit1,#my-svg .doneCrit2,#my-svg .doneCrit3{stroke:#ff8888;fill:lightgrey;stroke-width:2;cursor:pointer;shape-rendering:crispEdges;}#my-svg .milestone{transform:rotate(45deg) scale(0.8,0.8);}#my-svg .milestoneText{font-style:italic;}#my-svg .doneCritText0,#my-svg .doneCritText1,#my-svg .doneCritText2,#my-svg .doneCritText3{fill:black!important;}#my-svg .doneCritText0.taskTextOutsideLeft,#my-svg .doneCritText0.taskTextOutsideRight,#my-svg .doneCritText1.taskTextOutsideLeft,#my-svg .doneCritText1.taskTextOutsideRight,#my-svg .doneCritText2.taskTextOutsideLeft,#my-svg .doneCritText2.taskTextOutsideRight,#my-svg .doneCritText3.taskTextOutsideLeft,#my-svg .doneCritText3.taskTextOutsideRight{fill:black!important;}#my-svg .vert{stroke:navy;}#my-svg .vertText{font-size:15px;text-anchor:middle;fill:navy!important;}#my-svg .activeCritText0,#my-svg .activeCritText1,#my-svg .activeCritText2,#my-svg .activeCritText3{fill:black!important;}#my-svg .titleText{text-anchor:middle;font-size:18px;fill:#333;font-family:"trebuchet ms",verdana,arial,sans-serif;}#my-svg .node .neo-node{stroke:#9370DB;}#my-svg [data-look="neo"].node rect,#my-svg [data-look="neo"].cluster rect,#my-svg [data-look="neo"].node polygon{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].swimlane.cluster rect{filter:none;}#my-svg [data-look="neo"].node path{stroke:#9370DB;stroke-width:1px;}#my-svg [data-look="neo"].node .outer-path{filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node .neo-line path{stroke:#9370DB;filter:none;}#my-svg [data-look="neo"].node circle{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node circle .state-start{fill:#000000;}#my-svg [data-look="neo"].icon-shape .icon{fill:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].icon-shape .icon-neo path{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g/><g class="grid" transform="translate(75, 122)" fill="none" font-size="10" font-family="sans-serif" text-anchor="middle"><path class="domain" stroke="currentColor" d="M0,-87V0H634V-87"/><g class="tick" opacity="1" transform="translate(73,0)"><line stroke="currentColor" y2="-87"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">2026-09-20</text></g><g class="tick" opacity="1" transform="translate(159,0)"><line stroke="currentColor" y2="-87"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">2026-09-27</text></g><g class="tick" opacity="1" transform="translate(244,0)"><line stroke="currentColor" y2="-87"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">2026-10-04</text></g><g class="tick" opacity="1" transform="translate(329,0)"><line stroke="currentColor" y2="-87"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">2026-10-11</text></g><g class="tick" opacity="1" transform="translate(415,0)"><line stroke="currentColor" y2="-87"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">2026-10-18</text></g><g class="tick" opacity="1" transform="translate(500,0)"><line stroke="currentColor" y2="-87"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">2026-10-25</text></g><g class="tick" opacity="1" transform="translate(585,0)"><line stroke="currentColor" y2="-87"/><text fill="#000" y="3" dy="1em" stroke="none" font-size="10" style="text-anchor: middle;">2026-11-01</text></g></g><g><rect x="0" y="48" width="746.5" height="24" class="section section0"/><rect x="0" y="72" width="746.5" height="24" class="section section0"/><rect x="0" y="96" width="746.5" height="24" class="section section0"/></g><g><rect id="my-svg-pay1" rx="3" ry="3" x="75" y="50" width="12" height="20" transform-origin="81px 60px" class="task crit0"/><rect id="my-svg-pay2" rx="3" ry="3" x="429" y="74" width="12" height="20" transform-origin="435px 84px" class="task crit0"/><rect id="my-svg-pay3" rx="3" ry="3" x="697" y="98" width="12" height="20" transform-origin="703px 108px" class="task crit0"/><text id="my-svg-pay1-text" font-size="11" x="92" y="63.5" class="taskTextOutsideRight taskTextOutside0  critText0 width-75.828125">第一期 ¥96,000          </text><text id="my-svg-pay2-text" font-size="11" x="446" y="87.5" class="taskTextOutsideRight taskTextOutside0  critText0 width-75.828125">第二期 ¥96,000          </text><text id="my-svg-pay3-text" font-size="11" x="692" y="111.5" class="taskTextOutsideLeft taskTextOutside0  critText0">第三期 ¥48,000          </text></g><g><text dy="0em" x="10" y="86" font-size="11" class="sectionTitle sectionTitle0"><tspan alignment-baseline="central" x="10">付款</tspan></text></g><g class="today"><line x1="-176" x2="-176" y1="25" y2="147" class="today"/></g><text x="392" y="25" class="titleText">三期付款（合计 ¥240,000）</text></svg></div>
+<hr>
+<h2>七、第一期：接场与技术启动（W1 – W3）</h2>
+<p><strong>预算：¥96,000 · 付款：W3 验收后（40%）</strong></p>
+<h3>7.1 阶段目标</h3>
+<p>3 天内完成接场与 Scope 锁定；W3 末 IAP 沙盒 + OAuth 生产可用。</p>
+<h3>7.2 周度任务</h3>
+<table>
+<thead>
+<tr>
+<th>周次</th>
+<th>任务</th>
+<th>交付物</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>W1</strong></td>
+<td>接场 kickoff；快速 Scope 评审（PRD 已有）</td>
+<td>Gap 矩阵；<strong>Scope Matrix 签字</strong></td>
+</tr>
+<tr>
+<td><strong>W1</strong></td>
+<td>设计启动；法务模板选型</td>
+<td>Figma 项目；法务合同</td>
+</tr>
+<tr>
+<td><strong>W1</strong></td>
+<td>Staging 环境搭建</td>
+<td>Staging URL</td>
+</tr>
+<tr>
+<td><strong>W2</strong></td>
+<td>Design Token + 核心页线稿</td>
+<td>Token 文档；大厅 / 商城框架</td>
+</tr>
+<tr>
+<td><strong>W2</strong></td>
+<td>IAP 沙盒联调（iOS + Android）</td>
+<td>沙盒 E2E 录像</td>
+</tr>
+<tr>
+<td><strong>W2</strong></td>
+<td>App 图标</td>
+<td>商店 + App 内图标</td>
+</tr>
+<tr>
+<td><strong>W3</strong></td>
+<td>生产 OAuth 验签</td>
+<td>真 token 登录</td>
+</tr>
+<tr>
+<td><strong>W3</strong></td>
+<td>Firebase 核心事件 + Crashlytics</td>
+<td>3 个漏斗事件</td>
+</tr>
+<tr>
+<td><strong>W3</strong></td>
+<td>清档脚本 Staging 演练</td>
+<td>方案 A 演练记录</td>
+</tr>
+<tr>
+<td><strong>W3</strong></td>
+<td><strong>第一期验收</strong></td>
+<td>验收报告</td>
+</tr>
+</tbody></table>
+<h3>7.3 交付物</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>交付物</th>
+<th>验收</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>D1-01</td>
+<td>Gap 矩阵 + Scope Matrix</td>
+<td>创始人签字</td>
+</tr>
+<tr>
+<td>D1-02</td>
+<td>Design Token + 核心页线稿</td>
+<td>评审通过</td>
+</tr>
+<tr>
+<td>D1-03</td>
+<td>IAP 沙盒 E2E</td>
+<td>双端各 1 笔</td>
+</tr>
+<tr>
+<td>D1-04</td>
+<td>OAuth 生产可用</td>
+<td>非 dev-mode</td>
+</tr>
+<tr>
+<td>D1-05</td>
+<td>Staging 环境</td>
+<td>72h 稳定</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>八、第二期：UI 与上架冲刺（W4 – W7）</h2>
+<p><strong>预算：¥96,000 · 付款：W7 验收后（40%）</strong></p>
+<h3>8.1 阶段目标</h3>
+<p>核心 UI 代码落地；商店素材齐备；100 CCU 压测；<strong>W7 双端提审</strong>。</p>
+<h3>8.2 周度任务</h3>
+<table>
+<thead>
+<tr>
+<th>周次</th>
+<th>任务</th>
+<th>交付物</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>W4</strong></td>
+<td>大厅 / 商城 / 设置 UI 落地</td>
+<td>Staging 可体验</td>
+</tr>
+<tr>
+<td><strong>W4</strong></td>
+<td>牌桌 UI 设计定稿</td>
+<td>Figma 牌桌稿</td>
+</tr>
+<tr>
+<td><strong>W5</strong></td>
+<td>牌桌 UI 代码落地</td>
+<td>Table 主路径可用</td>
+</tr>
+<tr>
+<td><strong>W5</strong></td>
+<td>弹窗 / 引导 / 破产流程</td>
+<td>核心弹窗完成</td>
+</tr>
+<tr>
+<td><strong>W6</strong></td>
+<td>商店截图 6 张 + 简版视频</td>
+<td>可提审素材包</td>
+</tr>
+<tr>
+<td><strong>W6</strong></td>
+<td>英文 Privacy / ToS / RG 初稿</td>
+<td>法务评审</td>
+</tr>
+<tr>
+<td><strong>W6</strong></td>
+<td><strong>100 CCU 轻量压测</strong></td>
+<td>容量报告</td>
+</tr>
+<tr>
+<td><strong>W6</strong></td>
+<td>生产环境部署</td>
+<td>Prod 环境 + 基础监控</td>
+</tr>
+<tr>
+<td><strong>W7</strong></td>
+<td>QA 冒烟（官方场 + 私人场 + IAP）</td>
+<td>P0 = 0</td>
+</tr>
+<tr>
+<td><strong>W7</strong></td>
+<td><strong>iOS + Android 提审</strong></td>
+<td>提审回执</td>
+</tr>
+<tr>
+<td><strong>W7</strong></td>
+<td>TestFlight / Play 内测 30 人</td>
+<td>内测反馈清单</td>
+</tr>
+<tr>
+<td><strong>W7</strong></td>
+<td><strong>第二期验收</strong></td>
+<td>验收报告</td>
+</tr>
+</tbody></table>
+<h3>8.3 交付物</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>交付物</th>
+<th>验收</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>D2-01</td>
+<td>核心 UI（大厅 + 牌桌 + 商城）</td>
+<td>主路径无 P0</td>
+</tr>
+<tr>
+<td>D2-02</td>
+<td>商店截图 + 视频 + 英文文案</td>
+<td>可用于提审</td>
+</tr>
+<tr>
+<td>D2-03</td>
+<td>《100 CCU 压测报告》</td>
+<td>无致命瓶颈</td>
+</tr>
+<tr>
+<td>D2-04</td>
+<td>生产环境 + 监控</td>
+<td>API / Room 可用</td>
+</tr>
+<tr>
+<td>D2-05</td>
+<td>提审回执</td>
+<td>已提交</td>
+</tr>
+<tr>
+<td>D2-06</td>
+<td>QA 冒烟报告</td>
+<td>P0 = 0</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>九、第三期：上线与终验（W8 – W10）</h2>
+<p><strong>预算：¥48,000 · 付款：W10 终验后（20%）</strong></p>
+<h3>9.1 阶段目标</h3>
+<p>W9 全球发布；方案 A 迁移；1 周 Hypercare；W10 项目 closure。</p>
+<h3>9.2 周度任务</h3>
+<table>
+<thead>
+<tr>
+<th>周次</th>
+<th>任务</th>
+<th>交付物</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>W8</strong></td>
+<td>审核反馈修复（如有）</td>
+<td>修复版本</td>
+</tr>
+<tr>
+<td><strong>W8</strong></td>
+<td>法务终稿上线</td>
+<td>三件套 URL</td>
+</tr>
+<tr>
+<td><strong>W8</strong></td>
+<td>迁移公告 T-7；生产演练</td>
+<td>公告文案</td>
+</tr>
+<tr>
+<td><strong>W9</strong></td>
+<td><strong>全球英文区正式上线</strong></td>
+<td>商店可下载</td>
+</tr>
+<tr>
+<td><strong>W9</strong></td>
+<td>私人场全开</td>
+<td>回归确认</td>
+</tr>
+<tr>
+<td><strong>W9</strong></td>
+<td>方案 A 筹码迁移执行</td>
+<td>迁移日志</td>
+</tr>
+<tr>
+<td><strong>W9</strong></td>
+<td>生产 IAP 首笔验证</td>
+<td>对账记录</td>
+</tr>
+<tr>
+<td><strong>W10</strong></td>
+<td>UI / 商店 1 轮修订（如有）</td>
+<td>修订记录</td>
+</tr>
+<tr>
+<td><strong>W10</strong></td>
+<td>QA 终验 + Hypercare 报告</td>
+<td>P0 = 0</td>
+</tr>
+<tr>
+<td><strong>W10</strong></td>
+<td><strong>项目终验</strong></td>
+<td>终验报告 + 签字</td>
+</tr>
+</tbody></table>
+<h3>9.3 交付物</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>交付物</th>
+<th>验收</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>D3-01</td>
+<td>上线公告 + 商店链接</td>
+<td>双端可下载</td>
+</tr>
+<tr>
+<td>D3-02</td>
+<td>筹码迁移执行记录</td>
+<td>脚本成功</td>
+</tr>
+<tr>
+<td>D3-03</td>
+<td>生产 IAP 首笔</td>
+<td>到账确认</td>
+</tr>
+<tr>
+<td>D3-04</td>
+<td>法务终稿</td>
+<td>链接有效</td>
+</tr>
+<tr>
+<td>D3-05</td>
+<td>QA 终验报告</td>
+<td>P0 = 0</td>
+</tr>
+<tr>
+<td>D3-06</td>
+<td>《项目终验报告》</td>
+<td>创始人签字</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>十、WBS 工作分解结构</h2>
+<pre><code>1. Texas Hold&#39;em v1.1 精益上架 [¥240,000 · 10周]
+├── 1.1 第一期 W1-W3 [¥96,000]
+│   ├── 1.1.1 接场审计 + Scope
+│   ├── 1.1.2 Design Token + 图标
+│   ├── 1.1.3 IAP 沙盒 + OAuth 生产
+│   ├── 1.1.4 Staging + Crashlytics + 埋点
+│   └── 1.1.5 清档脚本演练
+├── 1.2 第二期 W4-W7 [¥96,000]
+│   ├── 1.2.1 核心 UI 设计与落地
+│   ├── 1.2.2 商店素材 + 法务初稿
+│   ├── 1.2.3 100 CCU 压测 + Prod 部署
+│   ├── 1.2.4 QA 冒烟
+│   └── 1.2.5 商店提审
+└── 1.3 第三期 W8-W10 [¥48,000]
+    ├── 1.3.1 审核修复 + 法务终稿
+    ├── 1.3.2 正式上线 + 筹码迁移
+    ├── 1.3.3 Hypercare 1 周
+    └── 1.3.4 终验 + Closure
+</code></pre>
+<hr>
+<h2>十一、里程碑与验收标准</h2>
+<table>
+<thead>
+<tr>
+<th>里程碑</th>
+<th>时间</th>
+<th>通过条件</th>
+<th>付款</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>M1 接场</td>
+<td>W1</td>
+<td>Gap + Scope 签字</td>
+<td>—</td>
+</tr>
+<tr>
+<td>M2 设计启动</td>
+<td>W2</td>
+<td>Design Token 评审</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>M3 技术 Alpha</strong></td>
+<td><strong>W3</strong></td>
+<td>IAP 沙盒 + OAuth 生产</td>
+<td><strong>¥96,000</strong></td>
+</tr>
+<tr>
+<td>M4 核心 UI</td>
+<td>W6</td>
+<td>大厅 + 牌桌 + 商城可用</td>
+<td>—</td>
+</tr>
+<tr>
+<td>M5 压测</td>
+<td>W6</td>
+<td>100 CCU 报告</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>M6 提审</strong></td>
+<td><strong>W7</strong></td>
+<td>双端已提交</td>
+<td><strong>¥96,000</strong></td>
+</tr>
+<tr>
+<td><strong>M7 上线</strong></td>
+<td><strong>W9</strong></td>
+<td>商店可下载；私人场全开</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>M8 终验</strong></td>
+<td><strong>W10</strong></td>
+<td>QA P0=0；文档齐全</td>
+<td><strong>¥48,000</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>十二、三期付款与交付对照</h2>
+<table>
+<thead>
+<tr>
+<th>期次</th>
+<th>金额</th>
+<th>占比</th>
+<th>验收周</th>
+<th>核心交付</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>第一期</strong></td>
+<td><strong>¥96,000</strong></td>
+<td>40%</td>
+<td>W3</td>
+<td>D1-01 ~ D1-05</td>
+</tr>
+<tr>
+<td><strong>第二期</strong></td>
+<td><strong>¥96,000</strong></td>
+<td>40%</td>
+<td>W7</td>
+<td>D2-01 ~ D2-06</td>
+</tr>
+<tr>
+<td><strong>第三期</strong></td>
+<td><strong>¥48,000</strong></td>
+<td>20%</td>
+<td>W10</td>
+<td>D3-01 ~ D3-06</td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td><strong>¥240,000</strong></td>
+<td>100%</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>付款节点：验收通过后 <strong>5 个工作日内</strong>；比例 <strong>40% / 40% / 20%（4:4:2）</strong>。</p>
+</blockquote>
+<hr>
+<h2>十三、预算总览</h2>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>金额</th>
+<th>期次</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>接场审计 + Scope</td>
+<td>¥10,000</td>
+<td>第一期</td>
+<td>W1</td>
+</tr>
+<tr>
+<td>IAP / OAuth / 埋点 / 清档</td>
+<td>¥55,000</td>
+<td>第一–二期</td>
+<td>技术冲刺</td>
+</tr>
+<tr>
+<td>UI 设计（核心）</td>
+<td>¥40,000</td>
+<td>第一–二期</td>
+<td>Token + 牌桌</td>
+</tr>
+<tr>
+<td>UI 落地（核心路径）</td>
+<td>¥48,000</td>
+<td>第二期</td>
+<td>研发</td>
+</tr>
+<tr>
+<td>商店素材</td>
+<td>¥15,000</td>
+<td>第二期</td>
+<td>截图 + 简版视频</td>
+</tr>
+<tr>
+<td>法务合规（模板）</td>
+<td>¥18,000</td>
+<td>第二–三期</td>
+<td>英文三件套</td>
+</tr>
+<tr>
+<td>QA（精简）</td>
+<td>¥14,000</td>
+<td>第二–三期</td>
+<td>冒烟 + 终验</td>
+</tr>
+<tr>
+<td>DevOps + 部署配置</td>
+<td>¥18,000</td>
+<td>第一–二期</td>
+<td>Staging / Prod 部署与监控接入（<strong>云账单另计</strong>）</td>
+</tr>
+<tr>
+<td>PM + 项目管理</td>
+<td>¥12,000</td>
+<td>全程</td>
+<td>10 周</td>
+</tr>
+<tr>
+<td>不可预见费</td>
+<td>¥20,000</td>
+<td>全程</td>
+<td>审核驳回等</td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td><strong>¥240,000</strong></td>
+<td></td>
+<td><strong>硬顶（技术服务）</strong></td>
+</tr>
+</tbody></table>
+<h3>13.1 不含在 ¥24 万内</h3>
+<ul>
+<li><strong>首期云资源</strong>（API / Room / PG / Redis 等）：创始人云账户支付，供应商代部署  </li>
+<li><strong>域名、SSL、CDN 及网络费用</strong>：创始人注册与续费  </li>
+<li>用户买量、客服人力  </li>
+<li>v1.1.x 视觉精修、ASO 第 2 轮起  </li>
+<li>300 CCU 全量压测  </li>
+<li>IAP 流水平台抽成（15%–30%）</li>
+</ul>
+<h3>13.2 创始人另行承担（基础设施参考）</h3>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>首期参考</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>云资源（计算 + 数据库 + 缓存）</td>
+<td><strong>¥12,000 – ¥18,000 / 季</strong></td>
+<td>按实际用量计费；Lean 期约 100 CCU</td>
+</tr>
+<tr>
+<td>域名 + SSL + CDN</td>
+<td><strong>¥500 – ¥2,000 / 年</strong></td>
+<td><code>.com</code> 域名、证书、静态资源加速</td>
+</tr>
+<tr>
+<td>开发者账号</td>
+<td><strong>¥700</strong>（一次性）</td>
+<td>Apple $99 + Google $25</td>
+</tr>
+<tr>
+<td>监控 / 分析 SaaS</td>
+<td><strong>¥0 – ¥3,000 / 季</strong></td>
+<td>Firebase 免费档为主，按需升级</td>
+</tr>
+<tr>
+<td><strong>首期基础设施合计</strong></td>
+<td><strong>约 ¥13,000 – ¥22,000</strong></td>
+<td>不含 IAP 流水抽成</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>十四、风险登记册</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>风险</th>
+<th>概率</th>
+<th>影响</th>
+<th>应对</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>R01</td>
+<td>¥24 万不够覆盖全 PRD 视觉</td>
+<td>高</td>
+<td>高</td>
+<td>Scope 精益版；精修走 v1.1.x CR</td>
+</tr>
+<tr>
+<td>R02</td>
+<td>10 周无法过审</td>
+<td>中</td>
+<td>高</td>
+<td>W7 提审；W8 预留修复；法务模板前置</td>
+</tr>
+<tr>
+<td>R03</td>
+<td>IAP 联调超时</td>
+<td>中</td>
+<td>高</td>
+<td>W2 启动；第一期专款</td>
+</tr>
+<tr>
+<td>R04</td>
+<td>牌桌 UI 压缩过度</td>
+<td>中</td>
+<td>中</td>
+<td>W5 创始人评审；仅保主路径</td>
+</tr>
+<tr>
+<td>R05</td>
+<td>创始人签字延迟</td>
+<td>中</td>
+<td>中</td>
+<td>48h SLA；逾期顺延不计供应商责任</td>
+</tr>
+<tr>
+<td>R06</td>
+<td>商店审核驳回</td>
+<td>中</td>
+<td>高</td>
+<td>不可预见费 ¥1.4 万；W8 修复</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>十五、KPI 与成功标准</h2>
+<h3>15.1 项目成功定义（W10）</h3>
+<ol>
+<li>App Store + Google Play 可下载  </li>
+<li>生产 IAP 首笔到账  </li>
+<li>私人场全开；冒烟回归通过  </li>
+<li>方案 A 迁移执行完成  </li>
+<li>QA 终验 P0 = 0  </li>
+<li>¥24 万三期付款结清</li>
+</ol>
+<h3>15.2 上架后指标（参考，非本项目交付）</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>上架后 30 天参考</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>累计注册</td>
+<td>500 – 2,000</td>
+</tr>
+<tr>
+<td>D7 留存</td>
+<td>≥ 10%</td>
+</tr>
+<tr>
+<td>Crash-free</td>
+<td>≥ 99%</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>十六、假设与约束</h2>
+<h3>16.1 假设</h3>
+<ol>
+<li>代码基线 <code>phase4-open-beta-2fc9</code> 无 P0 架构缺陷  </li>
+<li>创始人 W1 完成 Scope 签字；里程碑 48h 内批复  </li>
+<li>Apple / Google 账号与 IAP 商品配置由甲方提供  </li>
+<li>PRD 全量拟物化<strong>不在</strong> ¥24 万范围内</li>
+</ol>
+<h3>16.2 约束</h3>
+<ol>
+<li><strong>预算硬顶 ¥240,000</strong>  </li>
+<li><strong>周期硬顶 10 周</strong>（自 T0 起）  </li>
+<li>设计修订每阶段 <strong>≤1 轮</strong>  </li>
+<li>压测上限 <strong>100 CCU</strong></li>
+</ol>
+<hr>
+<h2>十七、附录</h2>
+<h3>附录 A：文档索引</h3>
+<table>
+<thead>
+<tr>
+<th>文档</th>
+<th>路径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>产品 PRD</td>
+<td><code>docs/PRD-完整版-v2.0.md</code></td>
+</tr>
+<tr>
+<td>全量版计划书（对照）</td>
+<td>Git 历史 v1.1</td>
+</tr>
+<tr>
+<td>商业化启动计划书</td>
+<td><code>docs/11-商业化启动计划书.md</code></td>
+</tr>
+</tbody></table>
+<h3>附录 B：签字页</h3>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>姓名</th>
+<th>签字</th>
+<th>日期</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>项目 Sponsor（创始人）</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>项目经理</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>签字即表示认可 <strong>¥24 万 / 10 周 / 三期</strong> 精益范围，并授权 <strong>W1</strong> 启动。</p>
+</blockquote>
+<hr>
+<p><em>本文档 v2.0 为精益上架方案；全量 58 周 / ¥101 万方案见 Git 历史 v1.1。</em></p>
+</div></body></html>

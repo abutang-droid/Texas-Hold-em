@@ -1,0 +1,17 @@
+{
+  "name": "scripts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "generate:project-plan-pdf": "node generate-project-plan-pdf.mjs",
+    "generate:commercialization-pdf": "node generate-commercialization-pdf.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@mermaid-js/mermaid-cli": "^11.4.2",
+    "marked": "^18.0.10"
+  }
+}

@@ -28,26 +28,70 @@ async function main() {
     body: JSON.stringify({ nickname: 'SmokeTest' }),
   });
   console.log('   chips:', login.user.chipsBalance);
+  let token = login.token;
+
+  console.log('2b. Age declaration');
+  await req('/api/v1/user/age-declaration', {
+    method: 'POST',
+    body: JSON.stringify({ confirmed: true }),
+  }, login.token);
+
+  console.log('2c. OAuth dev login');
+  const oauth = await req<{ token: string; user: { nickname: string } }>(
+    '/api/v1/auth/oauth',
+    {
+      method: 'POST',
+      body: JSON.stringify({ provider: 'GOOGLE', idToken: `dev:google:smoke-${Date.now()}` }),
+    },
+    token,
+  );
+  token = oauth.token;
+  console.log('   oauth user:', oauth.user.nickname);
 
   console.log('3. Mock recharge');
   const recharge = await req<{ chipsBalance: number }>(
     '/api/v1/shop/mock-recharge',
     { method: 'POST', body: JSON.stringify({ amount: 50, requestId: `smoke-${Date.now()}` }) },
-    login.token,
+    token,
   );
-  console.log('   balance:', recharge.chipsBalance);
+  console.log('   balance:', recharge.chipsBalance, 'bonus:', (recharge as { bonusChips?: number }).bonusChips ?? 0);
+
+  console.log('3b. Shop products');
+  const catalog = await req<{
+    products: Array<{ id: string; chips: number }>;
+    iapSandboxMode: boolean;
+  }>('/api/v1/shop/products', {}, token);
+  const product = catalog.products[0];
+  if (!product) throw new Error('No IAP products configured');
+  console.log('   product:', product.id, product.chips, 'sandbox:', catalog.iapSandboxMode);
+
+  console.log('3c. IAP sandbox recharge');
+  const iap = await req<{ chipsBalance: number; bonusChips: number }>(
+    '/api/v1/shop/recharge',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        channel: 'APPLE_IAP',
+        productId: product.id,
+        requestId: `iap-smoke-${Date.now()}`,
+        receiptToken: `sandbox:apple:${product.id}`,
+      }),
+    },
+    token,
+  );
+  console.log('   iap balance:', iap.chipsBalance, 'bonus:', iap.bonusChips);
 
   console.log('4. Quick start');
   const match = await req<{ roomId: string; wsUrl: string }>(
     '/api/v1/match/quick-start',
     { method: 'POST', body: JSON.stringify({}) },
-    login.token,
+    token,
   );
   console.log('   room:', match.roomId, match.wsUrl);
 
-  console.log('5. Weekly leaderboard');
-  const lb = await req<{ list: unknown[] }>('/api/v1/leaderboard/weekly-profit');
-  console.log('   entries:', lb.list.length);
+  console.log('5. Dual leaderboard');
+  const lb = await req<{ profit: unknown[]; biggestPot: unknown[] }>('/api/v1/leaderboard');
+  console.log('   profit:', lb.profit.length, 'biggest:', lb.biggestPot.length);
 
   console.log('\nSmoke test passed.');
 }

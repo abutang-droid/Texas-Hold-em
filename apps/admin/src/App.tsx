@@ -6,6 +6,7 @@ import HandsPage from './pages/HandsPage';
 import ConfigPage from './pages/ConfigPage';
 import ReportsPage from './pages/ReportsPage';
 import EconomyPage from './pages/EconomyPage';
+import UserDetailPage from './pages/UserDetailPage';
 import RiskPage from './pages/RiskPage';
 import { getAdminKey } from './api/client';
 
@@ -26,6 +27,7 @@ export default function App() {
         }
       >
         <Route index element={<UsersPage />} />
+        <Route path="users/:id" element={<UserDetailPage />} />
         <Route path="hands" element={<HandsPage />} />
         <Route path="config" element={<ConfigPage />} />
         <Route path="reports" element={<ReportsPage />} />

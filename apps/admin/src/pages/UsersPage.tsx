@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { adminApi, type AdminUser } from '../api/client';
 
 function StatusBadge({ status }: { status: string }) {
@@ -64,6 +65,7 @@ export default function UsersPage() {
               <th>筹码</th>
               <th>等级</th>
               <th>状态</th>
+              <th>详情</th>
               <th>操作</th>
             </tr>
           </thead>
@@ -76,6 +78,9 @@ export default function UsersPage() {
                 <td>Lv{u.level}</td>
                 <td>
                   <StatusBadge status={u.status} />
+                </td>
+                <td>
+                  <Link to={`/users/${u.id}`}>详情</Link>
                 </td>
                 <td>
                   <div className="row">

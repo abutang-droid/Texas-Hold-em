@@ -76,5 +76,40 @@
     "dissolve_failed": "解散投票未通过",
     "room_dissolved": "房间已解散",
     "report_sent": "举报已提交"
+  },
+  "compliance": {
+    "age_title": "年龄确认",
+    "age_confirm": "我确认已年满 18 周岁，并同意本游戏仅供娱乐，筹码无现金价值。",
+    "age_agree": "确认并继续",
+    "migration_title": "公测迁移公告",
+    "migration_agree": "我已阅读并同意"
+  },
+  "settings": {
+    "title": "设置与合规",
+    "back": "返回大厅",
+    "disclaimer": "本游戏仅供娱乐，游戏内筹码无任何实际现金价值，不可兑换为法币。",
+    "responsible_gaming": "负责任游戏",
+    "self_exclude_desc": "自我封禁将冻结账号 30 天，期间无法进入牌桌。",
+    "self_exclude_btn": "自我封禁 30 天",
+    "self_exclude_title": "确认自我封禁？",
+    "self_exclude_confirm": "封禁后 30 天内无法游戏，确定继续？",
+    "self_exclude_done": "已提交自我封禁",
+    "cancel": "取消",
+    "confirm": "确定",
+    "leaderboard": "排行榜",
+    "stealth_desc": "隐身模式（不上榜）"
+  },
+  "shop": {
+    "title": "充值商城",
+    "back": "返回",
+    "buy": "购买",
+    "sandbox_mode": "沙盒模式（开发测试）",
+    "first_bonus_hint": "首充额外赠送 {{pct}}%",
+    "success_title": "充值成功",
+    "success_body": "已获得 {{chips}} 筹码",
+    "native_only_title": "需真机购买",
+    "native_only_body": "正式 IAP 需在 iOS/Android 真机上通过 App Store / Google Play 购买。",
+    "first_bonus_title": "首充赠送",
+    "first_bonus_body": "额外获得 {{bonus}} 筹码！"
   }
 }

@@ -32,22 +32,123 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 }
 
 export async function guestLogin(deviceId?: string) {
-  const data = await request<{ token: string; deviceId: string; user: UserProfile }>(
-    '/api/v1/auth/guest',
-    { method: 'POST', body: JSON.stringify({ deviceId }) },
-  );
+  const data = await request<{
+    token: string;
+    refreshToken: string;
+    deviceId: string;
+    user: UserProfile;
+  }>('/api/v1/auth/guest', { method: 'POST', body: JSON.stringify({ deviceId }) });
   setToken(data.token);
   return data;
+}
+
+export async function oauthLogin(provider: 'APPLE' | 'GOOGLE', idToken: string, nickname?: string) {
+  const data = await request<{
+    token: string;
+    refreshToken: string;
+    user: UserProfile;
+  }>('/api/v1/auth/oauth', {
+    method: 'POST',
+    body: JSON.stringify({ provider, idToken, nickname }),
+  });
+  setToken(data.token);
+  return data;
+}
+
+export async function setLeaderboardStealth(enabled: boolean) {
+  return request<{ leaderboardStealth: boolean }>('/api/v1/user/leaderboard-stealth', {
+    method: 'POST',
+    body: JSON.stringify({ enabled }),
+  });
 }
 
 export async function getProfile() {
   return request<UserProfile>('/api/v1/user/profile');
 }
 
+export interface ShopProduct {
+  id: string;
+  chips: number;
+  priceCents: number;
+  label: string;
+}
+
+export async function getShopProducts() {
+  return request<{
+    products: ShopProduct[];
+    firstRechargeBonusEnabled: boolean;
+    firstRechargeBonusPct: number;
+    iapSandboxMode: boolean;
+  }>('/api/v1/shop/products');
+}
+
 export async function mockRecharge(amount: number, requestId: string) {
-  return request<{ chipsBalance: number }>('/api/v1/shop/mock-recharge', {
+  return request<{
+    chipsBalance: number;
+    amount: number;
+    bonusChips: number;
+    isFirstRecharge: boolean;
+  }>('/api/v1/shop/mock-recharge', {
     method: 'POST',
     body: JSON.stringify({ amount, requestId }),
+  });
+}
+
+export async function shopRecharge(
+  channel: 'MOCK' | 'APPLE_IAP' | 'GOOGLE_PLAY',
+  amount: number,
+  requestId: string,
+  receiptToken?: string,
+  productId?: string,
+) {
+  return request<{
+    chipsBalance: number;
+    amount: number;
+    bonusChips: number;
+    isFirstRecharge: boolean;
+  }>('/api/v1/shop/recharge', {
+    method: 'POST',
+    body: JSON.stringify({ channel, amount, requestId, receiptToken, productId }),
+  });
+}
+
+export async function getLeaderboard() {
+  return request<{
+    profit: Array<{ userId: number; nickname: string; score: number }>;
+    biggestPot: Array<{ userId: number; nickname: string; score: number }>;
+    refreshedAt: string;
+    refreshMinutes: number;
+  }>('/api/v1/leaderboard');
+}
+
+export async function getCompliance() {
+  return request<{
+    ageVerified: boolean;
+    migrationRequired: boolean;
+    migrationMessage: string;
+    isSelfExcluded: boolean;
+    selfExcludedUntil: string | null;
+  }>('/api/v1/user/compliance');
+}
+
+export async function declareAge() {
+  return request<{ ok: boolean }>('/api/v1/user/age-declaration', {
+    method: 'POST',
+    body: JSON.stringify({ confirmed: true }),
+  });
+}
+
+export async function acknowledgeMigration() {
+  return request<{ ok: boolean }>('/api/v1/migration/acknowledge', {
+    method: 'POST',
+    body: JSON.stringify({}),
+  });
+}
+
+export async function selfExclude(days: number) {
+  return request<{ selfExcludedUntil: string }>('/api/v1/user/self-exclude', {
+    method: 'POST',
+    body: JSON.stringify({ days }),
   });
 }
 
