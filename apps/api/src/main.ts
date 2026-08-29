@@ -833,7 +833,12 @@ class AdminController {
 class HealthController {
   @Get('health')
   health() {
-    return { status: 'ok', service: 'api', version: '0.4.0' };
+    return {
+      status: 'ok',
+      service: 'api',
+      version: '0.5.0',
+      features: { emailAuth: true, guestAuth: true, oauth: true },
+    };
   }
 }
 
