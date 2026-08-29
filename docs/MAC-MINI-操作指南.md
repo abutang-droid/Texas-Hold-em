@@ -187,11 +187,30 @@ ssh uoto@192.168.31.53
 
 在服务器里执行（**没有 brew，用 bash 脚本**）：
 
+**若 `git pull` 报 `not a git repository`（zip 安装）— 用下面整段更新：**
+
+```bash
+cd ~
+cp Texas-Hold-em/.env /tmp/th-env-backup 2>/dev/null || true
+curl -fsSL -o th-main.zip "https://ghfast.top/https://github.com/abutang-droid/Texas-Hold-em/archive/refs/heads/main.zip"
+unzip -qo th-main.zip
+rsync -a --delete Texas-Hold-em-main/ Texas-Hold-em/ --exclude node_modules --exclude .env
+cp /tmp/th-env-backup Texas-Hold-em/.env 2>/dev/null || true
+cd Texas-Hold-em
+pnpm install && pnpm build && pnpm migrate
+pm2 startOrRestart infra/staging/ecosystem.config.cjs --update-env
+curl -s http://localhost:3000/health
+```
+
+health 应含 `"version":"0.5.0"`。之后可用：`bash scripts/staging-update-no-git.sh`
+
+**若有 git 仓库（首次安装）：**
+
 ```bash
 cd ~/Texas-Hold-em 2>/dev/null || { cd ~ && git clone https://github.com/abutang-droid/Texas-Hold-em.git && cd Texas-Hold-em; }
 git fetch origin
-git checkout cursor/phase4-open-beta-2fc9
-git pull origin cursor/phase4-open-beta-2fc9
+git checkout main
+git pull origin main
 sudo bash scripts/staging-bootstrap.sh
 sudo bash scripts/staging-install-all.sh
 ```
