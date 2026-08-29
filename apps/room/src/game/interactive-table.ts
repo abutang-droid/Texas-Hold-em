@@ -61,6 +61,7 @@ export interface PublicTableState {
     betThisRound: number;
     status: string;
     isBot: boolean;
+    avatarUrl?: string | null;
     holeCards: string[] | ['**', '**'];
   }>;
 }
@@ -233,13 +234,15 @@ export class InteractiveTable {
     const p = this.players[idx];
     const chips = p.chips;
     if (!p.isBot) this.realPlayerCount = Math.max(0, this.realPlayerCount - 1);
+    this.avatarByUserId.delete(userId);
     this.players.splice(idx, 1);
     return chips;
   }
 
-  resumePlayer(userId: string): void {
+  resumePlayer(userId: string, avatarUrl?: string | null): void {
     const p = this.players.find((pl) => pl.userId === userId);
     if (p && p.status === 'SIT_OUT') p.status = 'ACTIVE';
+    if (avatarUrl !== undefined) this.avatarByUserId.set(userId, avatarUrl);
   }
 
   sitOutPlayer(userId: string): void {
@@ -301,8 +304,15 @@ export class InteractiveTable {
   private actionLog: HandActionRecord[] = [];
   private bettingRound: BettingRoundState = createBettingRoundState();
   private eventQueue: TableEvent[] = [];
+  private avatarByUserId = new Map<string, string | null>();
 
-  addPlayer(userId: string, nickname: string, chips: number, isBot = false): number {
+  addPlayer(
+    userId: string,
+    nickname: string,
+    chips: number,
+    isBot = false,
+    avatarUrl?: string | null,
+  ): number {
     const used = new Set(this.players.map((p) => p.seatIndex));
     let seat = 0;
     while (used.has(seat) && seat < this.config.maxSeats) seat += 1;
@@ -320,7 +330,10 @@ export class InteractiveTable {
       holeCards: [],
       isBot,
     });
-    if (!isBot) this.realPlayerCount += 1;
+    if (!isBot) {
+      this.realPlayerCount += 1;
+      this.avatarByUserId.set(userId, avatarUrl ?? null);
+    }
     this.scheduleBotFill();
     this.tryStartHand();
     return seat;
@@ -779,6 +792,7 @@ export class InteractiveTable {
         betThisRound: p.betThisRound,
         status: p.status,
         isBot: p.isBot,
+        avatarUrl: p.isBot ? null : (this.avatarByUserId.get(p.userId) ?? null),
         holeCards:
           forUserId && p.userId === forUserId
             ? p.holeCards.map((c) => c.rank + c.suit)

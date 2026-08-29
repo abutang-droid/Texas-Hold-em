@@ -1,5 +1,5 @@
 /**
- * Private room WebSocket smoke — 2 players join and wait for game_started.
+ * Private room WebSocket smoke — 2 players join, play one hand to hand_ended.
  *
  * Usage:
  *   API_URL=http://localhost:3000 ROOM_URL=http://localhost:3001 tsx scripts/private-room-ws.ts
@@ -37,6 +37,28 @@ function once<T>(socket: Socket, event: string, timeoutMs = 20000): Promise<T> {
     socket.once(event, (msg: T) => {
       clearTimeout(timer);
       resolve(msg);
+    });
+  });
+}
+
+function waitForActionTurn(
+  sockets: Socket[],
+  timeoutMs = 20000,
+): Promise<{ socket: Socket; seatIndex: number }> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      for (const { socket, handler } of handlers) socket.off('action_turn', handler);
+      reject(new Error('Timeout waiting for action_turn'));
+    }, timeoutMs);
+
+    const handlers = sockets.map((socket) => {
+      const handler = (msg: { payload: { seatIndex: number } }) => {
+        clearTimeout(timer);
+        for (const h of handlers) h.socket.off('action_turn', h.handler);
+        resolve({ socket, seatIndex: msg.payload.seatIndex });
+      };
+      socket.on('action_turn', handler);
+      return { socket, handler };
     });
   });
 }
@@ -92,9 +114,24 @@ async function main() {
   console.log('   host hand:', startedA.payload.handId);
   console.log('   guest hand:', startedB.payload.handId);
 
+  console.log('8. Fold when action_turn arrives');
+  const { socket: activeSocket } = await waitForActionTurn([hostSocket, guestSocket]);
+  activeSocket.emit('player_action', {
+    actionType: 'fold',
+    requestId: `fold-${Date.now()}`,
+  });
+
+  console.log('9. Wait for hand_ended on both sockets');
+  const [endedA, endedB] = await Promise.all([
+    once<{ payload: { handId: string; winners: unknown[] } }>(hostSocket, 'hand_ended'),
+    once<{ payload: { handId: string; winners: unknown[] } }>(guestSocket, 'hand_ended'),
+  ]);
+  console.log('   host winners:', endedA.payload.winners.length);
+  console.log('   guest winners:', endedB.payload.winners.length);
+
   hostSocket.disconnect();
   guestSocket.disconnect();
-  console.log('\n✓ Private room WS smoke passed');
+  console.log('\n✓ Private room WS smoke passed (full hand)');
 }
 
 main().catch((e) => {

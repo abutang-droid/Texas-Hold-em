@@ -20,6 +20,8 @@
     "blinds": "Blinds",
     "hand_start": "Hand #{{hand}} — SB seat {{sb}}, BB seat {{bb}}",
     "dealing_hole": "Dealing hole cards…",
+    "player_joined": "{{name}} joined the table",
+    "player_left": "{{name}} left the table",
     "community_dealt": "{{phase}} dealt",
     "auto": "auto",
     "raise_to": "Raise to",

@@ -4,6 +4,7 @@ import {
   buyInChips,
   cashOutChips,
   findPrivateRoomByRoomId,
+  findUserById,
   getRakeRate,
 } from '@texas-holdem/db';
 import type { ActionType } from '@texas-holdem/poker-engine';
@@ -99,6 +100,8 @@ async function handleJoin(
   const table = await getOrCreateRoom(msg.roomId, io);
   const cap = table.config.buyInCap;
   const actualBuyIn = Math.min(cap, Math.floor(msg.buyInAmount ?? cap));
+  const userRow = await findUserById(Number(userId));
+  const avatarUrl = userRow?.avatar_url ?? null;
 
   try {
     const { seat } = await joinRoomFlow({
@@ -109,6 +112,7 @@ async function handleJoin(
       userId,
       nickname,
       buyIn: actualBuyIn,
+      avatarUrl,
       buyInFn: async () => {
         await buyInChips(Number(userId), actualBuyIn, `${msg.roomId}:${userId}`);
       },

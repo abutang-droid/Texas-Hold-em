@@ -20,6 +20,8 @@
     "blinds": "盲注",
     "hand_start": "第 {{hand}} 手 — 小盲位 {{sb}}，大盲位 {{bb}}",
     "dealing_hole": "正在发底牌…",
+    "player_joined": "{{name}} 加入了牌桌",
+    "player_left": "{{name}} 离开了牌桌",
     "community_dealt": "发出 {{phase}}",
     "auto": "自动",
     "raise_to": "加注至",

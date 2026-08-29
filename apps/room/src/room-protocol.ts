@@ -260,18 +260,19 @@ export async function joinRoomFlow(opts: {
   nickname: string;
   buyIn: number;
   buyInFn: () => Promise<void>;
+  avatarUrl?: string | null;
 }): Promise<{ seat: number }> {
-  const { io, socket, table, roomId, userId, nickname, buyIn, buyInFn } = opts;
+  const { io, socket, table, roomId, userId, nickname, buyIn, buyInFn, avatarUrl } = opts;
   let seat: number;
   let isNewPlayer = false;
 
   if (table.hasPlayer(userId)) {
-    table.resumePlayer(userId);
+    table.resumePlayer(userId, avatarUrl);
     seat = table.getPublicState(userId).seats.find((s) => s.userId === userId)?.seatIndex ?? 0;
   } else {
     isNewPlayer = true;
     await buyInFn();
-    seat = table.addPlayer(userId, nickname, buyIn, false);
+    seat = table.addPlayer(userId, nickname, buyIn, false, avatarUrl);
   }
 
   await setUserActiveRoom(Number(userId), roomId);
@@ -287,7 +288,14 @@ export async function joinRoomFlow(opts: {
     io.to(roomId).emit('player_joined', {
       seq: nextSeq(roomId),
       serverTs: Date.now(),
-      payload: { seatIndex: seat, userId, nickname, chips: buyIn, isBot: false },
+      payload: {
+        seatIndex: seat,
+        userId,
+        nickname,
+        chips: buyIn,
+        isBot: false,
+        avatarUrl: avatarUrl ?? null,
+      },
     });
   }
 

@@ -22,6 +22,8 @@ interface TableState {
   communityCards: string[];
   currentTurnSeat: number | null;
   buttonSeat: number;
+  sbSeat: number | null;
+  bbSeat: number | null;
   seats: SeatView[];
   roomType: 'OFFICIAL' | 'PRIVATE';
   hostUserId?: string;
@@ -41,6 +43,8 @@ function mapSnapshot(payload: SnapshotPayload, currentTurnSeat: number | null): 
     communityCards: payload.communityCards,
     currentTurnSeat: payload.currentTurnSeat ?? currentTurnSeat,
     buttonSeat: payload.buttonSeat ?? 0,
+    sbSeat: payload.sbSeat ?? null,
+    bbSeat: payload.bbSeat ?? null,
     seats: (payload.seats ?? []).map((seat) => ({
       ...seat,
       isActive: seat.seatIndex === (payload.currentTurnSeat ?? currentTurnSeat),
@@ -69,6 +73,8 @@ export default function TableScreen() {
     communityCards: [],
     currentTurnSeat: null,
     buttonSeat: 0,
+    sbSeat: null,
+    bbSeat: null,
     seats: [],
     roomType: 'OFFICIAL',
     buyInCap: 100,
@@ -90,6 +96,7 @@ export default function TableScreen() {
   const [chipFlyEvents, setChipFlyEvents] = useState<
     Array<{ id: string; seatIndex: number; amount: number }>
   >([]);
+  const [animateHoleDeal, setAnimateHoleDeal] = useState(false);
   const joinedRef = useRef(false);
   const myUserIdRef = useRef<string | null>(null);
   const seatsRef = useRef<SeatView[]>([]);
@@ -284,6 +291,13 @@ export default function TableScreen() {
       setShowdown(null);
       setWinnerSeats([]);
       const p = msg.payload;
+      setState((prev) => ({
+        ...prev,
+        buttonSeat: p.buttonSeat,
+        sbSeat: p.sbSeat,
+        bbSeat: p.bbSeat,
+        seats: prev.seats.map((s) => ({ ...s, revealed: false })),
+      }));
       setHandNotice(
         t('game.hand_start', {
           hand: p.handId.slice(-4),
@@ -295,9 +309,13 @@ export default function TableScreen() {
     };
 
     const onHoleCardsDealt = () => {
+      setAnimateHoleDeal(true);
       setHandNotice(t('game.dealing_hole'));
       if (handNoticeTimer.current) clearTimeout(handNoticeTimer.current);
-      handNoticeTimer.current = setTimeout(() => setHandNotice(null), 1500);
+      handNoticeTimer.current = setTimeout(() => {
+        setHandNotice(null);
+        setAnimateHoleDeal(false);
+      }, 1500);
     };
 
     const onCommunityDealt = (msg: {
@@ -312,6 +330,42 @@ export default function TableScreen() {
       setHandNotice(t('game.community_dealt', { phase: t(phaseKey) }));
       if (handNoticeTimer.current) clearTimeout(handNoticeTimer.current);
       handNoticeTimer.current = setTimeout(() => setHandNotice(null), 1500);
+    };
+
+    const onShowdownResult = (msg: {
+      payload: {
+        handId: string;
+        boardCards: string[];
+        players: Array<{ seatIndex: number; userId: string; holeCards: string[] }>;
+      };
+    }) => {
+      const reveals = new Map(
+        msg.payload.players.map((p) => [p.seatIndex, p.holeCards] as const),
+      );
+      setState((prev) => ({
+        ...prev,
+        seats: prev.seats.map((seat) => {
+          const cards = reveals.get(seat.seatIndex);
+          if (!cards) return seat;
+          return { ...seat, holeCards: cards, revealed: true };
+        }),
+      }));
+    };
+
+    const onPlayerJoined = (msg: {
+      payload: { nickname: string; seatIndex: number; avatarUrl?: string | null };
+    }) => {
+      setHandNotice(t('game.player_joined', { name: msg.payload.nickname }));
+      if (handNoticeTimer.current) clearTimeout(handNoticeTimer.current);
+      handNoticeTimer.current = setTimeout(() => setHandNotice(null), 2500);
+    };
+
+    const onPlayerLeft = (msg: { payload: { userId: string } }) => {
+      const seat = seatsRef.current.find((s) => s.userId === msg.payload.userId);
+      const name = seat?.nickname ?? msg.payload.userId;
+      setHandNotice(t('game.player_left', { name }));
+      if (handNoticeTimer.current) clearTimeout(handNoticeTimer.current);
+      handNoticeTimer.current = setTimeout(() => setHandNotice(null), 2500);
     };
 
     const onError = (msg: { payload?: { code?: string; messageKey?: string } }) => {
@@ -368,6 +422,9 @@ export default function TableScreen() {
     s.on('game_started', onGameStarted);
     s.on('hole_cards_dealt', onHoleCardsDealt);
     s.on('community_cards_dealt', onCommunityDealt);
+    s.on('showdown_result', onShowdownResult);
+    s.on('player_joined', onPlayerJoined);
+    s.on('player_left', onPlayerLeft);
     s.on('error', onError);
     s.on('re_buy_approval_needed', onRebuyNeeded);
     s.on('re_buy_result', onRebuyResult);
@@ -385,6 +442,9 @@ export default function TableScreen() {
       s.off('game_started', onGameStarted);
       s.off('hole_cards_dealt', onHoleCardsDealt);
       s.off('community_cards_dealt', onCommunityDealt);
+      s.off('showdown_result', onShowdownResult);
+      s.off('player_joined', onPlayerJoined);
+      s.off('player_left', onPlayerLeft);
       s.off('error', onError);
       s.off('re_buy_approval_needed', onRebuyNeeded);
       s.off('re_buy_result', onRebuyResult);
@@ -461,9 +521,12 @@ export default function TableScreen() {
         potLabel={t('game.pot')}
         heroUserId={myUserId}
         buttonSeat={state.buttonSeat}
+        sbSeat={state.sbSeat}
+        bbSeat={state.bbSeat}
         turnDeadline={state.actionDeadline}
         winnerSeats={winnerSeats}
         chipFlyEvents={chipFlyEvents}
+        animateHoleDeal={animateHoleDeal}
         onChipFlyDone={(id) =>
           setChipFlyEvents((prev) => prev.filter((e) => e.id !== id))
         }
