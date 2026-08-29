@@ -10,6 +10,7 @@ import {
   acknowledgeMigration,
   getProfile,
   formatApiError,
+  getToken,
   type UserProfile,
 } from '../src/api/client';
 import { Screen } from '../src/components/ui/Screen';
@@ -88,7 +89,12 @@ export default function LobbyScreen() {
       if (compliance.migrationRequired) setMigrationMsg(compliance.migrationMessage);
       if (!compliance.ageVerified) setAgeRequired(true);
     } catch (e) {
-      showUserMessage(t('common.error'), formatApiError((e as Error).message, t));
+      const msg = formatApiError((e as Error).message, t);
+      if (msg === t('errors.unauthorized') || (e as Error).message === 'errors.unauthorized' || !getToken()) {
+        router.replace('/auth/login');
+        return;
+      }
+      showUserMessage(t('common.error'), msg);
     } finally {
       setLoading(false);
     }
@@ -97,6 +103,12 @@ export default function LobbyScreen() {
   useEffect(() => {
     init();
   }, [init]);
+
+  useEffect(() => {
+    if (!loading && !user && !getToken()) {
+      router.replace('/auth/login');
+    }
+  }, [loading, user, router]);
 
   const onQuickStart = async () => {
     if (starting) return;
@@ -157,6 +169,27 @@ export default function LobbyScreen() {
 
   if (loading) {
     return <Screen loading loadingLabel={t('common.loading')} />;
+  }
+
+  if (!user && !getToken()) {
+    return (
+      <Screen contentStyle={styles.content}>
+        <Text style={styles.loginTitle}>{t('auth.login_title')}</Text>
+        <Text style={styles.loginSubtitle}>{t('auth.login_subtitle')}</Text>
+        <Button
+          label={t('auth.login_btn')}
+          onPress={() => router.replace('/auth/login')}
+          fullWidth
+          style={styles.heroBtn}
+        />
+        <Button
+          label={t('auth.guest_continue')}
+          onPress={() => router.replace('/auth/login')}
+          variant="secondary"
+          fullWidth
+        />
+      </Screen>
+    );
   }
 
   return (
@@ -257,6 +290,13 @@ export default function LobbyScreen() {
 
 const styles = StyleSheet.create({
   content: { paddingTop: spacing.md },
+  loginTitle: { ...typography.h1, color: colors.text.primary, textAlign: 'center', marginBottom: spacing.sm },
+  loginSubtitle: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    marginBottom: spacing.xl,
+  },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',

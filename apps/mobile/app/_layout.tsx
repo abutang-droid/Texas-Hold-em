@@ -1,51 +1,39 @@
 import '../src/i18n';
 import { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { Stack, useRootNavigationState, useRouter, useSegments } from 'expo-router';
+import { Stack, useRootNavigationState, useSegments, Redirect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { isOnboardingComplete } from '../src/storage/onboarding';
-import { restoreSession, getToken } from '../src/api/client';
+import {
+  bootstrapSession,
+  getToken,
+  logout,
+  setAuthChangeHandler,
+  setUnauthorizedHandler,
+} from '../src/api/client';
 import { colors } from '../src/theme';
-
-function OnboardingGate() {
-  const router = useRouter();
-  const segments = useSegments();
-  const rootNavigationState = useRootNavigationState();
-
-  useEffect(() => {
-    if (!rootNavigationState?.key) return;
-    if (!isOnboardingComplete() && segments[0] !== 'onboarding') {
-      router.replace('/onboarding');
-    }
-  }, [rootNavigationState?.key, router, segments]);
-
-  return null;
-}
-
-function AuthGate({ sessionReady }: { sessionReady: boolean }) {
-  const router = useRouter();
-  const segments = useSegments();
-  const rootNavigationState = useRootNavigationState();
-
-  useEffect(() => {
-    if (!sessionReady || !rootNavigationState?.key) return;
-    const top = segments[0];
-    const inAuth = top === 'auth';
-    const inOnboarding = top === 'onboarding';
-    if (!getToken() && !inAuth && !inOnboarding) {
-      router.replace('/auth/login');
-    }
-  }, [sessionReady, rootNavigationState?.key, router, segments]);
-
-  return null;
-}
 
 export default function RootLayout() {
   const [sessionReady, setSessionReady] = useState(false);
+  const [authTick, setAuthTick] = useState(0);
+  const segments = useSegments();
+  const rootNavigationState = useRootNavigationState();
+  const navReady = !!rootNavigationState?.key;
 
   useEffect(() => {
-    restoreSession().finally(() => setSessionReady(true));
+    const bump = () => setAuthTick((n) => n + 1);
+    setUnauthorizedHandler(() => {
+      void logout().then(bump);
+    });
+    setAuthChangeHandler(bump);
+    bootstrapSession().finally(() => setSessionReady(true));
+    return () => {
+      setUnauthorizedHandler(null);
+      setAuthChangeHandler(null);
+    };
   }, []);
+
+  void authTick;
 
   if (!sessionReady) {
     return (
@@ -56,11 +44,22 @@ export default function RootLayout() {
     );
   }
 
+  const top = segments[0];
+  const inAuth = top === 'auth';
+  const inOnboarding = top === 'onboarding';
+  const hasToken = !!getToken();
+
+  if (navReady && !isOnboardingComplete() && !inOnboarding) {
+    return <Redirect href="/onboarding" />;
+  }
+
+  if (navReady && !hasToken && !inAuth && !inOnboarding) {
+    return <Redirect href="/auth/login" />;
+  }
+
   return (
     <>
       <StatusBar style="light" />
-      <OnboardingGate />
-      <AuthGate sessionReady={sessionReady} />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#121418' } }} />
     </>
   );

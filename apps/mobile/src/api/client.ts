@@ -14,6 +14,29 @@ export interface UserProfile {
 
 let token: string | null = null;
 let refreshToken: string | null = null;
+let unauthorizedHandler: (() => void) | null = null;
+let authChangeHandler: (() => void) | null = null;
+
+export function setUnauthorizedHandler(handler: (() => void) | null) {
+  unauthorizedHandler = handler;
+}
+
+export function setAuthChangeHandler(handler: (() => void) | null) {
+  authChangeHandler = handler;
+}
+
+function notifyAuthChange() {
+  authChangeHandler?.();
+}
+
+export function isAuthPath(path: string): boolean {
+  return (
+    path.startsWith('/api/v1/auth/login') ||
+    path.startsWith('/api/v1/auth/register') ||
+    path.startsWith('/api/v1/auth/guest') ||
+    path.startsWith('/api/v1/auth/refresh')
+  );
+}
 
 export function setToken(t: string) {
   token = t;
@@ -35,6 +58,7 @@ export async function persistAuth(data: {
   token = data.token;
   refreshToken = data.refreshToken;
   await saveSession(data);
+  notifyAuthChange();
 }
 
 export async function restoreSession(): Promise<StoredSession | null> {
@@ -45,10 +69,24 @@ export async function restoreSession(): Promise<StoredSession | null> {
   return session;
 }
 
+/** Restore saved session and verify the token is still valid. */
+export async function bootstrapSession(): Promise<boolean> {
+  const session = await restoreSession();
+  if (!session?.token) return false;
+  try {
+    await getProfile();
+    return true;
+  } catch {
+    await logout();
+    return false;
+  }
+}
+
 export async function logout(): Promise<void> {
   token = null;
   refreshToken = null;
   await clearSession();
+  notifyAuthChange();
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -88,6 +126,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     throw new Error(res.ok ? 'Invalid server response' : `Request failed (${res.status})`);
   }
   if (!res.ok) {
+    if (res.status === 401 && !isAuthPath(path)) {
+      await logout();
+      unauthorizedHandler?.();
+    }
     const payload = json.message;
     const payloadObj =
       payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : null;
