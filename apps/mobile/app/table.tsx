@@ -21,6 +21,7 @@ interface TableState {
   potTotal: number;
   communityCards: string[];
   currentTurnSeat: number | null;
+  buttonSeat: number;
   seats: SeatView[];
   roomType: 'OFFICIAL' | 'PRIVATE';
   hostUserId?: string;
@@ -39,6 +40,7 @@ function mapSnapshot(payload: SnapshotPayload, currentTurnSeat: number | null): 
     potTotal: payload.potTotal,
     communityCards: payload.communityCards,
     currentTurnSeat: payload.currentTurnSeat ?? currentTurnSeat,
+    buttonSeat: payload.buttonSeat ?? 0,
     seats: (payload.seats ?? []).map((seat) => ({
       ...seat,
       isActive: seat.seatIndex === (payload.currentTurnSeat ?? currentTurnSeat),
@@ -66,6 +68,7 @@ export default function TableScreen() {
     potTotal: 0,
     communityCards: [],
     currentTurnSeat: null,
+    buttonSeat: 0,
     seats: [],
     roomType: 'OFFICIAL',
     buyInCap: 100,
@@ -265,13 +268,55 @@ export default function TableScreen() {
       );
     };
 
-    const onGameStarted = () => {
+    const onGameStarted = (msg: {
+      payload: {
+        handId: string;
+        buttonSeat: number;
+        sbSeat: number;
+        bbSeat: number;
+        blindsPosted?: { sb: number; bb: number };
+      };
+    }) => {
       if (handNoticeTimer.current) {
         clearTimeout(handNoticeTimer.current);
         handNoticeTimer.current = null;
       }
       setShowdown(null);
       setWinnerSeats([]);
+      const p = msg.payload;
+      setHandNotice(
+        t('game.hand_start', {
+          hand: p.handId.slice(-4),
+          sb: p.sbSeat + 1,
+          bb: p.bbSeat + 1,
+        }),
+      );
+      handNoticeTimer.current = setTimeout(() => setHandNotice(null), 2500);
+    };
+
+    const onHoleCardsDealt = () => {
+      setHandNotice(t('game.dealing_hole'));
+      if (handNoticeTimer.current) clearTimeout(handNoticeTimer.current);
+      handNoticeTimer.current = setTimeout(() => setHandNotice(null), 1500);
+    };
+
+    const onCommunityDealt = (msg: {
+      payload: { phase: string; cards: string[] };
+    }) => {
+      const phaseKey =
+        msg.payload.phase === 'FLOP'
+          ? 'game.phase.flop'
+          : msg.payload.phase === 'TURN'
+            ? 'game.phase.turn'
+            : 'game.phase.river';
+      setHandNotice(t('game.community_dealt', { phase: t(phaseKey) }));
+      if (handNoticeTimer.current) clearTimeout(handNoticeTimer.current);
+      handNoticeTimer.current = setTimeout(() => setHandNotice(null), 1500);
+    };
+
+    const onError = (msg: { payload?: { code?: string; messageKey?: string } }) => {
+      const key = msg.payload?.messageKey;
+      Alert.alert(t('common.error'), key?.startsWith('errors.') ? t(key) : key ?? t('common.error'));
     };
 
     const onRebuyNeeded = (msg: {
@@ -321,6 +366,9 @@ export default function TableScreen() {
     s.on('action_result', onActionResult);
     s.on('hand_ended', onHandEnded);
     s.on('game_started', onGameStarted);
+    s.on('hole_cards_dealt', onHoleCardsDealt);
+    s.on('community_cards_dealt', onCommunityDealt);
+    s.on('error', onError);
     s.on('re_buy_approval_needed', onRebuyNeeded);
     s.on('re_buy_result', onRebuyResult);
     s.on('dissolve_vote_update', onDissolveUpdate);
@@ -335,6 +383,9 @@ export default function TableScreen() {
       s.off('action_result', onActionResult);
       s.off('hand_ended', onHandEnded);
       s.off('game_started', onGameStarted);
+      s.off('hole_cards_dealt', onHoleCardsDealt);
+      s.off('community_cards_dealt', onCommunityDealt);
+      s.off('error', onError);
       s.off('re_buy_approval_needed', onRebuyNeeded);
       s.off('re_buy_result', onRebuyResult);
       s.off('dissolve_vote_update', onDissolveUpdate);
@@ -409,6 +460,7 @@ export default function TableScreen() {
         communityCards={state.communityCards}
         potLabel={t('game.pot')}
         heroUserId={myUserId}
+        buttonSeat={state.buttonSeat}
         turnDeadline={state.actionDeadline}
         winnerSeats={winnerSeats}
         chipFlyEvents={chipFlyEvents}

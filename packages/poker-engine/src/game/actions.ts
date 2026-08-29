@@ -1,4 +1,13 @@
 import type { PlayerState } from './settlement.js';
+export type { BettingRoundState } from './betting-round.js';
+export {
+  createBettingRoundState,
+  markBlindPosted,
+  recordPlayerAction,
+  resetBettingRound,
+  actionWasRaise,
+  isBettingRoundComplete,
+} from './betting-round.js';
 
 export type ActionType = 'fold' | 'check' | 'call' | 'raise' | 'all_in';
 
@@ -112,23 +121,36 @@ export function applyAction(input: ApplyActionInput): ApplyActionResult {
   return { player: updated, newCurrentBet, raiseSize };
 }
 
-export function isBettingRoundComplete(players: PlayerState[], currentBet: number): boolean {
-  const canAct = players.filter((p) => p.status === 'ACTIVE');
-  if (canAct.length <= 1) return true;
-  return canAct.every((p) => p.betThisRound === currentBet);
-}
-
 export function countActivePlayers(players: PlayerState[]): number {
   return players.filter((p) => p.status === 'ACTIVE' || p.status === 'ALL_IN').length;
 }
 
 export function nextActiveSeat(players: PlayerState[], fromSeat: number): number | null {
   const sorted = [...players].sort((a, b) => a.seatIndex - b.seatIndex);
+  if (sorted.length === 0) return null;
   const n = sorted.length;
   const start = sorted.findIndex((p) => p.seatIndex === fromSeat);
+  const startIdx = start >= 0 ? start : 0;
   for (let i = 1; i <= n; i += 1) {
-    const p = sorted[(start + i) % n];
+    const p = sorted[(startIdx + i) % n];
     if (p.status === 'ACTIVE') return p.seatIndex;
   }
   return null;
+}
+
+/** Next seat index with chips (for dealer button rotation). */
+export function nextSeatWithChips(
+  seatIndices: number[],
+  fromSeat: number,
+  hasChips: (seat: number) => boolean,
+): number | null {
+  if (seatIndices.length === 0) return null;
+  const sorted = [...seatIndices].sort((a, b) => a - b);
+  const start = sorted.indexOf(fromSeat);
+  const startIdx = start >= 0 ? start : 0;
+  for (let i = 1; i <= sorted.length; i += 1) {
+    const seat = sorted[(startIdx + i) % sorted.length]!;
+    if (hasChips(seat)) return seat;
+  }
+  return sorted[startIdx] ?? null;
 }

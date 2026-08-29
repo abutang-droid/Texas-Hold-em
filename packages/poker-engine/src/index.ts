@@ -25,8 +25,14 @@ export {
   isBettingRoundComplete,
   countActivePlayers,
   nextActiveSeat,
+  nextSeatWithChips,
+  createBettingRoundState,
+  markBlindPosted,
+  recordPlayerAction,
+  resetBettingRound,
+  actionWasRaise,
 } from './game/actions.js';
-export type { ActionType, ValidActions } from './game/actions.js';
+export type { ActionType, ValidActions, BettingRoundState } from './game/actions.js';
 export { distributePotToWinners } from './game/settlement.js';
 export type { PlayerState, TableConfig, SettlementResult, GamePhase } from './game/settlement.js';
 export { phaseMachine, getNextPhase } from './game/state-machine.js';

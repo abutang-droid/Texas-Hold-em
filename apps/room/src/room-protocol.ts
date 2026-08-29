@@ -11,7 +11,7 @@ import {
   checkHandForChipDumping,
 } from '@texas-holdem/db';
 import type { ActionType } from '@texas-holdem/poker-engine';
-import type { HandEndSummary, InteractiveTable } from './game/interactive-table.js';
+import type { HandEndSummary, InteractiveTable, TableEvent } from './game/interactive-table.js';
 
 const roomSeq = new Map<string, number>();
 const requestCache = new Map<string, unknown>();
@@ -45,20 +45,6 @@ export function getCachedRequest<T>(requestId: string | undefined): T | undefine
 }
 
 export function wireTableHandlers(table: InteractiveTable, io: Server, roomId: string): void {
-  table.setGameStartedHandler((info) => {
-    io.to(roomId).emit('game_started', {
-      seq: nextSeq(roomId),
-      serverTs: Date.now(),
-      payload: {
-        handId: info.handId,
-        buttonSeat: info.buttonSeat,
-        sbSeat: info.sbSeat,
-        bbSeat: info.bbSeat,
-        blindsPosted: { sb: 1, bb: 2 },
-      },
-    });
-  });
-
   table.setHandEndHandler((summary) => {
     void persistHandEnd(summary).catch((err) => console.error('hand persist failed', err));
     io.to(roomId).emit('hand_ended', {
@@ -124,6 +110,7 @@ export async function syncRoomSnapshot(table: InteractiveTable): Promise<void> {
 }
 
 export function broadcastState(io: Server, roomId: string, table: InteractiveTable): void {
+  flushTableEvents(io, roomId, table);
   const sockets = io.sockets.adapter.rooms.get(roomId);
   if (!sockets) return;
   const seq = nextSeq(roomId);
@@ -136,6 +123,102 @@ export function broadcastState(io: Server, roomId: string, table: InteractiveTab
     emitActionTurnIfNeeded(s, table, seq, serverTs, userId);
   }
   void syncRoomSnapshot(table).catch((err) => console.error('snapshot sync failed', err));
+}
+
+export function flushTableEvents(io: Server, roomId: string, table: InteractiveTable): void {
+  const events = table.flushEvents();
+  for (const event of events) {
+    emitTableEvent(io, roomId, event);
+  }
+}
+
+function emitTableEvent(io: Server, roomId: string, event: TableEvent): void {
+  const seq = nextSeq(roomId);
+  const serverTs = Date.now();
+
+  switch (event.type) {
+    case 'game_started':
+      io.to(roomId).emit('game_started', {
+        seq,
+        serverTs,
+        payload: {
+          handId: event.handId,
+          buttonSeat: event.buttonSeat,
+          sbSeat: event.sbSeat,
+          bbSeat: event.bbSeat,
+          blindsPosted: event.blinds,
+        },
+      });
+      break;
+    case 'hole_cards_dealt': {
+      const sockets = io.sockets.adapter.rooms.get(roomId);
+      if (!sockets) break;
+      for (const sid of sockets) {
+        const socket = io.sockets.sockets.get(sid);
+        const userId = socket?.data.userId as string | undefined;
+        if (!socket || !userId) continue;
+        const deal = event.deals.find((d) => d.userId === userId);
+        if (!deal) continue;
+        socket.emit('hole_cards_dealt', {
+          seq,
+          serverTs,
+          payload: {
+            handId: event.handId,
+            seatIndex: deal.seatIndex,
+            cards: deal.cards,
+          },
+        });
+      }
+      break;
+    }
+    case 'community_cards_dealt':
+      io.to(roomId).emit('community_cards_dealt', {
+        seq,
+        serverTs,
+        payload: {
+          handId: event.handId,
+          phase: event.phase,
+          cards: event.cards,
+          boardCards: event.boardCards,
+        },
+      });
+      break;
+    case 'action_result':
+      io.to(roomId).emit('action_result', {
+        seq,
+        serverTs,
+        payload: {
+          seatIndex: event.seatIndex,
+          userId: event.userId,
+          actionType: event.actionType,
+          amount: event.amount,
+          chipsRemaining: event.chipsRemaining,
+          potTotal: event.potTotal,
+          autoAction: event.autoAction,
+        },
+      });
+      break;
+    case 'pot_updated':
+      io.to(roomId).emit('pot_updated', {
+        seq,
+        serverTs,
+        payload: { handId: event.handId, potTotal: event.potTotal },
+      });
+      break;
+    case 'showdown_result':
+      io.to(roomId).emit('showdown_result', {
+        seq,
+        serverTs,
+        payload: {
+          handId: event.handId,
+          boardCards: event.boardCards,
+          players: event.players,
+        },
+      });
+      break;
+    default:
+      break;
+  }
 }
 
 function emitActionTurnIfNeeded(
@@ -207,6 +290,8 @@ export async function joinRoomFlow(opts: {
       payload: { seatIndex: seat, userId, nickname, chips: buyIn, isBot: false },
     });
   }
+
+  broadcastState(io, roomId, table);
 
   return { seat };
 }

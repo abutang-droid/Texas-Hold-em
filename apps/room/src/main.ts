@@ -10,7 +10,6 @@ import type { ActionType } from '@texas-holdem/poker-engine';
 import { createServer } from 'node:http';
 import {
   broadcastState,
-  buildActionResultPayload,
   cacheRequestResult,
   emitError,
   getCachedRequest,
@@ -256,25 +255,16 @@ export function startRoomServer(port: number): void {
         const mySeat = state.seats.find((s) => s.userId === userId);
         if (!mySeat) return;
         try {
-          table.act(mySeat.seatIndex, msg.actionType, msg.amount);
-          const payload = buildActionResultPayload(
-            table,
-            mySeat.seatIndex,
-            userId,
-            msg.actionType,
-            msg.amount,
-          );
-          const envelope = { payload };
-          io.to(roomId).emit('action_result', envelope);
-          cacheRequestResult(msg.requestId, envelope);
+          table.act(mySeat.seatIndex, msg.actionType, msg.amount, false);
 
           let safety = 0;
           while (safety < 20) {
             safety += 1;
-            const acted = table.tick();
-            if (acted === null) break;
+            const ticked = table.tick();
+            if (!ticked) break;
           }
           broadcastState(io, roomId, table);
+          cacheRequestResult(msg.requestId, { ok: true });
         } catch {
           emitError(socket, 'INVALID_ACTION', msg.requestId, 'errors.invalid_action');
         }

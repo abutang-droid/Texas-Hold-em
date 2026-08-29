@@ -53,6 +53,7 @@ interface Props {
   communityCards: string[];
   potLabel: string;
   heroUserId?: string | null;
+  buttonSeat?: number;
   turnDeadline?: number | null;
   winnerSeats?: number[];
   chipFlyEvents?: ChipFlyEvent[];
@@ -65,6 +66,7 @@ export function Table9Max({
   communityCards,
   potLabel,
   heroUserId,
+  buttonSeat = 0,
   turnDeadline,
   winnerSeats = [],
   chipFlyEvents = [],
@@ -88,6 +90,7 @@ export function Table9Max({
               const showCards =
                 isHero && seat?.holeCards && seat.holeCards[0] !== '**';
               const isWinner = winnerSeats.includes(idx);
+              const isDealer = buttonSeat === idx;
               return (
                 <View
                   key={idx}
@@ -99,6 +102,11 @@ export function Table9Max({
                     isWinner && styles.seatWinner,
                   ]}
                 >
+                  {isDealer && seat ? (
+                    <View style={styles.dealerBtn}>
+                      <Text style={styles.dealerBtnText}>D</Text>
+                    </View>
+                  ) : null}
                   {showCards && (
                     <View style={styles.holeCards}>
                       {seat.holeCards!.map((c, i) => (
@@ -200,6 +208,19 @@ const styles = StyleSheet.create({
     marginTop: -20,
     alignItems: 'center',
   },
+  dealerBtn: {
+    position: 'absolute',
+    top: -8,
+    left: -4,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 5,
+  },
+  dealerBtnText: { fontSize: 10, fontWeight: '800', color: '#1A1A1A' },
   seatActive: {},
   seatHero: { zIndex: 2 },
   seatWinner: { zIndex: 3 },

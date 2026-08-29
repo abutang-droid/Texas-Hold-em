@@ -18,6 +18,9 @@
   "game": {
     "pot": "Pot",
     "blinds": "Blinds",
+    "hand_start": "Hand #{{hand}} — SB seat {{sb}}, BB seat {{bb}}",
+    "dealing_hole": "Dealing hole cards…",
+    "community_dealt": "{{phase}} dealt",
     "auto": "auto",
     "raise_to": "Raise to",
     "next_hand": "Next hand in {{seconds}}s",
