@@ -47,7 +47,7 @@ pnpm local:test        # 完整测试（需 api 运行）
 - 游客登录：`POST /api/v1/auth/guest`（移动端登录页可选）
 - OAuth 开发模式：`POST /api/v1/auth/oauth`（`idToken`: `dev:google:sub`）
 
-客户端大厅 →「私人场」：
+## 私人场（v1.0.5）
 
 1. 支付 100 筹码开通权限（协议存证）
 2. 建房：配置人数/带入上限，获取 6 位房间号 + 分享文案

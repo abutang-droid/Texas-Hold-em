@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, Alert, Pressable } from 'react-native';
-import { useRouter, Link } from 'expo-router';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { loginWithEmail, guestLogin } from '../../src/api/client';
 import { AuthField } from '../../src/components/auth/AuthField';
 import { Screen } from '../../src/components/ui/Screen';
 import { Card } from '../../src/components/ui/Card';
 import { Button } from '../../src/components/ui/Button';
+import { showAlert } from '../../src/utils/alert';
 import { colors, spacing, typography } from '../../src/theme';
 
 function authErrorMessage(t: (k: string) => string, err: Error & { code?: string }): string {
@@ -21,10 +22,14 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const onLogin = async () => {
+    setFormError(null);
     if (!email.trim() || !password) {
-      Alert.alert(t('auth.error_title'), t('auth.fill_required'));
+      const msg = t('auth.fill_required');
+      setFormError(msg);
+      showAlert(t('auth.error_title'), msg);
       return;
     }
     setLoading(true);
@@ -32,19 +37,24 @@ export default function LoginScreen() {
       await loginWithEmail(email.trim(), password);
       router.replace('/');
     } catch (e) {
-      Alert.alert(t('auth.error_title'), authErrorMessage(t, e as Error & { code?: string }));
+      const msg = authErrorMessage(t, e as Error & { code?: string });
+      setFormError(msg);
+      showAlert(t('auth.error_title'), msg);
     } finally {
       setLoading(false);
     }
   };
 
   const onGuest = async () => {
+    setFormError(null);
     setLoading(true);
     try {
       await guestLogin();
       router.replace('/');
     } catch (e) {
-      Alert.alert(t('auth.error_title'), (e as Error).message);
+      const msg = (e as Error).message;
+      setFormError(msg);
+      showAlert(t('auth.error_title'), msg);
     } finally {
       setLoading(false);
     }
@@ -71,16 +81,15 @@ export default function LoginScreen() {
           secureTextEntry
           placeholder="••••••••"
         />
+        {formError ? <Text style={styles.error}>{formError}</Text> : null}
         <Button label={t('auth.login_btn')} onPress={onLogin} loading={loading} fullWidth />
       </Card>
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>{t('auth.no_account')}</Text>
-        <Link href="/auth/register" asChild>
-          <Pressable>
-            <Text style={styles.link}>{t('auth.register_link')}</Text>
-          </Pressable>
-        </Link>
+        <Pressable onPress={() => router.push('/auth/register')} hitSlop={8}>
+          <Text style={styles.link}>{t('auth.register_link')}</Text>
+        </Pressable>
       </View>
 
       <Pressable onPress={onGuest} disabled={loading} style={styles.guestWrap}>
@@ -107,9 +116,15 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   card: { marginBottom: spacing.xl },
+  error: {
+    ...typography.caption,
+    color: colors.semantic.danger,
+    marginBottom: spacing.md,
+    textAlign: 'center',
+  },
   footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: spacing.xs },
   footerText: { ...typography.body, color: colors.text.secondary },
   link: { ...typography.body, color: colors.brand.secondary, fontWeight: '700' },
-  guestWrap: { marginTop: spacing.xl, alignItems: 'center' },
+  guestWrap: { marginTop: spacing.xl, alignItems: 'center', padding: spacing.sm },
   guest: { ...typography.caption, color: colors.text.disabled },
 });

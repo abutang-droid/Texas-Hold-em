@@ -57,7 +57,12 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   };
   if (token) headers.Authorization = `Bearer ${token}`;
   const res = await fetch(`${API_URL}${path}`, { ...options, headers });
-  const json = await res.json();
+  let json: Record<string, unknown>;
+  try {
+    json = (await res.json()) as Record<string, unknown>;
+  } catch {
+    throw new Error(res.ok ? 'Invalid server response' : `Request failed (${res.status})`);
+  }
   if (!res.ok) {
     const payload = json.message;
     const messageKey =

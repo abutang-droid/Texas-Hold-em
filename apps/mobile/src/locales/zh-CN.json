@@ -87,7 +87,8 @@
     "register_bonus": "🎁 新用户注册赠送 100 筹码",
     "error_title": "提示",
     "fill_required": "请填写邮箱和密码",
-    "password_mismatch": "两次输入的密码不一致"
+    "password_mismatch": "两次输入的密码不一致",
+    "network_error": "无法连接服务器，请检查网络或联系管理员执行数据库迁移"
   },
   "private": {
     "title": "私人场",

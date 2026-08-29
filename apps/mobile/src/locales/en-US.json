@@ -87,7 +87,8 @@
     "register_bonus": "🎁 New players receive 100 chips",
     "error_title": "Notice",
     "fill_required": "Please enter email and password",
-    "password_mismatch": "Passwords do not match"
+    "password_mismatch": "Passwords do not match",
+    "network_error": "Cannot reach server — check network or ask admin to run DB migration"
   },
   "private": {
     "title": "Private Room",

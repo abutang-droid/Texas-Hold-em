@@ -1,17 +1,21 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, Alert, Pressable } from 'react-native';
-import { useRouter, Link } from 'expo-router';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { registerWithEmail } from '../../src/api/client';
 import { AuthField } from '../../src/components/auth/AuthField';
 import { Screen } from '../../src/components/ui/Screen';
 import { Card } from '../../src/components/ui/Card';
 import { Button } from '../../src/components/ui/Button';
+import { showAlert } from '../../src/utils/alert';
 import { colors, spacing, typography } from '../../src/theme';
 
 function authErrorMessage(t: (k: string) => string, err: Error & { code?: string }): string {
   const key = err.message;
   if (key.startsWith('errors.')) return t(key);
+  if (err.message.includes('Failed to fetch') || err.message.includes('Network')) {
+    return t('auth.network_error');
+  }
   return err.message;
 }
 
@@ -23,14 +27,26 @@ export default function RegisterScreen() {
   const [confirm, setConfirm] = useState('');
   const [nickname, setNickname] = useState('');
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const onRegister = async () => {
+    setFormError(null);
     if (!email.trim() || !password) {
-      Alert.alert(t('auth.error_title'), t('auth.fill_required'));
+      const msg = t('auth.fill_required');
+      setFormError(msg);
+      showAlert(t('auth.error_title'), msg);
+      return;
+    }
+    if (password.length < 8) {
+      const msg = t('errors.weak_password');
+      setFormError(msg);
+      showAlert(t('auth.error_title'), msg);
       return;
     }
     if (password !== confirm) {
-      Alert.alert(t('auth.error_title'), t('auth.password_mismatch'));
+      const msg = t('auth.password_mismatch');
+      setFormError(msg);
+      showAlert(t('auth.error_title'), msg);
       return;
     }
     setLoading(true);
@@ -38,7 +54,9 @@ export default function RegisterScreen() {
       await registerWithEmail(email.trim(), password, nickname.trim() || undefined);
       router.replace('/');
     } catch (e) {
-      Alert.alert(t('auth.error_title'), authErrorMessage(t, e as Error & { code?: string }));
+      const msg = authErrorMessage(t, e as Error & { code?: string });
+      setFormError(msg);
+      showAlert(t('auth.error_title'), msg);
     } finally {
       setLoading(false);
     }
@@ -46,6 +64,10 @@ export default function RegisterScreen() {
 
   return (
     <Screen scroll contentStyle={styles.content}>
+      <Pressable onPress={() => router.back()} style={styles.back}>
+        <Text style={styles.backText}>← {t('auth.login_link')}</Text>
+      </Pressable>
+
       <Text style={styles.title}>{t('auth.register_title')}</Text>
       <Text style={styles.subtitle}>{t('auth.register_subtitle')}</Text>
 
@@ -79,23 +101,24 @@ export default function RegisterScreen() {
           placeholder="••••••••"
         />
         <Text style={styles.bonus}>{t('auth.register_bonus')}</Text>
+        {formError ? <Text style={styles.error}>{formError}</Text> : null}
         <Button label={t('auth.register_btn')} onPress={onRegister} loading={loading} fullWidth />
       </Card>
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>{t('auth.has_account')}</Text>
-        <Link href="/auth/login" asChild>
-          <Pressable>
-            <Text style={styles.link}>{t('auth.login_link')}</Text>
-          </Pressable>
-        </Link>
+        <Pressable onPress={() => router.replace('/auth/login')} hitSlop={8}>
+          <Text style={styles.link}>{t('auth.login_link')}</Text>
+        </Pressable>
       </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { paddingTop: spacing.xl },
+  content: { paddingTop: spacing.lg },
+  back: { marginBottom: spacing.md },
+  backText: { ...typography.caption, color: colors.brand.secondary },
   title: { ...typography.h1, color: colors.text.primary, textAlign: 'center' },
   subtitle: {
     ...typography.caption,
@@ -108,6 +131,12 @@ const styles = StyleSheet.create({
   bonus: {
     ...typography.micro,
     color: colors.brand.secondary,
+    marginBottom: spacing.md,
+    textAlign: 'center',
+  },
+  error: {
+    ...typography.caption,
+    color: colors.semantic.danger,
     marginBottom: spacing.md,
     textAlign: 'center',
   },
