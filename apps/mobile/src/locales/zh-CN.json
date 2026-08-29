@@ -77,7 +77,9 @@
     "room_code": "6 位房间号",
     "join_btn": "加入",
     "two_player_blocked": "2 人局需先完成 10 局官方场",
-    "official_hands": "已完成官方场 {{count}} 局"
+    "official_hands": "已完成官方场 {{count}} 局",
+    "joining_room": "正在加入房间…",
+    "join_failed": "加入失败"
   },
   "table": {
     "paused": "牌局已暂停",
