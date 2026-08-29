@@ -79,7 +79,9 @@ echo "==> pnpm build"
 pnpm build
 
 echo "==> migrate"
-pnpm migrate || bash scripts/migrate.sh
+if ! (pnpm migrate || bash scripts/migrate.sh); then
+  echo "WARN: migrate failed — continuing PM2 restart (DB may already be up to date)" >&2
+fi
 
 if ! grep -q "auth/register" apps/api/dist/main.js; then
   echo "ERROR: build missing auth/register in dist" >&2
