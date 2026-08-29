@@ -98,8 +98,8 @@ echo "==> Health:"
 curl -sf "http://127.0.0.1:${API_P}/health" && echo "" || echo "API health FAIL"
 curl -sf "http://127.0.0.1:${ROOM_P}/health" && echo "" || echo "Room health FAIL"
 
-if ! curl -sf "http://127.0.0.1:${ROOM_P}/health" | grep -q '"version":"0.4'; then
-  echo "WARN: room version still old — check: pm2 logs th-room --lines 30" >&2
+if ! curl -sf "http://127.0.0.1:${ROOM_P}/health" | grep -q '"version":"0.4.4"'; then
+  echo "WARN: room version not 0.4.4 — run: bash scripts/staging-redeploy-room.sh" >&2
 fi
 
 echo "==> Register probe:"
@@ -109,4 +109,4 @@ curl -sf -X POST "http://127.0.0.1:${API_P}/api/v1/auth/register" \
   | head -c 150 && echo ""
 
 echo ""
-echo "Done. API 0.5.0 · Room 0.4.3+ expected in health output above."
+echo "Done. API 0.5.0 · Room 0.4.4 expected in health output above."
