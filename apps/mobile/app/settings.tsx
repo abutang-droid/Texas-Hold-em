@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, Alert, Switch } from 'react-native';
+import { View, Text, StyleSheet, Alert, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { designTokens } from '@texas-holdem/shared';
 import { getProfile, selfExclude, setLeaderboardStealth } from '../src/api/client';
+import { Screen, ScreenHeader } from '../src/components/ui/Screen';
+import { Card } from '../src/components/ui/Card';
+import { Button } from '../src/components/ui/Button';
+import { colors, spacing, typography } from '../src/theme';
 
 export default function SettingsScreen() {
   const { t } = useTranslation();
@@ -50,52 +53,59 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Pressable onPress={() => router.back()}>
-        <Text style={styles.back}>← {t('settings.back')}</Text>
-      </Pressable>
-      <Text style={styles.title}>{t('settings.title')}</Text>
-      <Text style={styles.disclaimer}>{t('settings.disclaimer')}</Text>
+    <Screen scroll>
+      <ScreenHeader
+        title={t('settings.title')}
+        onBack={() => router.back()}
+        backLabel={t('settings.back')}
+      />
 
-      <View style={styles.card}>
-        <Text style={styles.section}>{t('settings.leaderboard')}</Text>
+      <Card style={styles.disclaimerCard}>
+        <Text style={styles.disclaimerIcon}>ℹ️</Text>
+        <Text style={styles.disclaimer}>{t('settings.disclaimer')}</Text>
+      </Card>
+
+      <Card style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('settings.leaderboard')}</Text>
         <View style={styles.row}>
           <Text style={styles.body}>{t('settings.stealth_desc')}</Text>
-          <Switch value={stealth} onValueChange={onStealthToggle} />
+          <Switch
+            value={stealth}
+            onValueChange={onStealthToggle}
+            trackColor={{ false: '#333', true: colors.brand.primary }}
+            thumbColor={stealth ? colors.brand.secondary : '#888'}
+          />
         </View>
-      </View>
+      </Card>
 
-      <View style={styles.card}>
-        <Text style={styles.section}>{t('settings.responsible_gaming')}</Text>
-        <Text style={styles.body}>{t('settings.self_exclude_desc')}</Text>
-        <Pressable style={styles.dangerBtn} onPress={onSelfExclude} disabled={loading}>
-          <Text style={styles.dangerText}>{t('settings.self_exclude_btn')}</Text>
-        </Pressable>
-      </View>
-    </View>
+      <Card style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('settings.responsible_gaming')}</Text>
+        <Text style={styles.bodyBlock}>{t('settings.self_exclude_desc')}</Text>
+        <Button
+          label={t('settings.self_exclude_btn')}
+          onPress={onSelfExclude}
+          variant="danger"
+          loading={loading}
+          fullWidth
+        />
+      </Card>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: designTokens.color.bg.lobby, padding: 24 },
-  back: { color: designTokens.color.brand.secondary, marginBottom: 16 },
-  title: { color: '#F5F5F5', fontSize: 24, fontWeight: '700', marginBottom: 12 },
-  disclaimer: { color: '#9E9E9E', lineHeight: 20, marginBottom: 20 },
-  card: {
-    backgroundColor: designTokens.color.bg.card,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+  disclaimerCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: spacing.lg,
+    backgroundColor: 'rgba(21,101,192,0.12)',
+    borderColor: 'rgba(21,101,192,0.25)',
   },
-  section: { color: '#F5F5F5', fontSize: 16, fontWeight: '600', marginBottom: 8 },
-  body: { color: '#9E9E9E', lineHeight: 22, flex: 1, marginRight: 12 },
+  disclaimerIcon: { fontSize: 18, marginRight: spacing.md },
+  disclaimer: { ...typography.caption, color: colors.text.secondary, flex: 1, lineHeight: 22 },
+  section: { marginBottom: spacing.lg },
+  sectionTitle: { ...typography.h2, color: colors.text.primary, marginBottom: spacing.md },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  dangerBtn: {
-    backgroundColor: '#B71C1C',
-    borderRadius: 8,
-    padding: 14,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  dangerText: { color: '#fff', fontWeight: '700' },
+  body: { ...typography.body, color: colors.text.secondary, flex: 1, marginRight: spacing.md },
+  bodyBlock: { ...typography.body, color: colors.text.secondary, marginBottom: spacing.lg, lineHeight: 22 },
 });

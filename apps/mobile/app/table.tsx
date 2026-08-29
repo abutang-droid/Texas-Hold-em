@@ -237,6 +237,7 @@ export default function TableScreen() {
         potTotal={state.potTotal}
         communityCards={state.communityCards}
         potLabel={t('game.pot')}
+        heroUserId={myUserId}
       />
 
       <PrivateTablePanels
@@ -262,10 +263,26 @@ export default function TableScreen() {
 
       {isMyTurn && (
         <View style={styles.actions}>
-          <ActionBtn label={t('game.action.fold')} onPress={() => sendAction('fold')} />
-          <ActionBtn label={t('game.action.check')} onPress={() => sendAction('check')} />
-          <ActionBtn label={t('game.action.call')} onPress={() => sendAction('call')} />
-          <ActionBtn label={t('game.action.raise')} onPress={() => sendAction('raise', 4)} />
+          <ActionBtn
+            label={t('game.action.fold')}
+            variant="fold"
+            onPress={() => sendAction('fold')}
+          />
+          <ActionBtn
+            label={t('game.action.check')}
+            variant="check"
+            onPress={() => sendAction('check')}
+          />
+          <ActionBtn
+            label={t('game.action.call')}
+            variant="call"
+            onPress={() => sendAction('call')}
+          />
+          <ActionBtn
+            label={t('game.action.raise')}
+            variant="raise"
+            onPress={() => sendAction('raise', 4)}
+          />
         </View>
       )}
       <Pressable
@@ -281,10 +298,25 @@ export default function TableScreen() {
   );
 }
 
-function ActionBtn({ label, onPress }: { label: string; onPress: () => void }) {
+function ActionBtn({
+  label,
+  onPress,
+  variant,
+}: {
+  label: string;
+  onPress: () => void;
+  variant: 'fold' | 'check' | 'call' | 'raise';
+}) {
   return (
-    <Pressable style={styles.actionBtn} onPress={onPress}>
-      <Text style={styles.actionText}>{label}</Text>
+    <Pressable
+      style={({ pressed }) => [
+        styles.actionBtn,
+        styles[`btn_${variant}`],
+        pressed && styles.actionPressed,
+      ]}
+      onPress={onPress}
+    >
+      <Text style={[styles.actionText, variant === 'raise' && styles.actionTextDark]}>{label}</Text>
     </Pressable>
   );
 }
@@ -293,21 +325,41 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#121418' },
   actions: {
     position: 'absolute',
-    bottom: 24,
-    left: 0,
-    right: 0,
+    bottom: 28,
+    left: 16,
+    right: 16,
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 8,
+    backgroundColor: 'rgba(18,20,24,0.85)',
+    borderRadius: 12,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   actionBtn: {
-    backgroundColor: '#2E7D32',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    flex: 1,
+    paddingVertical: 14,
     borderRadius: 8,
-    marginHorizontal: 4,
+    alignItems: 'center',
+    maxWidth: 100,
   },
-  actionText: { color: '#fff', fontWeight: '600' },
-  back: { position: 'absolute', top: 16, left: 16, zIndex: 11 },
-  backText: { color: '#C9A227' },
+  btn_fold: { backgroundColor: '#C62828' },
+  btn_check: { backgroundColor: '#424242' },
+  btn_call: { backgroundColor: '#2E7D32' },
+  btn_raise: { backgroundColor: '#C9A227' },
+  actionPressed: { opacity: 0.85, transform: [{ scale: 0.97 }] },
+  actionText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  actionTextDark: { color: '#1A1A1A' },
+  back: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    zIndex: 11,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  backText: { color: '#C9A227', fontWeight: '600' },
 });
