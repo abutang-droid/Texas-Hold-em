@@ -9,6 +9,7 @@ import {
   clearUserActiveRoom,
   getUserActiveRoom,
   checkHandForChipDumping,
+  clearOfficialRoomIp,
 } from '@texas-holdem/db';
 import type { ActionType } from '@texas-holdem/poker-engine';
 import type { HandEndSummary, InteractiveTable, TableEvent } from './game/interactive-table.js';
@@ -45,6 +46,13 @@ export function getCachedRequest<T>(requestId: string | undefined): T | undefine
 }
 
 export function wireTableHandlers(table: InteractiveTable, io: Server, roomId: string): void {
+  table.setOnPlayerRemoved((userId) => {
+    if (table.config.roomType !== 'OFFICIAL') return;
+    void clearOfficialRoomIp(roomId, userId).catch((err) =>
+      console.error('clearOfficialRoomIp failed', err),
+    );
+  });
+
   table.setHandEndHandler((summary) => {
     void persistHandEnd(summary).catch((err) => console.error('hand persist failed', err));
     io.to(roomId).emit('hand_ended', {

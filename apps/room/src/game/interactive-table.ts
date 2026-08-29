@@ -177,6 +177,7 @@ export class InteractiveTable {
   private realPlayerCount = 0;
   private paused = false;
   private pendingKick = new Set<string>();
+  private onPlayerRemoved?: (userId: string) => void;
 
   constructor(roomId: string, config?: Partial<TableConfig>) {
     this.roomId = roomId;
@@ -202,6 +203,10 @@ export class InteractiveTable {
 
   markKickAfterHand(userId: string): void {
     this.pendingKick.add(userId);
+  }
+
+  setOnPlayerRemoved(handler: (userId: string) => void): void {
+    this.onPlayerRemoved = handler;
   }
 
   addChipsToPlayer(userId: string, amount: number): void {
@@ -233,7 +238,10 @@ export class InteractiveTable {
     if (idx < 0) throw new Error('NOT_SEATED');
     const p = this.players[idx];
     const chips = p.chips;
-    if (!p.isBot) this.realPlayerCount = Math.max(0, this.realPlayerCount - 1);
+    if (!p.isBot) {
+      this.realPlayerCount = Math.max(0, this.realPlayerCount - 1);
+      this.onPlayerRemoved?.(userId);
+    }
     this.avatarByUserId.delete(userId);
     this.players.splice(idx, 1);
     return chips;

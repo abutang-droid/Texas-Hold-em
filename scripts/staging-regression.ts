@@ -143,6 +143,27 @@ async function main() {
     pass('IAP sandbox recharge', `balance=${iap.chipsBalance}`);
   });
 
+  await section('Profile & avatars', async () => {
+    const presets = await req<{ presets: Array<{ id: string }> }>(
+      '/api/v1/user/avatar-presets',
+      {},
+      token,
+    );
+    if (!presets.presets.length) throw new Error('no avatar presets');
+    pass('Avatar presets', `${presets.presets.length} presets`);
+
+    const updated = await req<{ nickname: string; avatarUrl: string | null }>(
+      '/api/v1/user/profile',
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ nickname: 'RegressUser', avatarUrl: 'preset:spade' }),
+      },
+      token,
+    );
+    if (updated.avatarUrl !== 'preset:spade') throw new Error('avatar update failed');
+    pass('Profile update', `nick=${updated.nickname}`);
+  });
+
   await section('Official table (API)', async () => {
     const match = await req<{ roomId: string; wsUrl: string; buyInCap: number }>(
       '/api/v1/match/quick-start',

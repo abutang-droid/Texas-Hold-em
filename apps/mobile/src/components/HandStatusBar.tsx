@@ -33,9 +33,16 @@ interface Props {
   blinds: { sb: number; bb: number };
   lastAction?: LastAction | null;
   handNotice?: string | null;
+  connectionStatus?: 'connected' | 'reconnecting' | 'disconnected';
 }
 
-export function HandStatusBar({ phase, blinds, lastAction, handNotice }: Props) {
+export function HandStatusBar({
+  phase,
+  blinds,
+  lastAction,
+  handNotice,
+  connectionStatus = 'connected',
+}: Props) {
   const { t } = useTranslation();
   const phaseKey = PHASE_KEYS[phase] ?? 'game.phase.waiting';
 
@@ -48,7 +55,13 @@ export function HandStatusBar({ phase, blinds, lastAction, handNotice }: Props) 
         </Text>
       </View>
       {handNotice ? (
-        <View style={styles.notice}>
+        <View
+          style={[
+            styles.notice,
+            connectionStatus === 'reconnecting' && styles.noticeReconnect,
+            connectionStatus === 'disconnected' && styles.noticeDisconnected,
+          ]}
+        >
           <Text style={styles.noticeText}>{handNotice}</Text>
         </View>
       ) : lastAction ? (
@@ -93,4 +106,12 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(201,162,39,0.4)',
   },
   noticeText: { ...typography.micro, color: colors.brand.secondary, fontWeight: '600' },
+  noticeReconnect: {
+    borderColor: 'rgba(74,144,217,0.6)',
+    backgroundColor: 'rgba(74,144,217,0.2)',
+  },
+  noticeDisconnected: {
+    borderColor: 'rgba(220,80,80,0.6)',
+    backgroundColor: 'rgba(220,80,80,0.2)',
+  },
 });

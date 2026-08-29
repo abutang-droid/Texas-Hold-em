@@ -17,6 +17,13 @@ export {
 } from './avatars.js';
 export type { AvatarPreset } from './avatars.js';
 
+export {
+  TABLE_EMOJI_PRESETS,
+  getTableEmoji,
+  isValidTableEmojiId,
+} from './table-emojis.js';
+export type { TableEmojiPreset } from './table-emojis.js';
+
 export type PlayerActionType = 'fold' | 'check' | 'call' | 'raise' | 'all_in';
 
 export type GamePhase =

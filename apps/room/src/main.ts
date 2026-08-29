@@ -6,9 +6,13 @@ import {
   findPrivateRoomByRoomId,
   findUserById,
   getRakeRate,
+  findOfficialIpConflict,
+  registerOfficialRoomIp,
 } from '@texas-holdem/db';
 import type { ActionType } from '@texas-holdem/poker-engine';
+import { getTableEmoji, isValidTableEmojiId } from '@texas-holdem/shared';
 import { createServer } from 'node:http';
+import { getClientIp } from './client-ip.js';
 import {
   broadcastState,
   cacheRequestResult,
@@ -16,6 +20,7 @@ import {
   getCachedRequest,
   joinRoomFlow,
   leaveRoomFlow,
+  nextSeq,
   resolveReconnectRoom,
   wireTableHandlers,
 } from './room-protocol.js';
@@ -31,6 +36,7 @@ const rooms = new Map<string, InteractiveTable>();
 const roomConfigs = new Map<string, Partial<TableConfig>>();
 const roomTicks = new Map<string, ReturnType<typeof setInterval>>();
 const userRoom = new Map<string, string>();
+const emojiCooldown = new Map<string, number>();
 
 async function resolveTableConfig(roomId: string): Promise<Partial<TableConfig> | undefined> {
   if (!roomId.startsWith('P')) return undefined;
@@ -102,6 +108,16 @@ async function handleJoin(
   const actualBuyIn = Math.min(cap, Math.floor(msg.buyInAmount ?? cap));
   const userRow = await findUserById(Number(userId));
   const avatarUrl = userRow?.avatar_url ?? null;
+  const clientIp = getClientIp(socket);
+  const isNewSeat = !table.hasPlayer(userId);
+
+  if (table.config.roomType === 'OFFICIAL' && isNewSeat) {
+    const conflictUserId = await findOfficialIpConflict(msg.roomId, clientIp, userId);
+    if (conflictUserId) {
+      emitError(socket, 'IP_CONFLICT', msg.requestId, 'errors.ip_conflict');
+      return { ok: false, error: 'IP_CONFLICT' };
+    }
+  }
 
   try {
     const { seat } = await joinRoomFlow({
@@ -118,6 +134,9 @@ async function handleJoin(
       },
     });
     userRoom.set(userId, msg.roomId);
+    if (table.config.roomType === 'OFFICIAL' && isNewSeat) {
+      await registerOfficialRoomIp(msg.roomId, userId, clientIp);
+    }
     ensureRoomTick(io, msg.roomId);
     onPlayerJoinedPrivateRoom(msg.roomId, userId, table);
     const result = { ok: true as const, seatIndex: seat };
@@ -130,7 +149,9 @@ async function handleJoin(
         ? 'INSUFFICIENT_CHIPS'
         : message === 'ROOM_FULL'
           ? 'ROOM_FULL'
-          : 'INVALID_ACTION';
+          : message === 'IP_CONFLICT'
+            ? 'IP_CONFLICT'
+            : 'INVALID_ACTION';
     emitError(socket, code, msg.requestId);
     return { ok: false, error: message };
   }
@@ -140,7 +161,7 @@ export function startRoomServer(port: number): void {
   const httpServer = createServer((req, res) => {
     if (req.url === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.4.1' }));
+      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.4.3' }));
       return;
     }
     res.writeHead(404);
@@ -272,6 +293,56 @@ export function startRoomServer(port: number): void {
         } catch {
           emitError(socket, 'INVALID_ACTION', msg.requestId, 'errors.invalid_action');
         }
+      },
+    );
+
+    socket.on(
+      'send_emoji',
+      (msg: { emojiId: string; requestId?: string }, ack?: (r: { ok: boolean }) => void) => {
+        const roomId = userRoom.get(userId);
+        const table = roomId ? rooms.get(roomId) : undefined;
+        if (!roomId || !table) {
+          emitError(socket, 'ROOM_NOT_FOUND', msg.requestId);
+          ack?.({ ok: false });
+          return;
+        }
+        if (table.config.roomType !== 'OFFICIAL') {
+          emitError(socket, 'FORBIDDEN', msg.requestId, 'errors.emoji_official_only');
+          ack?.({ ok: false });
+          return;
+        }
+        if (!isValidTableEmojiId(msg.emojiId)) {
+          emitError(socket, 'INVALID_EMOJI', msg.requestId);
+          ack?.({ ok: false });
+          return;
+        }
+        const now = Date.now();
+        const last = emojiCooldown.get(userId) ?? 0;
+        if (now - last < 3000) {
+          emitError(socket, 'RATE_LIMIT', msg.requestId, 'errors.emoji_rate_limit');
+          ack?.({ ok: false });
+          return;
+        }
+        emojiCooldown.set(userId, now);
+
+        const seat = table.getPublicState(userId).seats.find((s) => s.userId === userId);
+        if (!seat) {
+          ack?.({ ok: false });
+          return;
+        }
+        const preset = getTableEmoji(msg.emojiId)!;
+        io.to(roomId).emit('emoji_sent', {
+          seq: nextSeq(roomId),
+          serverTs: now,
+          payload: {
+            seatIndex: seat.seatIndex,
+            userId,
+            nickname: seat.nickname,
+            emojiId: msg.emojiId,
+            emoji: preset.emoji,
+          },
+        });
+        ack?.({ ok: true });
       },
     );
 
