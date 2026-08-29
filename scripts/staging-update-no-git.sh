@@ -53,8 +53,13 @@ rsync -a --delete \
   "$SRC/" "$ROOT/"
 
 if [ -f "$BACKUP_ENV" ]; then
-  cp "$BACKUP_ENV" .env
-  echo "==> Restored .env"
+  if [ ! -f .env ] || [ -w .env ]; then
+    cp "$BACKUP_ENV" .env
+    echo "==> Restored .env"
+  else
+    echo "==> Kept existing .env (not writable — rsync did not replace it)"
+    echo "    To fix for future deploys: sudo chown $(whoami):$(whoami) .env"
+  fi
 fi
 
 rm -rf "$TMP" "$ZIP"
@@ -104,4 +109,4 @@ curl -sf -X POST "http://127.0.0.1:${API_P}/api/v1/auth/register" \
   | head -c 150 && echo ""
 
 echo ""
-echo "Done. health version should be 0.5.0 with emailAuth:true"
+echo "Done. API 0.5.0 · Room 0.4.3+ expected in health output above."
