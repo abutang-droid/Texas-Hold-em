@@ -8,6 +8,7 @@ import { Table9Max, type SeatView } from '../src/components/Table9Max';
 import { ActionPanel } from '../src/components/ActionPanel';
 import { HandStatusBar } from '../src/components/HandStatusBar';
 import { ShowdownOverlay } from '../src/components/ShowdownOverlay';
+import { EmojiBar } from '../src/components/EmojiBar';
 import {
   PrivateTablePanels,
   type DissolveVoteState,
@@ -97,10 +98,12 @@ export default function TableScreen() {
     Array<{ id: string; seatIndex: number; amount: number }>
   >([]);
   const [animateHoleDeal, setAnimateHoleDeal] = useState(false);
+  const [seatEmojis, setSeatEmojis] = useState<Record<number, string>>({});
   const joinedRef = useRef(false);
   const myUserIdRef = useRef<string | null>(null);
   const seatsRef = useRef<SeatView[]>([]);
   const handNoticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const emojiTimers = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
   const shownHandsRef = useRef(new Set<string>());
 
   const dismissShowdown = useCallback(() => {
@@ -352,6 +355,27 @@ export default function TableScreen() {
       }));
     };
 
+    const showSeatEmoji = (seatIndex: number, emoji: string) => {
+      const prev = emojiTimers.current.get(seatIndex);
+      if (prev) clearTimeout(prev);
+      setSeatEmojis((cur) => ({ ...cur, [seatIndex]: emoji }));
+      const timer = setTimeout(() => {
+        setSeatEmojis((cur) => {
+          const next = { ...cur };
+          delete next[seatIndex];
+          return next;
+        });
+        emojiTimers.current.delete(seatIndex);
+      }, 2500);
+      emojiTimers.current.set(seatIndex, timer);
+    };
+
+    const onEmojiSent = (msg: {
+      payload: { seatIndex: number; emoji: string };
+    }) => {
+      showSeatEmoji(msg.payload.seatIndex, msg.payload.emoji);
+    };
+
     const onPlayerJoined = (msg: {
       payload: { nickname: string; seatIndex: number; avatarUrl?: string | null };
     }) => {
@@ -423,6 +447,7 @@ export default function TableScreen() {
     s.on('hole_cards_dealt', onHoleCardsDealt);
     s.on('community_cards_dealt', onCommunityDealt);
     s.on('showdown_result', onShowdownResult);
+    s.on('emoji_sent', onEmojiSent);
     s.on('player_joined', onPlayerJoined);
     s.on('player_left', onPlayerLeft);
     s.on('error', onError);
@@ -434,6 +459,8 @@ export default function TableScreen() {
 
     return () => {
       if (handNoticeTimer.current) clearTimeout(handNoticeTimer.current);
+      for (const timer of emojiTimers.current.values()) clearTimeout(timer);
+      emojiTimers.current.clear();
       s.off('connect', onConnect);
       s.off('room_state_sync', onRoomState);
       s.off('action_turn', onActionTurn);
@@ -443,6 +470,7 @@ export default function TableScreen() {
       s.off('hole_cards_dealt', onHoleCardsDealt);
       s.off('community_cards_dealt', onCommunityDealt);
       s.off('showdown_result', onShowdownResult);
+      s.off('emoji_sent', onEmojiSent);
       s.off('player_joined', onPlayerJoined);
       s.off('player_left', onPlayerLeft);
       s.off('error', onError);
@@ -467,6 +495,10 @@ export default function TableScreen() {
   const sendAction = (actionType: PokerAction, amount?: number) => {
     setTurnContext(null);
     socket?.emit('player_action', { actionType, amount, requestId: `a-${Date.now()}` });
+  };
+
+  const sendEmoji = (emojiId: string) => {
+    socket?.emit('send_emoji', { emojiId, requestId: `emoji-${Date.now()}` });
   };
 
   const requestRebuy = () => {
@@ -527,6 +559,7 @@ export default function TableScreen() {
         winnerSeats={winnerSeats}
         chipFlyEvents={chipFlyEvents}
         animateHoleDeal={animateHoleDeal}
+        seatEmojis={seatEmojis}
         onChipFlyDone={(id) =>
           setChipFlyEvents((prev) => prev.filter((e) => e.id !== id))
         }
@@ -566,6 +599,12 @@ export default function TableScreen() {
         </View>
       )}
 
+      {!isPrivate && (
+        <View style={[styles.emojiWrap, isMyTurn && turnContext && styles.emojiWrapAboveActions]}>
+          <EmojiBar onSend={sendEmoji} />
+        </View>
+      )}
+
       <ShowdownOverlay
         visible={!!showdown}
         handId={showdown?.handId ?? ''}
@@ -596,6 +635,16 @@ const styles = StyleSheet.create({
     left: 16,
     right: 16,
     zIndex: 20,
+  },
+  emojiWrap: {
+    position: 'absolute',
+    bottom: 20,
+    left: 16,
+    right: 16,
+    zIndex: 19,
+  },
+  emojiWrapAboveActions: {
+    bottom: 120,
   },
   back: {
     position: 'absolute',

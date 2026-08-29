@@ -63,6 +63,7 @@ interface Props {
   winnerSeats?: number[];
   chipFlyEvents?: ChipFlyEvent[];
   animateHoleDeal?: boolean;
+  seatEmojis?: Record<number, string>;
   onChipFlyDone?: (id: string) => void;
 }
 
@@ -102,6 +103,7 @@ export function Table9Max({
   winnerSeats = [],
   chipFlyEvents = [],
   animateHoleDeal = false,
+  seatEmojis = {},
   onChipFlyDone,
 }: Props) {
   return (
@@ -159,6 +161,11 @@ export function Table9Max({
                       animate={animateHoleDeal && !!isHero}
                     />
                   )}
+                  {seatEmojis[idx] ? (
+                    <View style={styles.emojiBubble}>
+                      <Text style={styles.emojiBubbleText}>{seatEmojis[idx]}</Text>
+                    </View>
+                  ) : null}
                   <View style={[styles.seatBadge, seat?.isActive && styles.seatBadgeActive, isHero && styles.seatHeroBadge, isWinner && styles.seatWinnerBadge]}>
                     {seat ? (
                       <View style={styles.avatarWrap}>
@@ -284,6 +291,18 @@ const styles = StyleSheet.create({
   bbBadge: { backgroundColor: '#C94A4A' },
   blindBadgeText: { fontSize: 8, fontWeight: '800', color: '#fff' },
   avatarWrap: { marginBottom: 4 },
+  emojiBubble: {
+    position: 'absolute',
+    top: -36,
+    zIndex: 6,
+    backgroundColor: 'rgba(0,0,0,0.75)',
+    borderRadius: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(201,162,39,0.5)',
+  },
+  emojiBubbleText: { fontSize: 22 },
   seatActive: {},
   seatHero: { zIndex: 2 },
   seatWinner: { zIndex: 3 },

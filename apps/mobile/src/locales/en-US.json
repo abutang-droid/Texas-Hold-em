@@ -69,6 +69,8 @@
     "email_taken": "This email is already registered",
     "invalid_credentials": "Incorrect email or password",
     "invalid_avatar": "Please choose a preset avatar",
+    "emoji_official_only": "Quick emojis are only available at official tables",
+    "emoji_rate_limit": "Please wait a moment before sending another emoji",
     "unauthorized": "Please sign in first",
     "account_blocked": "This account has been restricted"
   },
