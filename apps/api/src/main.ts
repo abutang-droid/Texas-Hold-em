@@ -168,7 +168,7 @@ class ApiController {
     if (provider !== 'APPLE' && provider !== 'GOOGLE') {
       throw new BadRequestException('Invalid provider');
     }
-    const verified = verifyOAuthIdToken(provider, body.idToken);
+    const verified = await verifyOAuthIdToken(provider, body.idToken);
     if (!verified) {
       throw new UnauthorizedException({ code: 'INVALID_TOKEN', messageKey: 'errors.invalid_oauth' });
     }
@@ -836,8 +836,14 @@ class HealthController {
     return {
       status: 'ok',
       service: 'api',
-      version: '0.5.0',
-      features: { emailAuth: true, guestAuth: true, oauth: true },
+      version: '0.6.0',
+      features: {
+        emailAuth: true,
+        guestAuth: true,
+        oauth: true,
+        oauthDevMode: process.env.OAUTH_DEV_MODE !== 'false',
+        iapSandboxMode: process.env.IAP_SANDBOX_MODE !== 'false',
+      },
     };
   }
 }

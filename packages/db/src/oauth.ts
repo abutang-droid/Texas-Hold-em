@@ -13,10 +13,12 @@ function hashToken(token: string): string {
 }
 
 /** Dev/sandbox: idToken format `dev:{provider}:{sub}` or `dev:{sub}` */
-export function verifyOAuthIdToken(
+export async function verifyOAuthIdToken(
   provider: OAuthProvider,
   idToken: string,
-): { sub: string; email?: string } | null {
+): Promise<{ sub: string; email?: string } | null> {
+  if (!idToken) return null;
+
   const devMode = process.env.OAUTH_DEV_MODE !== 'false';
   if (devMode && idToken.startsWith('dev:')) {
     const parts = idToken.split(':');
@@ -24,7 +26,18 @@ export function verifyOAuthIdToken(
     if (!sub) return null;
     return { sub: `${provider.toLowerCase()}_${sub}` };
   }
-  if (!idToken || idToken.length < 10) return null;
+
+  if (!devMode) {
+    const { verifyProviderIdToken } = await import('./oauth-verify.js');
+    const verified = await verifyProviderIdToken(provider, idToken);
+    if (!verified) return null;
+    return {
+      sub: `${provider.toLowerCase()}_${verified.sub}`,
+      email: verified.email,
+    };
+  }
+
+  if (idToken.length < 10) return null;
   return { sub: `${provider.toLowerCase()}_${createHash('sha256').update(idToken).digest('hex').slice(0, 16)}` };
 }
 

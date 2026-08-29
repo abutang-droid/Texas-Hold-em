@@ -63,6 +63,7 @@
     "weak_password": "密码至少 8 位",
     "email_taken": "该邮箱已注册",
     "invalid_credentials": "邮箱或密码错误",
+    "invalid_oauth": "第三方登录失败，请重试",
     "unauthorized": "请先登录",
     "account_blocked": "账号已被限制"
   },
@@ -84,6 +85,11 @@
     "register_link": "立即注册",
     "login_link": "去登录",
     "guest_continue": "游客试玩（无需注册）",
+    "oauth_divider": "或使用以下方式",
+    "google_sign_in": "使用 Google 登录",
+    "oauth_not_configured": "当前版本未配置 Google 登录",
+    "oauth_failed": "登录已取消或失败",
+    "oauth_web_hint": "Web 端需配置 EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID",
     "register_bonus": "🎁 新用户注册赠送 100 筹码",
     "error_title": "提示",
     "fill_required": "请填写邮箱和密码",
@@ -168,6 +174,8 @@
     "success_body": "已获得 {{chips}} 筹码",
     "native_only_title": "需真机购买",
     "native_only_body": "正式 IAP 需在 iOS/Android 真机上通过 App Store / Google Play 购买。",
+    "iap_unavailable": "当前设备不支持应用内购买",
+    "iap_failed": "购买未能完成",
     "first_bonus_title": "首充赠送",
     "first_bonus_body": "额外获得 {{bonus}} 筹码！"
   },

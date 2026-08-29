@@ -1,5 +1,6 @@
 import type { VerifiedIapPurchase } from './types.js';
 import { getProductById } from './catalog.js';
+import { verifyStoreKitJws } from './apple-jws.js';
 
 interface AppleVerifyResponse {
   status: number;
@@ -21,20 +22,6 @@ function isJws(token: string): boolean {
   return token.split('.').length === 3;
 }
 
-/** Decode StoreKit 2 JWS payload (verification via Apple API recommended for production). */
-function decodeJwsPayload(jws: string): { productId?: string; transactionId?: string } | null {
-  try {
-    const payload = jws.split('.')[1];
-    if (!payload) return null;
-    const json = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as {
-      productId?: string;
-      transactionId?: string;
-    };
-    return json;
-  } catch {
-    return null;
-  }
-}
 
 async function verifyLegacyReceipt(
   receiptData: string,
@@ -97,8 +84,10 @@ export async function verifyApplePurchase(opts: {
   let transactionId: string;
 
   if (isJws(opts.receiptToken)) {
-    const decoded = decodeJwsPayload(opts.receiptToken);
+    const decoded = verifyStoreKitJws(opts.receiptToken);
     if (!decoded?.productId || !decoded.transactionId) throw new Error('INVALID_RECEIPT');
+    const expectedBundle = process.env.APPLE_BUNDLE_ID ?? 'com.texasholdem.app';
+    if (decoded.bundleId && decoded.bundleId !== expectedBundle) throw new Error('INVALID_RECEIPT');
     productId = decoded.productId;
     transactionId = decoded.transactionId;
   } else {

@@ -7,6 +7,7 @@ import { AuthField } from '../../src/components/auth/AuthField';
 import { Screen } from '../../src/components/ui/Screen';
 import { Card } from '../../src/components/ui/Card';
 import { Button } from '../../src/components/ui/Button';
+import { OAuthButtons } from '../../src/components/auth/OAuthButtons';
 import { showAlert } from '../../src/utils/alert';
 import { colors, spacing, typography } from '../../src/theme';
 
@@ -104,6 +105,16 @@ export default function RegisterScreen() {
         {formError ? <Text style={styles.error}>{formError}</Text> : null}
         <Button label={t('auth.register_btn')} onPress={onRegister} loading={loading} fullWidth />
       </Card>
+
+      <OAuthButtons
+        loading={loading}
+        onLoadingChange={setLoading}
+        onSuccess={() => router.replace('/')}
+        onError={(msg) => {
+          setFormError(msg);
+          showAlert(t('auth.error_title'), msg);
+        }}
+      />
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>{t('auth.has_account')}</Text>
