@@ -7,12 +7,13 @@ import { getToken, submitReport } from '../src/api/client';
 import { Table9Max, type SeatView } from '../src/components/Table9Max';
 import { ActionPanel } from '../src/components/ActionPanel';
 import { HandStatusBar } from '../src/components/HandStatusBar';
+import { ShowdownOverlay } from '../src/components/ShowdownOverlay';
 import {
   PrivateTablePanels,
   type DissolveVoteState,
   type RebuyApproval,
 } from '../src/components/PrivateTablePanels';
-import type { HandEndNotice, LastAction, PokerAction, TurnContext } from '../src/types/table';
+import type { HandEndPayload, LastAction, PokerAction, TurnContext } from '../src/types/table';
 
 const ROOM_URL = process.env.EXPO_PUBLIC_ROOM_URL ?? 'http://localhost:3001';
 
@@ -79,6 +80,8 @@ export default function TableScreen() {
   const [turnContext, setTurnContext] = useState<TurnContext | null>(null);
   const [lastAction, setLastAction] = useState<LastAction | null>(null);
   const [handNotice, setHandNotice] = useState<string | null>(null);
+  const [showdown, setShowdown] = useState<HandEndPayload | null>(null);
+  const [winnerSeats, setWinnerSeats] = useState<number[]>([]);
   const [rebuyApproval, setRebuyApproval] = useState<RebuyApproval | null>(null);
   const [dissolveVote, setDissolveVote] = useState<DissolveVoteState | null>(null);
   const joinedRef = useRef(false);
@@ -210,12 +213,24 @@ export default function TableScreen() {
       },
     );
 
-    s.on('hand_ended', (msg: { payload: HandEndNotice }) => {
+    s.on('hand_ended', (msg: { payload: Partial<HandEndPayload> & { handId: string; nextHandIn: number } }) => {
       setTurnContext(null);
-      const secs = Math.ceil(msg.payload.nextHandIn / 1000);
-      setHandNotice(t('game.next_hand', { seconds: secs }));
+      const p = msg.payload;
+      const payload: HandEndPayload = {
+        handId: p.handId,
+        nextHandIn: p.nextHandIn ?? 3000,
+        potSize: p.potSize ?? 0,
+        boardCards: p.boardCards ?? '',
+        winners: p.winners ?? [],
+      };
+      setShowdown(payload);
+      setWinnerSeats(payload.winners.map((w) => w.seatIndex));
+      setHandNotice(null);
       if (handNoticeTimer.current) clearTimeout(handNoticeTimer.current);
-      handNoticeTimer.current = setTimeout(() => setHandNotice(null), msg.payload.nextHandIn);
+      handNoticeTimer.current = setTimeout(() => {
+        setShowdown(null);
+        setWinnerSeats([]);
+      }, payload.nextHandIn);
     });
 
     s.on(
@@ -337,6 +352,7 @@ export default function TableScreen() {
         potLabel={t('game.pot')}
         heroUserId={myUserId}
         turnDeadline={state.actionDeadline}
+        winnerSeats={winnerSeats}
       />
 
       <HandStatusBar
@@ -371,6 +387,20 @@ export default function TableScreen() {
         <View style={styles.actionWrap}>
           <ActionPanel turn={turnContext} onAction={sendAction} />
         </View>
+      )}
+
+      {showdown && (
+        <ShowdownOverlay
+          visible
+          winners={showdown.winners}
+          potSize={showdown.potSize}
+          boardCards={showdown.boardCards}
+          nextHandIn={showdown.nextHandIn}
+          onDismiss={() => {
+            setShowdown(null);
+            setWinnerSeats([]);
+          }}
+        />
       )}
 
       <Pressable

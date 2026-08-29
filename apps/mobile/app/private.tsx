@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, TextInput, Alert, Share } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Alert, Share } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import {
@@ -8,11 +8,40 @@ import {
   grantPrivatePermission,
   joinPrivateRoom,
 } from '../src/api/client';
-import { designTokens } from '@texas-holdem/shared';
+import { Screen, ScreenHeader } from '../src/components/ui/Screen';
+import { Card } from '../src/components/ui/Card';
+import { Button } from '../src/components/ui/Button';
+import { colors, spacing, typography } from '../src/theme';
+
+function LabeledInput({
+  label,
+  value,
+  onChangeText,
+  keyboardType = 'default',
+}: {
+  label: string;
+  value: string;
+  onChangeText: (v: string) => void;
+  keyboardType?: 'default' | 'number-pad';
+}) {
+  return (
+    <View style={styles.field}>
+      <Text style={styles.label}>{label}</Text>
+      <TextInput
+        style={styles.input}
+        value={value}
+        onChangeText={onChangeText}
+        keyboardType={keyboardType}
+        placeholderTextColor={colors.text.disabled}
+      />
+    </View>
+  );
+}
 
 export default function PrivateRoomScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
   const [permission, setPermission] = useState<{
     hasPermission: boolean;
     officialHandsPlayed: number;
@@ -22,6 +51,8 @@ export default function PrivateRoomScreen() {
   const [roomCode, setRoomCode] = useState('');
   const [maxSeats, setMaxSeats] = useState('6');
   const [buyInCap, setBuyInCap] = useState('500');
+  const [creating, setCreating] = useState(false);
+  const [joining, setJoining] = useState(false);
   const [created, setCreated] = useState<{
     roomCode: string;
     roomId: string;
@@ -32,7 +63,8 @@ export default function PrivateRoomScreen() {
   useEffect(() => {
     getPrivatePermission()
       .then(setPermission)
-      .catch((e) => Alert.alert('Error', (e as Error).message));
+      .catch((e) => Alert.alert('Error', (e as Error).message))
+      .finally(() => setLoading(false));
   }, []);
 
   const onGrant = async () => {
@@ -52,6 +84,7 @@ export default function PrivateRoomScreen() {
       Alert.alert(t('private.two_player_blocked'));
       return;
     }
+    setCreating(true);
     try {
       const room = await createPrivateRoom({
         maxSeats: seats,
@@ -67,11 +100,14 @@ export default function PrivateRoomScreen() {
       });
     } catch (e) {
       Alert.alert('Error', (e as Error).message);
+    } finally {
+      setCreating(false);
     }
   };
 
   const onJoin = async () => {
     if (!roomCode.trim()) return;
+    setJoining(true);
     try {
       const room = await joinPrivateRoom(roomCode.trim());
       router.push({
@@ -80,6 +116,8 @@ export default function PrivateRoomScreen() {
       });
     } catch (e) {
       Alert.alert('Error', (e as Error).message);
+    } finally {
+      setJoining(false);
     }
   };
 
@@ -88,136 +126,130 @@ export default function PrivateRoomScreen() {
     await Share.share({ message: created.inviteText });
   };
 
+  if (loading) {
+    return <Screen loading loadingLabel={t('common.loading')} />;
+  }
+
   if (!permission) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.muted}>{t('common.loading')}</Text>
-      </View>
+      <Screen>
+        <Text style={styles.error}>{t('common.error')}</Text>
+      </Screen>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Pressable onPress={() => router.back()}>
-        <Text style={styles.back}>← {t('private.back')}</Text>
-      </Pressable>
-
-      <Text style={styles.title}>{t('private.title')}</Text>
+    <Screen scroll>
+      <ScreenHeader
+        title={t('private.title')}
+        subtitle={t('private.official_hands', { count: permission.officialHandsPlayed })}
+        onBack={() => router.back()}
+        backLabel={t('private.back')}
+      />
 
       {!permission.hasPermission ? (
-        <View style={styles.card}>
+        <Card elevated style={styles.unlockCard}>
+          <Text style={styles.unlockIcon}>🔒</Text>
+          <Text style={styles.unlockTitle}>{t('private.unlock_title')}</Text>
           <Text style={styles.body}>{t('private.permission_desc', { fee: permission.fee })}</Text>
-          <Pressable style={styles.primaryBtn} onPress={onGrant}>
-            <Text style={styles.primaryText}>{t('private.grant_permission')}</Text>
-          </Pressable>
-        </View>
+          <Button label={t('private.grant_permission')} onPress={onGrant} fullWidth />
+        </Card>
       ) : (
-        <>
-          <View style={styles.card}>
-            <Text style={styles.section}>{t('private.create')}</Text>
-            <TextInput
-              style={styles.input}
-              value={maxSeats}
-              onChangeText={setMaxSeats}
-              keyboardType="number-pad"
-              placeholder={t('private.max_seats')}
-            />
-            <TextInput
-              style={styles.input}
-              value={buyInCap}
-              onChangeText={setBuyInCap}
-              keyboardType="number-pad"
-              placeholder={t('private.buy_in_cap')}
-            />
-            <Pressable style={styles.primaryBtn} onPress={onCreate}>
-              <Text style={styles.primaryText}>{t('private.create_btn')}</Text>
-            </Pressable>
-          </View>
-
-          {created && (
-            <View style={styles.card}>
-              <Text style={styles.section}>{t('private.room_created')}</Text>
-              <Text style={styles.code}>{created.roomCode}</Text>
-              <Text style={styles.muted}>{created.inviteText}</Text>
-              <Pressable style={styles.secondaryBtn} onPress={onShare}>
-                <Text style={styles.secondaryText}>{t('private.share')}</Text>
-              </Pressable>
-              <Pressable
-                style={styles.primaryBtn}
-                onPress={() =>
-                  router.push({
-                    pathname: '/table',
-                    params: {
-                      roomId: created.roomId,
-                      buyInCap: String(created.buyInCap),
-                    },
-                  })
-                }
-              >
-                <Text style={styles.primaryText}>{t('private.enter_room')}</Text>
-              </Pressable>
-            </View>
-          )}
-        </>
+        <Card style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('private.create')}</Text>
+          <LabeledInput
+            label={t('private.max_seats')}
+            value={maxSeats}
+            onChangeText={setMaxSeats}
+            keyboardType="number-pad"
+          />
+          <LabeledInput
+            label={t('private.buy_in_cap')}
+            value={buyInCap}
+            onChangeText={setBuyInCap}
+            keyboardType="number-pad"
+          />
+          <Button
+            label={t('private.create_btn')}
+            onPress={onCreate}
+            loading={creating}
+            fullWidth
+          />
+        </Card>
       )}
 
-      <View style={styles.card}>
-        <Text style={styles.section}>{t('private.join')}</Text>
-        <TextInput
-          style={styles.input}
+      {created && (
+        <Card elevated style={styles.inviteCard}>
+          <Text style={styles.sectionTitle}>{t('private.room_created')}</Text>
+          <Text style={styles.code}>{created.roomCode}</Text>
+          <Text style={styles.inviteText}>{created.inviteText}</Text>
+          <View style={styles.row}>
+            <Button label={t('private.share')} onPress={onShare} variant="secondary" style={styles.half} />
+            <Button
+              label={t('private.enter_room')}
+              onPress={() =>
+                router.push({
+                  pathname: '/table',
+                  params: {
+                    roomId: created.roomId,
+                    buyInCap: String(created.buyInCap),
+                  },
+                })
+              }
+              style={styles.half}
+            />
+          </View>
+        </Card>
+      )}
+
+      <Card style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('private.join')}</Text>
+        <LabeledInput
+          label={t('private.room_code')}
           value={roomCode}
           onChangeText={setRoomCode}
           keyboardType="number-pad"
-          placeholder={t('private.room_code')}
         />
-        <Pressable style={styles.secondaryBtn} onPress={onJoin}>
-          <Text style={styles.secondaryText}>{t('private.join_btn')}</Text>
-        </Pressable>
-      </View>
-
-      <Text style={styles.muted}>
-        {t('private.official_hands', { count: permission.officialHandsPlayed })}
-      </Text>
-    </View>
+        <Button
+          label={t('private.join_btn')}
+          onPress={onJoin}
+          variant="secondary"
+          loading={joining}
+          fullWidth
+        />
+      </Card>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: designTokens.color.bg.lobby, padding: 24 },
-  back: { color: designTokens.color.brand.secondary, marginBottom: 16 },
-  title: { color: '#F5F5F5', fontSize: 24, fontWeight: '700', marginBottom: 20 },
-  card: {
-    backgroundColor: designTokens.color.bg.card,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-  },
-  section: { color: '#F5F5F5', fontSize: 16, fontWeight: '600', marginBottom: 12 },
-  body: { color: '#9E9E9E', marginBottom: 16, lineHeight: 22 },
+  unlockCard: { alignItems: 'center', marginBottom: spacing.lg },
+  unlockIcon: { fontSize: 40, marginBottom: spacing.md },
+  unlockTitle: { ...typography.h2, color: colors.text.primary, marginBottom: spacing.sm },
+  body: { ...typography.body, color: colors.text.secondary, textAlign: 'center', marginBottom: spacing.lg, lineHeight: 24 },
+  section: { marginBottom: spacing.lg },
+  sectionTitle: { ...typography.h2, color: colors.brand.secondary, marginBottom: spacing.md },
+  field: { marginBottom: spacing.md },
+  label: { ...typography.micro, color: colors.text.secondary, marginBottom: spacing.xs },
   input: {
-    backgroundColor: '#121418',
+    backgroundColor: colors.bg.lobby,
     borderRadius: 8,
-    padding: 12,
-    color: '#F5F5F5',
-    marginBottom: 12,
-  },
-  code: { color: designTokens.color.brand.secondary, fontSize: 32, fontWeight: '700', marginVertical: 8 },
-  muted: { color: '#9E9E9E', marginTop: 8 },
-  primaryBtn: {
-    backgroundColor: designTokens.color.brand.secondary,
-    borderRadius: 8,
-    padding: 14,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  primaryText: { color: '#1A1A1A', fontWeight: '700' },
-  secondaryBtn: {
+    padding: spacing.md,
+    color: colors.text.primary,
     borderWidth: 1,
-    borderColor: designTokens.color.brand.secondary,
-    borderRadius: 8,
-    padding: 14,
-    alignItems: 'center',
-    marginTop: 8,
+    borderColor: 'rgba(255,255,255,0.08)',
+    ...typography.body,
   },
-  secondaryText: { color: designTokens.color.brand.secondary, fontWeight: '600' },
+  inviteCard: { marginBottom: spacing.lg },
+  code: {
+    ...typography.display,
+    color: colors.brand.secondary,
+    textAlign: 'center',
+    letterSpacing: 8,
+    marginVertical: spacing.md,
+  },
+  inviteText: { ...typography.caption, color: colors.text.secondary, marginBottom: spacing.lg, lineHeight: 20 },
+  row: { flexDirection: 'row', gap: spacing.md },
+  half: { flex: 1 },
+  error: { ...typography.body, color: colors.semantic.danger, textAlign: 'center' },
 });

@@ -1,7 +1,8 @@
 {
   "common": {
     "chips": "chips",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "error": "Something went wrong"
   },
   "lobby": {
     "quick_start": "Quick Start",
@@ -62,6 +63,7 @@
   "private": {
     "title": "Private Room",
     "back": "Lobby",
+    "unlock_title": "Unlock Private Tables",
     "permission_desc": "Unlock private rooms for a one-time fee of {{fee}} chips. You must agree to the compliance terms.",
     "grant_permission": "Agree & Unlock",
     "create": "Create Room",
@@ -134,6 +136,12 @@
     "native_only_body": "Real IAP requires an iOS or Android device via App Store / Google Play.",
     "first_bonus_title": "First recharge bonus",
     "first_bonus_body": "You received {{bonus}} bonus chips!"
+  },
+  "showdown": {
+    "title": "Showdown",
+    "board": "Board",
+    "pot": "Pot",
+    "no_winner": "Hand complete"
   },
   "leaderboard": {
     "title": "Leaderboard",

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, radius, spacing, typography } from '../theme';
 import { PlayingCard } from './ui/PlayingCard';
+import { CommunityCardsRow } from './CommunityCardsRow';
+import { PotDisplay } from './PotDisplay';
 
 function SeatCountdown({ deadline }: { deadline: number }) {
   const [sec, setSec] = useState(0);
@@ -51,6 +53,7 @@ interface Props {
   potLabel: string;
   heroUserId?: string | null;
   turnDeadline?: number | null;
+  winnerSeats?: number[];
 }
 
 export function Table9Max({
@@ -60,6 +63,7 @@ export function Table9Max({
   potLabel,
   heroUserId,
   turnDeadline,
+  winnerSeats = [],
 }: Props) {
   return (
     <View style={styles.container}>
@@ -69,27 +73,15 @@ export function Table9Max({
           <View style={styles.felt}>
             <View style={styles.feltPattern} />
             <View style={styles.center}>
-              <View style={styles.communityRow}>
-                {communityCards.length > 0 ? (
-                  communityCards.map((c, i) => <PlayingCard key={i} code={c} size="md" />)
-                ) : (
-                  <>
-                    <PlayingCard code="**" faceDown size="sm" />
-                    <PlayingCard code="**" faceDown size="sm" />
-                    <PlayingCard code="**" faceDown size="sm" />
-                  </>
-                )}
-              </View>
-              <View style={styles.potChip}>
-                <Text style={styles.potLabel}>{potLabel}</Text>
-                <Text style={styles.pot}>{potTotal.toLocaleString()}</Text>
-              </View>
+              <CommunityCardsRow cards={communityCards} />
+              <PotDisplay potTotal={potTotal} potLabel={potLabel} />
             </View>
             {SEAT_POSITIONS.map((pos, idx) => {
               const seat = seats.find((s) => s.seatIndex === idx);
               const isHero = heroUserId && seat?.userId === heroUserId;
               const showCards =
                 isHero && seat?.holeCards && seat.holeCards[0] !== '**';
+              const isWinner = winnerSeats.includes(idx);
               return (
                 <View
                   key={idx}
@@ -98,6 +90,7 @@ export function Table9Max({
                     { top: pos.top as `${number}%`, left: pos.left as `${number}%` },
                     seat?.isActive && styles.seatActive,
                     isHero && styles.seatHero,
+                    isWinner && styles.seatWinner,
                   ]}
                 >
                   {showCards && (
@@ -107,7 +100,7 @@ export function Table9Max({
                       ))}
                     </View>
                   )}
-                  <View style={[styles.seatBadge, seat?.isActive && styles.seatBadgeActive, isHero && styles.seatHeroBadge]}>
+                  <View style={[styles.seatBadge, seat?.isActive && styles.seatBadgeActive, isHero && styles.seatHeroBadge, isWinner && styles.seatWinnerBadge]}>
                     <Text style={styles.seatName} numberOfLines={1}>
                       {seat?.nickname ?? '—'}
                       {seat?.isBot ? ' 🤖' : ''}
@@ -203,6 +196,7 @@ const styles = StyleSheet.create({
   },
   seatActive: {},
   seatHero: { zIndex: 2 },
+  seatWinner: { zIndex: 3 },
   holeCards: {
     flexDirection: 'row',
     marginBottom: 4,
@@ -225,6 +219,16 @@ const styles = StyleSheet.create({
   },
   seatHeroBadge: {
     borderColor: colors.semantic.info,
+  },
+  seatWinnerBadge: {
+    borderColor: colors.brand.secondary,
+    borderWidth: 2,
+    backgroundColor: 'rgba(201,162,39,0.35)',
+    shadowColor: colors.brand.secondary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 8,
+    elevation: 8,
   },
   seatName: { ...typography.micro, color: colors.text.primary, maxWidth: 80 },
   seatChips: { ...typography.micro, color: colors.brand.secondary, fontWeight: '700', marginTop: 2 },
