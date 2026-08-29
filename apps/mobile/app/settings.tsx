@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Alert, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { getProfile, selfExclude, setLeaderboardStealth } from '../src/api/client';
+import {
+  getProfile,
+  selfExclude,
+  setLeaderboardStealth,
+  logout,
+} from '../src/api/client';
 import { Screen, ScreenHeader } from '../src/components/ui/Screen';
 import { Card } from '../src/components/ui/Card';
 import { Button } from '../src/components/ui/Button';
@@ -86,6 +91,19 @@ export default function SettingsScreen() {
           onPress={onSelfExclude}
           variant="danger"
           loading={loading}
+          fullWidth
+        />
+      </Card>
+
+      <Card style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('settings.account')}</Text>
+        <Button
+          label={t('settings.logout')}
+          onPress={async () => {
+            await logout();
+            router.replace('/auth/login');
+          }}
+          variant="secondary"
           fullWidth
         />
       </Card>

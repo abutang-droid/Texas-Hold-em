@@ -52,6 +52,10 @@ import {
   setAdminRemark,
   verifyOAuthIdToken,
   loginOrRegisterOAuth,
+  registerWithEmail,
+  loginWithEmail,
+  isValidEmail,
+  isValidPassword,
   createRefreshSession,
   rotateRefreshSession,
   updateUserProfile,
@@ -193,6 +197,85 @@ class ApiController {
       message: 'ok',
       data: { token, refreshToken, user: toProfile(user) },
     };
+  }
+
+  @Post('auth/register')
+  async emailRegister(
+    @Body() body: { email: string; password: string; nickname?: string },
+    @Headers('accept-language') acceptLang?: string,
+    @Headers('authorization') auth?: string,
+  ) {
+    if (!body.email?.trim()) {
+      throw new BadRequestException({ code: 'INVALID_EMAIL', messageKey: 'errors.invalid_email' });
+    }
+    if (!isValidEmail(body.email)) {
+      throw new BadRequestException({ code: 'INVALID_EMAIL', messageKey: 'errors.invalid_email' });
+    }
+    if (!isValidPassword(body.password ?? '')) {
+      throw new BadRequestException({ code: 'WEAK_PASSWORD', messageKey: 'errors.weak_password' });
+    }
+
+    let linkGuestUserId: number | undefined;
+    try {
+      linkGuestUserId = authUser(auth).userId;
+    } catch {
+      /* optional guest bind */
+    }
+
+    const locale = parseLocale(acceptLang);
+    const nickname = body.nickname?.trim() || body.email.split('@')[0]!.slice(0, 32);
+
+    try {
+      const user = await registerWithEmail({
+        email: body.email,
+        password: body.password,
+        nickname,
+        locale,
+        linkGuestUserId,
+      });
+      const token = signAccessToken({ sub: user.id, nickname: user.nickname });
+      const refreshToken = await createRefreshSession(user.id);
+      return {
+        code: 0,
+        message: 'ok',
+        data: { token, refreshToken, user: toProfile(user) },
+      };
+    } catch (e) {
+      const msg = (e as Error).message;
+      if (msg === 'EMAIL_TAKEN') {
+        throw new BadRequestException({ code: 'EMAIL_TAKEN', messageKey: 'errors.email_taken' });
+      }
+      throw e;
+    }
+  }
+
+  @Post('auth/login')
+  async emailLogin(@Body() body: { email: string; password: string }) {
+    if (!body.email?.trim() || !body.password) {
+      throw new BadRequestException({ code: 'INVALID_CREDENTIALS', messageKey: 'errors.invalid_credentials' });
+    }
+
+    try {
+      const user = await loginWithEmail(body.email, body.password);
+      if (!user) {
+        throw new UnauthorizedException({
+          code: 'INVALID_CREDENTIALS',
+          messageKey: 'errors.invalid_credentials',
+        });
+      }
+      const token = signAccessToken({ sub: user.id, nickname: user.nickname });
+      const refreshToken = await createRefreshSession(user.id);
+      return {
+        code: 0,
+        message: 'ok',
+        data: { token, refreshToken, user: toProfile(user) },
+      };
+    } catch (e) {
+      if ((e as Error).message === 'ACCOUNT_BLOCKED') {
+        throw new ForbiddenException({ code: 'FORBIDDEN', messageKey: 'errors.account_blocked' });
+      }
+      throw e;
+    }
   }
 
   @Post('auth/refresh')

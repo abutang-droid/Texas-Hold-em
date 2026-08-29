@@ -17,4 +17,5 @@ export type { RechargeChannel } from './iap/types.js';
 export * from './compliance.js';
 export * from './leaderboard.js';
 export * from './oauth.js';
+export * from './email-auth.js';
 export * from './profile.js';

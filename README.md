@@ -41,7 +41,11 @@ pnpm local:test        # 完整测试（需 api 运行）
 
 功能：用户查询/封禁/调账、手牌只读、私人场开关、举报工单、经济看板、风控告警
 
-## 私人场（v1.0.5）
+## 认证
+
+- **邮箱注册/登录**：`POST /api/v1/auth/register` · `POST /api/v1/auth/login`
+- 游客登录：`POST /api/v1/auth/guest`（移动端登录页可选）
+- OAuth 开发模式：`POST /api/v1/auth/oauth`（`idToken`: `dev:google:sub`）
 
 客户端大厅 →「私人场」：
 

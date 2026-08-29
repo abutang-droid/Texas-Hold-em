@@ -1,3 +1,5 @@
+import { saveSession, loadSession, clearSession, type StoredSession } from '../storage/session';
+
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
 
 export interface UserProfile {
@@ -10,6 +12,7 @@ export interface UserProfile {
 }
 
 let token: string | null = null;
+let refreshToken: string | null = null;
 
 export function setToken(t: string) {
   token = t;
@@ -17,6 +20,34 @@ export function setToken(t: string) {
 
 export function getToken() {
   return token;
+}
+
+export function getRefreshToken() {
+  return refreshToken;
+}
+
+export async function persistAuth(data: {
+  token: string;
+  refreshToken: string;
+  user: UserProfile;
+}): Promise<void> {
+  token = data.token;
+  refreshToken = data.refreshToken;
+  await saveSession(data);
+}
+
+export async function restoreSession(): Promise<StoredSession | null> {
+  const session = await loadSession();
+  if (!session?.token) return null;
+  token = session.token;
+  refreshToken = session.refreshToken;
+  return session;
+}
+
+export async function logout(): Promise<void> {
+  token = null;
+  refreshToken = null;
+  await clearSession();
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -27,7 +58,18 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   if (token) headers.Authorization = `Bearer ${token}`;
   const res = await fetch(`${API_URL}${path}`, { ...options, headers });
   const json = await res.json();
-  if (!res.ok) throw new Error(json.messageKey ?? json.message ?? 'Request failed');
+  if (!res.ok) {
+    const payload = json.message;
+    const messageKey =
+      (typeof payload === 'object' && payload?.messageKey) ||
+      json.messageKey ||
+      (typeof payload === 'string' ? payload : null) ||
+      json.message ||
+      'Request failed';
+    const err = new Error(messageKey) as Error & { code?: string };
+    err.code = (typeof payload === 'object' && payload?.code) || json.code;
+    throw err;
+  }
   return json.data as T;
 }
 
@@ -38,7 +80,33 @@ export async function guestLogin(deviceId?: string) {
     deviceId: string;
     user: UserProfile;
   }>('/api/v1/auth/guest', { method: 'POST', body: JSON.stringify({ deviceId }) });
-  setToken(data.token);
+  await persistAuth(data);
+  return data;
+}
+
+export async function registerWithEmail(email: string, password: string, nickname?: string) {
+  const data = await request<{
+    token: string;
+    refreshToken: string;
+    user: UserProfile;
+  }>('/api/v1/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ email, password, nickname }),
+  });
+  await persistAuth(data);
+  return data;
+}
+
+export async function loginWithEmail(email: string, password: string) {
+  const data = await request<{
+    token: string;
+    refreshToken: string;
+    user: UserProfile;
+  }>('/api/v1/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+  await persistAuth(data);
   return data;
 }
 
@@ -51,7 +119,7 @@ export async function oauthLogin(provider: 'APPLE' | 'GOOGLE', idToken: string, 
     method: 'POST',
     body: JSON.stringify({ provider, idToken, nickname }),
   });
-  setToken(data.token);
+  await persistAuth(data);
   return data;
 }
 

@@ -58,7 +58,36 @@
     "start": "开始游戏"
   },
   "errors": {
-    "insufficient_chips": "筹码不足"
+    "insufficient_chips": "筹码不足",
+    "invalid_email": "邮箱格式不正确",
+    "weak_password": "密码至少 8 位",
+    "email_taken": "该邮箱已注册",
+    "invalid_credentials": "邮箱或密码错误",
+    "unauthorized": "请先登录",
+    "account_blocked": "账号已被限制"
+  },
+  "auth": {
+    "login_title": "登录",
+    "login_subtitle": "使用邮箱登录你的账号",
+    "register_title": "注册",
+    "register_subtitle": "创建账号，注册即送 100 筹码",
+    "email": "邮箱",
+    "password": "密码",
+    "confirm_password": "确认密码",
+    "nickname": "昵称",
+    "nickname_optional": "可选，默认使用邮箱前缀",
+    "password_hint": "至少 8 位",
+    "login_btn": "登录",
+    "register_btn": "注册",
+    "no_account": "还没有账号？",
+    "has_account": "已有账号？",
+    "register_link": "立即注册",
+    "login_link": "去登录",
+    "guest_continue": "游客试玩（无需注册）",
+    "register_bonus": "🎁 新用户注册赠送 100 筹码",
+    "error_title": "提示",
+    "fill_required": "请填写邮箱和密码",
+    "password_mismatch": "两次输入的密码不一致"
   },
   "private": {
     "title": "私人场",
@@ -124,7 +153,9 @@
     "cancel": "取消",
     "confirm": "确定",
     "leaderboard": "排行榜",
-    "stealth_desc": "隐身模式（不上榜）"
+    "stealth_desc": "隐身模式（不上榜）",
+    "account": "账号",
+    "logout": "退出登录"
   },
   "shop": {
     "title": "充值商城",

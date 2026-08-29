@@ -14,6 +14,8 @@ export interface UserRow {
   level: number;
   preferred_locale: SupportedLocale;
   device_id: string | null;
+  email?: string | null;
+  password_hash?: string | null;
   private_room_permission: boolean;
   status: string;
   settings_json?: Record<string, unknown> | null;

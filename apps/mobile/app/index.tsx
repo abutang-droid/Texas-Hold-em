@@ -3,12 +3,12 @@ import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import {
-  guestLogin,
   quickStart,
   getLeaderboard,
   getCompliance,
   declareAge,
   acknowledgeMigration,
+  getProfile,
   type UserProfile,
 } from '../src/api/client';
 import { Screen } from '../src/components/ui/Screen';
@@ -62,8 +62,8 @@ export default function LobbyScreen() {
 
   const init = useCallback(async () => {
     try {
-      const login = await guestLogin();
-      setUser(login.user);
+      const profile = await getProfile();
+      setUser(profile);
       const [board, compliance] = await Promise.all([getLeaderboard(), getCompliance()]);
       setProfitTop(board.profit.slice(0, 3));
       if (compliance.migrationRequired) setMigrationMsg(compliance.migrationMessage);

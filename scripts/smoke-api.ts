@@ -48,6 +48,33 @@ async function main() {
   token = oauth.token;
   console.log('   oauth user:', oauth.user.nickname);
 
+  const testEmail = `smoke-${Date.now()}@example.com`;
+  console.log('2d. Email register');
+  const registered = await req<{ token: string; user: { chipsBalance: number; nickname: string } }>(
+    '/api/v1/auth/register',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        email: testEmail,
+        password: 'smokepass8',
+        nickname: 'SmokeEmail',
+      }),
+    },
+  );
+  console.log('   registered:', registered.user.nickname, 'chips:', registered.user.chipsBalance);
+  token = registered.token;
+
+  console.log('2e. Email login');
+  const emailLogin = await req<{ token: string; user: { nickname: string } }>(
+    '/api/v1/auth/login',
+    {
+      method: 'POST',
+      body: JSON.stringify({ email: testEmail, password: 'smokepass8' }),
+    },
+  );
+  token = emailLogin.token;
+  console.log('   login ok:', emailLogin.user.nickname);
+
   console.log('3. Mock recharge');
   const recharge = await req<{ chipsBalance: number }>(
     '/api/v1/shop/mock-recharge',
