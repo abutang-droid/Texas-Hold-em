@@ -149,7 +149,7 @@ async function main() {
       { method: 'POST', body: JSON.stringify({}) },
       token,
     );
-    if (!match.roomId?.startsWith('O')) throw new Error(`unexpected roomId ${match.roomId}`);
+    if (!/^R\d+/.test(match.roomId)) throw new Error(`unexpected official roomId ${match.roomId}`);
     pass('Quick start', `room=${match.roomId} cap=${match.buyInCap}`);
 
     const lb = await req<{ profit: unknown[]; biggestPot: unknown[] }>('/api/v1/leaderboard');
