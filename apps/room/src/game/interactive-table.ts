@@ -429,7 +429,11 @@ export class InteractiveTable {
     }
   }
 
+  private finishingHand = false;
+
   private finishHand(): void {
+    if (this.finishingHand) return;
+    this.finishingHand = true;
     const active = this.players.filter((p) => p.status !== 'FOLDED' && p.status !== 'SIT_OUT');
     const totalPot = this.getPotTotal();
     let rakeAmount = 0;
@@ -512,6 +516,7 @@ export class InteractiveTable {
     }
 
     setTimeout(() => {
+      this.finishingHand = false;
       for (const uid of [...this.pendingKick]) {
         if (this.hasPlayer(uid)) this.removePlayer(uid);
         this.pendingKick.delete(uid);

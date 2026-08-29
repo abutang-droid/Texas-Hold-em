@@ -23,8 +23,17 @@ export interface LastAction {
   autoAction?: boolean;
 }
 
-export interface HandEndNotice {
+export interface HandWinner {
+  seatIndex: number;
+  userId: string;
+  nickname: string;
+  winAmount: number;
+}
+
+export interface HandEndPayload {
   handId: string;
   nextHandIn: number;
-  shownAt: number;
+  potSize: number;
+  boardCards: string;
+  winners: HandWinner[];
 }

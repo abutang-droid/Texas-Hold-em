@@ -64,7 +64,18 @@ export function wireTableHandlers(table: InteractiveTable, io: Server, roomId: s
     io.to(roomId).emit('hand_ended', {
       seq: nextSeq(roomId),
       serverTs: Date.now(),
-      payload: { handId: summary.handId, nextHandIn: 3000 },
+      payload: {
+        handId: summary.handId,
+        nextHandIn: 3000,
+        potSize: summary.potSize,
+        boardCards: summary.boardCards,
+        winners: summary.winners.map((w) => ({
+          seatIndex: w.seatIndex,
+          userId: w.userId,
+          winAmount: w.winAmount,
+          nickname: summary.playerSnapshot[w.userId]?.nickname ?? `Seat ${w.seatIndex + 1}`,
+        })),
+      },
     });
   });
 }

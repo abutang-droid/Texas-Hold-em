@@ -7,12 +7,13 @@ import { getToken, submitReport } from '../src/api/client';
 import { Table9Max, type SeatView } from '../src/components/Table9Max';
 import { ActionPanel } from '../src/components/ActionPanel';
 import { HandStatusBar } from '../src/components/HandStatusBar';
+import { ShowdownOverlay } from '../src/components/ShowdownOverlay';
 import {
   PrivateTablePanels,
   type DissolveVoteState,
   type RebuyApproval,
 } from '../src/components/PrivateTablePanels';
-import type { HandEndNotice, LastAction, PokerAction, TurnContext } from '../src/types/table';
+import type { HandEndPayload, LastAction, PokerAction, TurnContext } from '../src/types/table';
 
 const ROOM_URL = process.env.EXPO_PUBLIC_ROOM_URL ?? 'http://localhost:3001';
 
@@ -79,12 +80,25 @@ export default function TableScreen() {
   const [turnContext, setTurnContext] = useState<TurnContext | null>(null);
   const [lastAction, setLastAction] = useState<LastAction | null>(null);
   const [handNotice, setHandNotice] = useState<string | null>(null);
+  const [showdown, setShowdown] = useState<HandEndPayload | null>(null);
+  const [winnerSeats, setWinnerSeats] = useState<number[]>([]);
   const [rebuyApproval, setRebuyApproval] = useState<RebuyApproval | null>(null);
   const [dissolveVote, setDissolveVote] = useState<DissolveVoteState | null>(null);
   const joinedRef = useRef(false);
   const myUserIdRef = useRef<string | null>(null);
   const seatsRef = useRef<SeatView[]>([]);
   const handNoticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const shownHandsRef = useRef(new Set<string>());
+
+  const dismissShowdown = useCallback(() => {
+    setShowdown(null);
+    setWinnerSeats([]);
+  }, []);
+
+  const dismissShowdownRef = useRef(dismissShowdown);
+  useEffect(() => {
+    dismissShowdownRef.current = dismissShowdown;
+  }, [dismissShowdown]);
 
   useEffect(() => {
     seatsRef.current = state.seats;
@@ -144,133 +158,175 @@ export default function TableScreen() {
       });
     };
 
-    s.on('connect', () => {
+    const onConnect = () => {
       join(joinedRef.current);
       joinedRef.current = true;
-    });
+    };
 
-    s.on('room_state_sync', (msg: { payload: SnapshotPayload }) => {
+    const onRoomState = (msg: { payload: SnapshotPayload }) => {
       applySnapshot(msg.payload);
-    });
+    };
 
-    s.on(
-      'action_turn',
-      (msg: {
-        payload: {
-          seatIndex: number;
-          deadline: number;
-          validActions: PokerAction[];
-          callAmount: number;
-          minRaise: number;
-          maxRaise: number;
-        };
-      }) => {
-        const p = msg.payload;
-        setTurnContext({
-          seatIndex: p.seatIndex,
-          deadline: p.deadline,
-          validActions: p.validActions,
-          callAmount: p.callAmount,
-          minRaise: p.minRaise,
-          maxRaise: p.maxRaise,
-        });
-        setState((prev) => ({
-          ...prev,
-          currentTurnSeat: p.seatIndex,
-          actionDeadline: p.deadline,
-          seats: prev.seats.map((seat) => ({
-            ...seat,
-            isActive: seat.seatIndex === p.seatIndex,
-          })),
-        }));
-      },
-    );
+    const onActionTurn = (msg: {
+      payload: {
+        seatIndex: number;
+        deadline: number;
+        validActions: PokerAction[];
+        callAmount: number;
+        minRaise: number;
+        maxRaise: number;
+      };
+    }) => {
+      const p = msg.payload;
+      setTurnContext({
+        seatIndex: p.seatIndex,
+        deadline: p.deadline,
+        validActions: p.validActions,
+        callAmount: p.callAmount,
+        minRaise: p.minRaise,
+        maxRaise: p.maxRaise,
+      });
+      setState((prev) => ({
+        ...prev,
+        currentTurnSeat: p.seatIndex,
+        actionDeadline: p.deadline,
+        seats: prev.seats.map((seat) => ({
+          ...seat,
+          isActive: seat.seatIndex === p.seatIndex,
+        })),
+      }));
+    };
 
-    s.on(
-      'action_result',
-      (msg: {
-        payload: {
-          seatIndex: number;
-          userId: string;
-          actionType: string;
-          amount?: number;
-          autoAction?: boolean;
-        };
-      }) => {
-        const seat = seatsRef.current.find((x) => x.seatIndex === msg.payload.seatIndex);
-        setLastAction({
-          nickname: seat?.nickname ?? msg.payload.userId,
-          actionType: msg.payload.actionType,
-          amount: msg.payload.amount,
-          autoAction: msg.payload.autoAction,
-        });
-        if (msg.payload.userId === myUserIdRef.current) {
-          setTurnContext(null);
-        }
-      },
-    );
+    const onActionResult = (msg: {
+      payload: {
+        seatIndex: number;
+        userId: string;
+        actionType: string;
+        amount?: number;
+        autoAction?: boolean;
+      };
+    }) => {
+      const seat = seatsRef.current.find((x) => x.seatIndex === msg.payload.seatIndex);
+      setLastAction({
+        nickname: seat?.nickname ?? msg.payload.userId,
+        actionType: msg.payload.actionType,
+        amount: msg.payload.amount,
+        autoAction: msg.payload.autoAction,
+      });
+      if (msg.payload.userId === myUserIdRef.current) {
+        setTurnContext(null);
+      }
+    };
 
-    s.on('hand_ended', (msg: { payload: HandEndNotice }) => {
+    const onHandEnded = (msg: {
+      payload: Partial<HandEndPayload> & { handId: string; nextHandIn: number };
+    }) => {
+      const handId = msg.payload.handId;
+      if (!handId || shownHandsRef.current.has(handId)) return;
+      shownHandsRef.current.add(handId);
+      if (shownHandsRef.current.size > 50) {
+        const oldest = shownHandsRef.current.values().next().value;
+        if (oldest) shownHandsRef.current.delete(oldest);
+      }
+
       setTurnContext(null);
-      const secs = Math.ceil(msg.payload.nextHandIn / 1000);
-      setHandNotice(t('game.next_hand', { seconds: secs }));
+      const p = msg.payload;
+      const payload: HandEndPayload = {
+        handId,
+        nextHandIn: p.nextHandIn ?? 3000,
+        potSize: p.potSize ?? 0,
+        boardCards: p.boardCards ?? '',
+        winners: p.winners ?? [],
+      };
+      setShowdown((prev) => (prev?.handId === handId ? prev : payload));
+      setWinnerSeats(payload.winners.map((w) => w.seatIndex));
+      setHandNotice(null);
       if (handNoticeTimer.current) clearTimeout(handNoticeTimer.current);
-      handNoticeTimer.current = setTimeout(() => setHandNotice(null), msg.payload.nextHandIn);
-    });
+      handNoticeTimer.current = setTimeout(
+        () => dismissShowdownRef.current(),
+        payload.nextHandIn,
+      );
+    };
 
-    s.on(
-      're_buy_approval_needed',
-      (msg: {
-        payload: {
-          requestId: string;
-          userId: string;
-          nickname: string;
-          amount: number;
-          deadline: number;
-        };
-      }) => {
-        setRebuyApproval(msg.payload);
-      },
-    );
+    const onGameStarted = () => {
+      if (handNoticeTimer.current) {
+        clearTimeout(handNoticeTimer.current);
+        handNoticeTimer.current = null;
+      }
+      setShowdown(null);
+      setWinnerSeats([]);
+    };
 
-    s.on(
-      're_buy_result',
-      (msg: {
-        payload: { userId: string; approved: boolean; amount?: number };
-      }) => {
-        if (msg.payload.userId === myUserIdRef.current) {
-          Alert.alert(
-            msg.payload.approved ? t('table.rebuy_approved') : t('table.rebuy_rejected'),
-          );
-        }
-        setRebuyApproval((cur) =>
-          cur && cur.userId === msg.payload.userId ? null : cur,
+    const onRebuyNeeded = (msg: {
+      payload: {
+        requestId: string;
+        userId: string;
+        nickname: string;
+        amount: number;
+        deadline: number;
+      };
+    }) => {
+      setRebuyApproval(msg.payload);
+    };
+
+    const onRebuyResult = (msg: {
+      payload: { userId: string; approved: boolean; amount?: number };
+    }) => {
+      if (msg.payload.userId === myUserIdRef.current) {
+        Alert.alert(
+          msg.payload.approved ? t('table.rebuy_approved') : t('table.rebuy_rejected'),
         );
-      },
-    );
+      }
+      setRebuyApproval((cur) =>
+        cur && cur.userId === msg.payload.userId ? null : cur,
+      );
+    };
 
-    s.on('dissolve_vote_update', (msg: { payload: DissolveVoteState }) => {
+    const onDissolveUpdate = (msg: { payload: DissolveVoteState }) => {
       setDissolveVote(msg.payload);
-    });
+    };
 
-    s.on('dissolve_vote_failed', () => {
+    const onDissolveFailed = () => {
       setDissolveVote(null);
       Alert.alert(t('table.dissolve_failed'));
-    });
+    };
 
-    s.on('room_dissolved', () => {
+    const onRoomDissolved = () => {
       setDissolveVote(null);
       Alert.alert(t('table.room_dissolved'), '', [
         { text: 'OK', onPress: () => router.replace('/') },
       ]);
-    });
+    };
+
+    s.on('connect', onConnect);
+    s.on('room_state_sync', onRoomState);
+    s.on('action_turn', onActionTurn);
+    s.on('action_result', onActionResult);
+    s.on('hand_ended', onHandEnded);
+    s.on('game_started', onGameStarted);
+    s.on('re_buy_approval_needed', onRebuyNeeded);
+    s.on('re_buy_result', onRebuyResult);
+    s.on('dissolve_vote_update', onDissolveUpdate);
+    s.on('dissolve_vote_failed', onDissolveFailed);
+    s.on('room_dissolved', onRoomDissolved);
 
     return () => {
       if (handNoticeTimer.current) clearTimeout(handNoticeTimer.current);
+      s.off('connect', onConnect);
+      s.off('room_state_sync', onRoomState);
+      s.off('action_turn', onActionTurn);
+      s.off('action_result', onActionResult);
+      s.off('hand_ended', onHandEnded);
+      s.off('game_started', onGameStarted);
+      s.off('re_buy_approval_needed', onRebuyNeeded);
+      s.off('re_buy_result', onRebuyResult);
+      s.off('dissolve_vote_update', onDissolveUpdate);
+      s.off('dissolve_vote_failed', onDissolveFailed);
+      s.off('room_dissolved', onRoomDissolved);
       s.emit('leave_room', { requestId: `leave-${Date.now()}` });
       s.disconnect();
     };
-  }, [roomId, buyInCapParam, router, t, applySnapshot]);
+  }, [roomId, buyInCapParam, router, applySnapshot, t]);
 
   const emitAdmin = (action: string, targetUserId?: string) => {
     socket?.emit('room_admin_action', {
@@ -337,6 +393,7 @@ export default function TableScreen() {
         potLabel={t('game.pot')}
         heroUserId={myUserId}
         turnDeadline={state.actionDeadline}
+        winnerSeats={winnerSeats}
       />
 
       <HandStatusBar
@@ -372,6 +429,15 @@ export default function TableScreen() {
           <ActionPanel turn={turnContext} onAction={sendAction} />
         </View>
       )}
+
+      <ShowdownOverlay
+        visible={!!showdown}
+        handId={showdown?.handId ?? ''}
+        winners={showdown?.winners ?? []}
+        potSize={showdown?.potSize ?? 0}
+        boardCards={showdown?.boardCards ?? ''}
+        nextHandIn={showdown?.nextHandIn ?? 3000}
+      />
 
       <Pressable
         style={styles.back}
