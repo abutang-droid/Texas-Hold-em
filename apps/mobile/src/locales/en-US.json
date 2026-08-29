@@ -2,10 +2,12 @@
   "common": {
     "chips": "chips",
     "loading": "Loading...",
-    "error": "Something went wrong"
+    "error": "Something went wrong",
+    "ok": "OK"
   },
   "lobby": {
     "quick_start": "Quick Start",
+    "quick_start_loading": "Starting…",
     "recharge": "Recharge",
     "private": "Private Room",
     "weekly_top": "Weekly Top",
@@ -75,7 +77,12 @@
     "ip_conflict": "Another account on your network is already at this table",
     "room_full": "This table is full",
     "unauthorized": "Please sign in first",
-    "account_blocked": "This account has been restricted"
+    "account_blocked": "This account has been restricted",
+    "age_required": "Please confirm you are 18+ before playing",
+    "migration_required": "Please acknowledge the beta migration notice",
+    "network_timeout": "Request timed out — check your network connection",
+    "network_unreachable": "Cannot reach server — check API URL and WiFi",
+    "request_failed": "Request failed"
   },
   "auth": {
     "login_title": "Sign In",

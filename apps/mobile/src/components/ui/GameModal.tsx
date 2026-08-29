@@ -8,9 +8,17 @@ interface Props {
   body: string;
   confirmLabel: string;
   onConfirm: () => void;
+  confirmDisabled?: boolean;
 }
 
-export function GameModal({ visible, title, body, confirmLabel, onConfirm }: Props) {
+export function GameModal({
+  visible,
+  title,
+  body,
+  confirmLabel,
+  onConfirm,
+  confirmDisabled,
+}: Props) {
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.backdrop}>
@@ -18,7 +26,7 @@ export function GameModal({ visible, title, body, confirmLabel, onConfirm }: Pro
           <View style={styles.accent} />
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.body}>{body}</Text>
-          <Button label={confirmLabel} onPress={onConfirm} fullWidth />
+          <Button label={confirmLabel} onPress={onConfirm} fullWidth disabled={confirmDisabled} />
         </View>
       </View>
     </Modal>
