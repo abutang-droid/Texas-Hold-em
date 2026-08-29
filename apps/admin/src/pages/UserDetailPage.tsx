@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { adminApi, type AdminHand, type AdminUser } from '../api/client';
+import { adminApi, type AdminUser } from '../api/client';
 
 interface ChipTx {
   id: number;
@@ -11,15 +11,22 @@ interface ChipTx {
   createdAt: string;
 }
 
+type DetailUser = AdminUser & {
+  adminRemark?: string;
+  deviceId?: string;
+  email?: string | null;
+  privateRoomPermission?: boolean;
+};
+
 export default function UserDetailPage() {
   const { id } = useParams<{ id: string }>();
   const userId = Number(id);
-  const [user, setUser] = useState<AdminUser & { adminRemark?: string; deviceId?: string } | null>(
-    null,
-  );
+  const [user, setUser] = useState<DetailUser | null>(null);
   const [transactions, setTransactions] = useState<ChipTx[]>([]);
-  const [hands, setHands] = useState<AdminHand[]>([]);
+  const [hands, setHands] = useState<Awaited<ReturnType<typeof adminApi.getUserDetail>>['recentHands']>([]);
   const [remark, setRemark] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
   const [error, setError] = useState('');
 
   const load = () => {
@@ -29,6 +36,8 @@ export default function UserDetailPage() {
       .then((data) => {
         setUser(data.user);
         setRemark(data.user.adminRemark ?? '');
+        setNickname(data.user.nickname);
+        setAvatarUrl(data.user.avatarUrl ?? 'preset:spade');
         setTransactions(data.transactions);
         setHands(data.recentHands);
       })
@@ -39,6 +48,16 @@ export default function UserDetailPage() {
 
   const saveRemark = async () => {
     await adminApi.setUserRemark(userId, remark);
+    load();
+  };
+
+  const saveProfile = async () => {
+    await adminApi.updateUserProfile(userId, { nickname, avatarUrl });
+    load();
+  };
+
+  const togglePrivate = async () => {
+    await adminApi.setPrivatePermission(userId, !user?.privateRoomPermission);
     load();
   };
 
@@ -58,10 +77,29 @@ export default function UserDetailPage() {
           <p>筹码: {user.chipsBalance}</p>
           <p>等级: Lv.{user.level}</p>
           <p>状态: {user.status}</p>
+          <p>邮箱: {user.email ?? '-'}</p>
+          <p>头像: {user.avatarUrl ?? '-'}</p>
+          <p>私人场权限: {user.privateRoomPermission ? '已开通' : '未开通'}</p>
           <p className="muted">设备: {user.deviceId ?? '-'}</p>
+          <button className="btn" onClick={togglePrivate}>
+            {user.privateRoomPermission ? '撤销私人场权限' : '授予私人场权限'}
+          </button>
         </div>
         <div className="card" style={{ flex: 1 }}>
-          <h3>运营备注</h3>
+          <h3>资料编辑</h3>
+          <label>
+            昵称
+            <input value={nickname} onChange={(e) => setNickname(e.target.value)} style={{ width: '100%' }} />
+          </label>
+          <label>
+            头像 preset URL
+            <input value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} style={{ width: '100%' }} />
+          </label>
+          <p className="muted">例: preset:spade / preset:heart</p>
+          <button className="btn btn-primary" onClick={saveProfile} style={{ marginTop: 8 }}>
+            保存资料
+          </button>
+          <h3 style={{ marginTop: 16 }}>运营备注</h3>
           <textarea
             value={remark}
             onChange={(e) => setRemark(e.target.value)}
@@ -82,27 +120,29 @@ export default function UserDetailPage() {
             <th>类型</th>
             <th>变动</th>
             <th>余额</th>
+            <th>参考</th>
           </tr>
         </thead>
         <tbody>
-          {transactions.map((t) => (
-            <tr key={t.id}>
-              <td>{new Date(t.createdAt).toLocaleString()}</td>
-              <td>{t.type}</td>
-              <td>{t.amount}</td>
-              <td>{t.balanceAfter}</td>
+          {transactions.map((tx) => (
+            <tr key={tx.id}>
+              <td>{new Date(tx.createdAt).toLocaleString()}</td>
+              <td>{tx.type}</td>
+              <td>{tx.amount}</td>
+              <td>{tx.balanceAfter}</td>
+              <td>{tx.referenceId}</td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      <h3>最近 10 手</h3>
+      <h3>最近手牌</h3>
       <table className="table">
         <thead>
           <tr>
-            <th>Hand ID</th>
-            <th>房间</th>
-            <th>底池</th>
+            <th>Hand</th>
+            <th>Room</th>
+            <th>Pot</th>
             <th>时间</th>
           </tr>
         </thead>
@@ -110,7 +150,7 @@ export default function UserDetailPage() {
           {hands.map((h) => (
             <tr key={h.handId}>
               <td>
-                <Link to={`/hands?hand=${h.handId}`}>{h.handId}</Link>
+                <Link to={`/hands/${h.handId}`}>{h.handId}</Link>
               </td>
               <td>{h.roomId}</td>
               <td>{h.potSize}</td>

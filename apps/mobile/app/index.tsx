@@ -15,22 +15,26 @@ import { Screen } from '../src/components/ui/Screen';
 import { Card } from '../src/components/ui/Card';
 import { Button } from '../src/components/ui/Button';
 import { GameModal } from '../src/components/ui/GameModal';
+import { Avatar } from '../src/components/Avatar';
 import { colors, spacing, typography } from '../src/theme';
 
-function AvatarBadge({ nickname, level }: { nickname: string; level: number }) {
-  const initial = (nickname[0] ?? '?').toUpperCase();
+function ProfileBadge({
+  user,
+  onPress,
+}: {
+  user: UserProfile;
+  onPress: () => void;
+}) {
   return (
-    <View style={styles.avatarRow}>
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{initial}</Text>
-      </View>
+    <Pressable style={styles.avatarRow} onPress={onPress}>
+      <Avatar nickname={user.nickname} avatarUrl={user.avatarUrl} size="md" />
       <View>
-        <Text style={styles.nickname}>{nickname}</Text>
+        <Text style={styles.nickname}>{user.nickname}</Text>
         <View style={styles.levelPill}>
-          <Text style={styles.levelText}>Lv.{level}</Text>
+          <Text style={styles.levelText}>Lv.{user.level}</Text>
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -112,7 +116,7 @@ export default function LobbyScreen() {
   return (
     <Screen scroll contentStyle={styles.content}>
       <View style={styles.topBar}>
-        {user ? <AvatarBadge nickname={user.nickname} level={user.level} /> : null}
+        {user ? <ProfileBadge user={user} onPress={() => router.push('/profile')} /> : null}
         <Pressable onPress={() => router.push('/settings')} hitSlop={12}>
           <Text style={styles.gear}>⚙</Text>
         </Pressable>

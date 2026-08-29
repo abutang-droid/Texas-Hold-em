@@ -66,6 +66,7 @@
     "weak_password": "Password must be at least 8 characters",
     "email_taken": "This email is already registered",
     "invalid_credentials": "Incorrect email or password",
+    "invalid_avatar": "Please choose a preset avatar",
     "unauthorized": "Please sign in first",
     "account_blocked": "This account has been restricted"
   },
@@ -143,6 +144,16 @@
     "age_agree": "Confirm & continue",
     "migration_title": "Open beta notice",
     "migration_agree": "I have read and agree"
+  },
+  "profile": {
+    "title": "Profile",
+    "back": "Settings",
+    "edit": "Edit profile",
+    "avatar_pick": "Choose avatar",
+    "save": "Save profile",
+    "saved_title": "Saved",
+    "saved_body": "Your profile has been updated",
+    "nickname_required": "Nickname is required"
   },
   "settings": {
     "title": "Settings & compliance",

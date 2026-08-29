@@ -5,6 +5,7 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
 export interface UserProfile {
   id: number;
   nickname: string;
+  avatarUrl?: string | null;
   chipsBalance: number;
   level: number;
   totalExp: number;
@@ -138,7 +139,26 @@ export async function setLeaderboardStealth(enabled: boolean) {
 }
 
 export async function getProfile() {
-  return request<UserProfile>('/api/v1/user/profile');
+  return request<UserProfile & { settings?: { leaderboardStealth?: boolean } }>('/api/v1/user/profile');
+}
+
+export async function getAvatarPresets() {
+  return request<{
+    presets: Array<{ id: string; emoji: string; color: string; label: string; avatarUrl: string }>;
+  }>('/api/v1/user/avatar-presets');
+}
+
+export async function updateProfile(patch: { nickname?: string; avatarUrl?: string | null }) {
+  const data = await request<UserProfile>('/api/v1/user/profile', {
+    method: 'POST',
+    body: JSON.stringify(patch),
+  });
+  await persistAuth({
+    token: getToken()!,
+    refreshToken: getRefreshToken()!,
+    user: data,
+  });
+  return data;
 }
 
 export interface ShopProduct {

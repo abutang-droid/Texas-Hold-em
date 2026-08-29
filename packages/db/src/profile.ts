@@ -5,21 +5,26 @@ export async function updateUserProfile(
   userId: number,
   patch: { nickname?: string; avatarUrl?: string | null },
 ): Promise<UserRow | null> {
+  const sets: string[] = [];
+  const values: unknown[] = [];
+  let idx = 1;
+
   if (patch.nickname !== undefined) {
-    const res = await query<UserRow>(
-      `UPDATE users SET nickname = $1, updated_at = NOW() WHERE id = $2 RETURNING *`,
-      [patch.nickname.slice(0, 32), userId],
-    );
-    return res.rows[0] ?? null;
+    sets.push(`nickname = $${idx++}`);
+    values.push(patch.nickname.slice(0, 32));
   }
   if (patch.avatarUrl !== undefined) {
-    const res = await query<UserRow>(
-      `UPDATE users SET avatar_url = $1, updated_at = NOW() WHERE id = $2 RETURNING *`,
-      [patch.avatarUrl, userId],
-    );
-    return res.rows[0] ?? null;
+    sets.push(`avatar_url = $${idx++}`);
+    values.push(patch.avatarUrl);
   }
-  return null;
+  if (sets.length === 0) return null;
+
+  values.push(userId);
+  const res = await query<UserRow>(
+    `UPDATE users SET ${sets.join(', ')}, updated_at = NOW() WHERE id = $${idx} RETURNING *`,
+    values,
+  );
+  return res.rows[0] ?? null;
 }
 
 export async function setLeaderboardStealth(userId: number, enabled: boolean): Promise<void> {

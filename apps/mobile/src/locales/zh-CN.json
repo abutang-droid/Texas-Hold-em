@@ -66,6 +66,7 @@
     "weak_password": "密码至少 8 位",
     "email_taken": "该邮箱已注册",
     "invalid_credentials": "邮箱或密码错误",
+    "invalid_avatar": "请选择预设头像",
     "unauthorized": "请先登录",
     "account_blocked": "账号已被限制"
   },
@@ -143,6 +144,16 @@
     "age_agree": "确认并继续",
     "migration_title": "公测迁移公告",
     "migration_agree": "我已阅读并同意"
+  },
+  "profile": {
+    "title": "个人资料",
+    "back": "设置",
+    "edit": "编辑资料",
+    "avatar_pick": "选择头像",
+    "save": "保存",
+    "saved_title": "已保存",
+    "saved_body": "资料已更新",
+    "nickname_required": "请填写昵称"
   },
   "settings": {
     "title": "设置与合规",
