@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 import { colors, radius, spacing, typography } from '../theme';
 import { PlayingCard } from './ui/PlayingCard';
 import { CommunityCardsRow } from './CommunityCardsRow';
 import { PotDisplay } from './PotDisplay';
 import { ChipFlyLayer, type ChipFlyEvent } from './ChipFlyLayer';
+import { Avatar } from './Avatar';
 
 function SeatCountdown({ deadline }: { deadline: number }) {
   const [sec, setSec] = useState(0);
@@ -44,6 +45,8 @@ export interface SeatView {
   status?: string;
   isActive?: boolean;
   isBot?: boolean;
+  avatarUrl?: string | null;
+  revealed?: boolean;
   holeCards?: string[];
 }
 
@@ -53,10 +56,37 @@ interface Props {
   communityCards: string[];
   potLabel: string;
   heroUserId?: string | null;
+  buttonSeat?: number;
+  sbSeat?: number | null;
+  bbSeat?: number | null;
   turnDeadline?: number | null;
   winnerSeats?: number[];
   chipFlyEvents?: ChipFlyEvent[];
+  animateHoleDeal?: boolean;
   onChipFlyDone?: (id: string) => void;
+}
+
+function HoleCardsRow({ cards, animate }: { cards: string[]; animate?: boolean }) {
+  const scale = useRef(new Animated.Value(animate ? 0.5 : 1)).current;
+  const opacity = useRef(new Animated.Value(animate ? 0 : 1)).current;
+
+  useEffect(() => {
+    if (!animate) return;
+    scale.setValue(0.5);
+    opacity.setValue(0);
+    Animated.parallel([
+      Animated.spring(scale, { toValue: 1, friction: 7, useNativeDriver: true }),
+      Animated.timing(opacity, { toValue: 1, duration: 320, useNativeDriver: true }),
+    ]).start();
+  }, [animate, scale, opacity]);
+
+  return (
+    <Animated.View style={[styles.holeCards, { opacity, transform: [{ scale }] }]}>
+      {cards.map((c, i) => (
+        <PlayingCard key={i} code={c} size="sm" />
+      ))}
+    </Animated.View>
+  );
 }
 
 export function Table9Max({
@@ -65,9 +95,13 @@ export function Table9Max({
   communityCards,
   potLabel,
   heroUserId,
+  buttonSeat = 0,
+  sbSeat = null,
+  bbSeat = null,
   turnDeadline,
   winnerSeats = [],
   chipFlyEvents = [],
+  animateHoleDeal = false,
   onChipFlyDone,
 }: Props) {
   return (
@@ -85,9 +119,14 @@ export function Table9Max({
             {SEAT_POSITIONS.map((pos, idx) => {
               const seat = seats.find((s) => s.seatIndex === idx);
               const isHero = heroUserId && seat?.userId === heroUserId;
-              const showCards =
-                isHero && seat?.holeCards && seat.holeCards[0] !== '**';
+              const hasVisibleCards =
+                seat?.holeCards &&
+                seat.holeCards[0] !== '**' &&
+                (isHero || seat.revealed);
               const isWinner = winnerSeats.includes(idx);
+              const isDealer = buttonSeat === idx;
+              const isSb = sbSeat === idx;
+              const isBb = bbSeat === idx;
               return (
                 <View
                   key={idx}
@@ -99,14 +138,33 @@ export function Table9Max({
                     isWinner && styles.seatWinner,
                   ]}
                 >
-                  {showCards && (
-                    <View style={styles.holeCards}>
-                      {seat.holeCards!.map((c, i) => (
-                        <PlayingCard key={i} code={c} size="sm" />
-                      ))}
+                  {isDealer && seat ? (
+                    <View style={styles.dealerBtn}>
+                      <Text style={styles.dealerBtnText}>D</Text>
                     </View>
+                  ) : null}
+                  {isSb && seat ? (
+                    <View style={[styles.blindBadge, styles.sbBadge]}>
+                      <Text style={styles.blindBadgeText}>SB</Text>
+                    </View>
+                  ) : null}
+                  {isBb && seat ? (
+                    <View style={[styles.blindBadge, styles.bbBadge]}>
+                      <Text style={styles.blindBadgeText}>BB</Text>
+                    </View>
+                  ) : null}
+                  {hasVisibleCards && (
+                    <HoleCardsRow
+                      cards={seat.holeCards!}
+                      animate={animateHoleDeal && !!isHero}
+                    />
                   )}
                   <View style={[styles.seatBadge, seat?.isActive && styles.seatBadgeActive, isHero && styles.seatHeroBadge, isWinner && styles.seatWinnerBadge]}>
+                    {seat ? (
+                      <View style={styles.avatarWrap}>
+                        <Avatar nickname={seat.nickname} avatarUrl={seat.avatarUrl} size="sm" />
+                      </View>
+                    ) : null}
                     <Text style={styles.seatName} numberOfLines={1}>
                       {seat?.nickname ?? '—'}
                       {seat?.isBot ? ' 🤖' : ''}
@@ -200,6 +258,32 @@ const styles = StyleSheet.create({
     marginTop: -20,
     alignItems: 'center',
   },
+  dealerBtn: {
+    position: 'absolute',
+    top: -8,
+    left: -4,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 5,
+  },
+  dealerBtnText: { fontSize: 10, fontWeight: '800', color: '#1A1A1A' },
+  blindBadge: {
+    position: 'absolute',
+    top: -8,
+    right: -4,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 6,
+    zIndex: 5,
+  },
+  sbBadge: { backgroundColor: '#4A90D9' },
+  bbBadge: { backgroundColor: '#C94A4A' },
+  blindBadgeText: { fontSize: 8, fontWeight: '800', color: '#fff' },
+  avatarWrap: { marginBottom: 4 },
   seatActive: {},
   seatHero: { zIndex: 2 },
   seatWinner: { zIndex: 3 },

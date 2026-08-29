@@ -52,3 +52,17 @@ export function verifyAdminKey(header?: string): boolean {
   const key = header?.replace(/^Bearer\s+/i, '').trim();
   return key === expected;
 }
+
+export async function adminGrantPrivatePermission(
+  userId: number,
+  granted: boolean,
+): Promise<UserRow | null> {
+  const res = await query<UserRow>(
+    `UPDATE users SET private_room_permission = $1,
+      private_room_permission_at = CASE WHEN $1 THEN NOW() ELSE private_room_permission_at END,
+      updated_at = NOW()
+     WHERE id = $2 RETURNING *`,
+    [granted, userId],
+  );
+  return res.rows[0] ?? null;
+}

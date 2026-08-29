@@ -120,6 +120,48 @@ async function main() {
   const lb = await req<{ profit: unknown[]; biggestPot: unknown[] }>('/api/v1/leaderboard');
   console.log('   profit:', lb.profit.length, 'biggest:', lb.biggestPot.length);
 
+  console.log('6. Private room API');
+  const host = await req<{ token: string; user: { id: number } }>('/api/v1/auth/guest', {
+    method: 'POST',
+    body: JSON.stringify({ nickname: 'SmokeHost' }),
+  });
+  const guest = await req<{ token: string }>('/api/v1/auth/guest', {
+    method: 'POST',
+    body: JSON.stringify({ nickname: 'SmokeGuest' }),
+  });
+
+  const permBefore = await req<{ hasPermission: boolean }>(
+    '/api/v1/private/permission',
+    {},
+    host.token,
+  );
+  console.log('   permission before:', permBefore.hasPermission);
+
+  if (!permBefore.hasPermission) {
+    await req('/api/v1/private/grant-permission', {
+      method: 'POST',
+      body: JSON.stringify({ agreed: true }),
+    }, host.token);
+    console.log('   granted private permission');
+  }
+
+  const created = await req<{ roomId: string; roomCode: string }>(
+    '/api/v1/private/create-room',
+    {
+      method: 'POST',
+      body: JSON.stringify({ maxSeats: 2, smallBlind: 1, bigBlind: 2, buyInCap: 100 }),
+    },
+    host.token,
+  );
+  console.log('   created room:', created.roomId, created.roomCode);
+
+  const joined = await req<{ roomId: string }>(
+    '/api/v1/private/join-room',
+    { method: 'POST', body: JSON.stringify({ roomCode: created.roomCode }) },
+    guest.token,
+  );
+  console.log('   guest joined:', joined.roomId);
+
   console.log('\nSmoke test passed.');
 }
 

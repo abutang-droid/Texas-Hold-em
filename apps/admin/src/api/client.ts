@@ -29,11 +29,14 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 export interface AdminUser {
   id: number;
   nickname: string;
+  avatarUrl?: string | null;
   chipsBalance: number;
   level: number;
   totalExp: number;
   status: string;
   preferredLocale: string;
+  privateRoomPermission?: boolean;
+  email?: string | null;
 }
 
 export interface AdminHand {
@@ -124,6 +127,16 @@ export const adminApi = {
     request<{ ok: boolean }>(`/api/v1/admin/users/${id}/remark`, {
       method: 'POST',
       body: JSON.stringify({ remark }),
+    }),
+  updateUserProfile: (id: number, patch: { nickname?: string; avatarUrl?: string | null }) =>
+    request<AdminUser>(`/api/v1/admin/users/${id}/profile`, {
+      method: 'POST',
+      body: JSON.stringify(patch),
+    }),
+  setPrivatePermission: (id: number, granted: boolean) =>
+    request<AdminUser>(`/api/v1/admin/users/${id}/private-permission`, {
+      method: 'POST',
+      body: JSON.stringify({ granted }),
     }),
   listHands: (roomId?: string) =>
     request<{ list: AdminHand[] }>(

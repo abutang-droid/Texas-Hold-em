@@ -98,6 +98,13 @@ export default function SettingsScreen() {
       <Card style={styles.section}>
         <Text style={styles.sectionTitle}>{t('settings.account')}</Text>
         <Button
+          label={t('profile.edit')}
+          onPress={() => router.push('/profile')}
+          variant="secondary"
+          fullWidth
+          style={{ marginBottom: spacing.md }}
+        />
+        <Button
           label={t('settings.logout')}
           onPress={async () => {
             await logout();

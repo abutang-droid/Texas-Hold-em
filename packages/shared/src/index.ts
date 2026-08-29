@@ -9,6 +9,14 @@ import colors from './design-tokens/colors.json' with { type: 'json' };
 
 export const designTokens = colors;
 
+export {
+  AVATAR_PRESETS,
+  presetAvatarUrl,
+  parseAvatarPreset,
+  isValidPresetAvatarUrl,
+} from './avatars.js';
+export type { AvatarPreset } from './avatars.js';
+
 export type PlayerActionType = 'fold' | 'check' | 'call' | 'raise' | 'all_in';
 
 export type GamePhase =

@@ -14,6 +14,7 @@
     "dev:admin": "pnpm --filter @texas-holdem/admin run dev",
     "smoke": "tsx scripts/smoke-api.ts",
     "staging:regression": "tsx scripts/staging-regression.ts",
+    "private:ws-smoke": "tsx scripts/private-room-ws.ts",
     "local:up": "bash scripts/local-up.sh",
     "local:down": "bash scripts/local-down.sh",
     "local:mac": "bash scripts/mac-local-up.sh",

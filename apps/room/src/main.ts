@@ -4,13 +4,13 @@ import {
   buyInChips,
   cashOutChips,
   findPrivateRoomByRoomId,
+  findUserById,
   getRakeRate,
 } from '@texas-holdem/db';
 import type { ActionType } from '@texas-holdem/poker-engine';
 import { createServer } from 'node:http';
 import {
   broadcastState,
-  buildActionResultPayload,
   cacheRequestResult,
   emitError,
   getCachedRequest,
@@ -100,6 +100,8 @@ async function handleJoin(
   const table = await getOrCreateRoom(msg.roomId, io);
   const cap = table.config.buyInCap;
   const actualBuyIn = Math.min(cap, Math.floor(msg.buyInAmount ?? cap));
+  const userRow = await findUserById(Number(userId));
+  const avatarUrl = userRow?.avatar_url ?? null;
 
   try {
     const { seat } = await joinRoomFlow({
@@ -110,6 +112,7 @@ async function handleJoin(
       userId,
       nickname,
       buyIn: actualBuyIn,
+      avatarUrl,
       buyInFn: async () => {
         await buyInChips(Number(userId), actualBuyIn, `${msg.roomId}:${userId}`);
       },
@@ -137,7 +140,7 @@ export function startRoomServer(port: number): void {
   const httpServer = createServer((req, res) => {
     if (req.url === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.3.0' }));
+      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.4.0' }));
       return;
     }
     res.writeHead(404);
@@ -256,25 +259,16 @@ export function startRoomServer(port: number): void {
         const mySeat = state.seats.find((s) => s.userId === userId);
         if (!mySeat) return;
         try {
-          table.act(mySeat.seatIndex, msg.actionType, msg.amount);
-          const payload = buildActionResultPayload(
-            table,
-            mySeat.seatIndex,
-            userId,
-            msg.actionType,
-            msg.amount,
-          );
-          const envelope = { payload };
-          io.to(roomId).emit('action_result', envelope);
-          cacheRequestResult(msg.requestId, envelope);
+          table.act(mySeat.seatIndex, msg.actionType, msg.amount, false);
 
           let safety = 0;
           while (safety < 20) {
             safety += 1;
-            const acted = table.tick();
-            if (acted === null) break;
+            const ticked = table.tick();
+            if (!ticked) break;
           }
           broadcastState(io, roomId, table);
+          cacheRequestResult(msg.requestId, { ok: true });
         } catch {
           emitError(socket, 'INVALID_ACTION', msg.requestId, 'errors.invalid_action');
         }

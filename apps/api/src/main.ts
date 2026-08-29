@@ -27,6 +27,7 @@ import {
   setUserStatus,
   adminAdjustChips,
   verifyAdminKey,
+  adminGrantPrivatePermission,
   listHandHistories,
   getHandById,
   getSystemConfig,
@@ -66,7 +67,7 @@ import {
   type OAuthProvider,
 } from '@texas-holdem/db';
 import type { SupportedLocale } from '@texas-holdem/shared';
-import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@texas-holdem/shared';
+import { AVATAR_PRESETS, DEFAULT_LOCALE, isValidPresetAvatarUrl, SUPPORTED_LOCALES } from '@texas-holdem/shared';
 
 function parseLocale(header?: string): SupportedLocale {
   if (!header) return DEFAULT_LOCALE;
@@ -303,12 +304,33 @@ class ApiController {
     return { code: 0, message: 'ok', data: { ...toProfile(user), settings } };
   }
 
+  @Get('user/avatar-presets')
+  async avatarPresets(@Headers('accept-language') acceptLang?: string) {
+    const locale = parseLocale(acceptLang);
+    return {
+      code: 0,
+      message: 'ok',
+      data: {
+        presets: AVATAR_PRESETS.map((p) => ({
+          id: p.id,
+          emoji: p.emoji,
+          color: p.color,
+          label: p.label[locale] ?? p.label['en-US'],
+          avatarUrl: `preset:${p.id}`,
+        })),
+      },
+    };
+  }
+
   @Post('user/profile')
   async updateProfile(
     @Headers('authorization') auth: string,
     @Body() body: { nickname?: string; avatarUrl?: string | null },
   ) {
     const { userId } = authUser(auth);
+    if (body.avatarUrl !== undefined && !isValidPresetAvatarUrl(body.avatarUrl)) {
+      throw new BadRequestException({ code: 'INVALID_AVATAR', messageKey: 'errors.invalid_avatar' });
+    }
     const user = await updateUserProfile(userId, body);
     if (!user) throw new BadRequestException('Nothing to update');
     return { code: 0, message: 'ok', data: toProfile(user) };
@@ -688,6 +710,9 @@ class AdminController {
           ...toProfile(user),
           adminRemark: user.admin_remark ?? '',
           deviceId: user.device_id,
+          email: user.email,
+          avatarUrl: user.avatar_url,
+          privateRoomPermission: user.private_room_permission,
           createdAt: user.created_at,
         },
         transactions: transactions.map((t) => ({
@@ -712,6 +737,33 @@ class AdminController {
     requireAdmin(auth);
     await setAdminRemark(id, body.remark ?? '');
     return { code: 0, message: 'ok', data: { ok: true } };
+  }
+
+  @Post('users/:id/profile')
+  async adminUpdateProfile(
+    @Headers('authorization') auth: string,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { nickname?: string; avatarUrl?: string | null },
+  ) {
+    requireAdmin(auth);
+    if (body.avatarUrl !== undefined && !isValidPresetAvatarUrl(body.avatarUrl)) {
+      throw new BadRequestException('Invalid avatar');
+    }
+    const user = await updateUserProfile(id, body);
+    if (!user) throw new BadRequestException('Nothing to update');
+    return { code: 0, message: 'ok', data: toProfile(user) };
+  }
+
+  @Post('users/:id/private-permission')
+  async adminPrivatePermission(
+    @Headers('authorization') auth: string,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { granted: boolean },
+  ) {
+    requireAdmin(auth);
+    const user = await adminGrantPrivatePermission(id, !!body.granted);
+    if (!user) throw new BadRequestException('User not found');
+    return { code: 0, message: 'ok', data: toProfile(user) };
   }
 
   @Get('hands')
