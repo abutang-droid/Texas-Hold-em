@@ -12,11 +12,16 @@ export function PotDisplay({ potTotal, potLabel }: Props) {
   const prevPot = useRef(potTotal);
 
   useEffect(() => {
-    if (potTotal !== prevPot.current && potTotal > prevPot.current) {
+    const increased = potTotal > prevPot.current;
+    const isReset = potTotal === 0 && prevPot.current > 0;
+    if (increased && !isReset && potTotal > 0) {
       Animated.sequence([
         Animated.timing(scale, { toValue: 1.12, duration: 120, useNativeDriver: true }),
         Animated.spring(scale, { toValue: 1, friction: 5, useNativeDriver: true }),
       ]).start();
+    }
+    if (isReset) {
+      scale.setValue(1);
     }
     prevPot.current = potTotal;
   }, [potTotal, scale]);

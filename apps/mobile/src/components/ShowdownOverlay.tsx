@@ -6,44 +6,47 @@ import { colors, radius, spacing, typography } from '../theme';
 
 interface Props {
   visible: boolean;
+  handId: string;
   winners: HandWinner[];
   potSize: number;
   boardCards: string;
   nextHandIn: number;
-  onDismiss: () => void;
 }
 
 export function ShowdownOverlay({
   visible,
+  handId,
   winners,
   potSize,
   boardCards,
   nextHandIn,
-  onDismiss,
 }: Props) {
   const { t } = useTranslation();
   const fade = useRef(new Animated.Value(0)).current;
   const slide = useRef(new Animated.Value(40)).current;
+  const animatedHandId = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!visible) return;
+    if (!visible || !handId) return;
+    if (animatedHandId.current === handId) return;
+    animatedHandId.current = handId;
     fade.setValue(0);
     slide.setValue(40);
     Animated.parallel([
       Animated.timing(fade, { toValue: 1, duration: 280, useNativeDriver: true }),
       Animated.spring(slide, { toValue: 0, friction: 8, useNativeDriver: true }),
     ]).start();
-    const timer = setTimeout(onDismiss, nextHandIn);
-    return () => clearTimeout(timer);
-  }, [visible, nextHandIn, onDismiss, fade, slide]);
+  }, [visible, handId, fade, slide]);
 
-  if (!visible) return null;
+  useEffect(() => {
+    if (!visible) animatedHandId.current = null;
+  }, [visible]);
 
   const board = boardCards.trim() ? boardCards.split(/\s+/) : [];
 
   return (
-    <Modal transparent visible animationType="none">
-      <Animated.View style={[styles.backdrop, { opacity: fade }]}>
+    <Modal transparent visible={visible} animationType="none">
+      <Animated.View style={[styles.backdrop, { opacity: visible ? fade : 0 }]}>
         <Animated.View style={[styles.card, { transform: [{ translateY: slide }] }]}>
           <Text style={styles.title}>{t('showdown.title')}</Text>
           {board.length > 0 && (
@@ -71,7 +74,9 @@ export function ShowdownOverlay({
               ))
             )}
           </View>
-          <Text style={styles.hint}>{t('game.next_hand', { seconds: Math.ceil(nextHandIn / 1000) })}</Text>
+          <Text style={styles.hint}>
+            {t('game.next_hand', { seconds: Math.ceil(nextHandIn / 1000) })}
+          </Text>
         </Animated.View>
       </Animated.View>
     </Modal>

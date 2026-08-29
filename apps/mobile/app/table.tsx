@@ -88,6 +88,12 @@ export default function TableScreen() {
   const myUserIdRef = useRef<string | null>(null);
   const seatsRef = useRef<SeatView[]>([]);
   const handNoticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastHandEndedRef = useRef<string | null>(null);
+
+  const dismissShowdown = useCallback(() => {
+    setShowdown(null);
+    setWinnerSeats([]);
+  }, []);
 
   useEffect(() => {
     seatsRef.current = state.seats;
@@ -214,10 +220,14 @@ export default function TableScreen() {
     );
 
     s.on('hand_ended', (msg: { payload: Partial<HandEndPayload> & { handId: string; nextHandIn: number } }) => {
+      const handId = msg.payload.handId;
+      if (!handId || lastHandEndedRef.current === handId) return;
+      lastHandEndedRef.current = handId;
+
       setTurnContext(null);
       const p = msg.payload;
       const payload: HandEndPayload = {
-        handId: p.handId,
+        handId,
         nextHandIn: p.nextHandIn ?? 3000,
         potSize: p.potSize ?? 0,
         boardCards: p.boardCards ?? '',
@@ -227,10 +237,12 @@ export default function TableScreen() {
       setWinnerSeats(payload.winners.map((w) => w.seatIndex));
       setHandNotice(null);
       if (handNoticeTimer.current) clearTimeout(handNoticeTimer.current);
-      handNoticeTimer.current = setTimeout(() => {
-        setShowdown(null);
-        setWinnerSeats([]);
-      }, payload.nextHandIn);
+      handNoticeTimer.current = setTimeout(dismissShowdown, payload.nextHandIn);
+    });
+
+    s.on('game_started', () => {
+      lastHandEndedRef.current = null;
+      dismissShowdown();
     });
 
     s.on(
@@ -285,7 +297,7 @@ export default function TableScreen() {
       s.emit('leave_room', { requestId: `leave-${Date.now()}` });
       s.disconnect();
     };
-  }, [roomId, buyInCapParam, router, t, applySnapshot]);
+  }, [roomId, buyInCapParam, router, applySnapshot, dismissShowdown]);
 
   const emitAdmin = (action: string, targetUserId?: string) => {
     socket?.emit('room_admin_action', {
@@ -389,19 +401,14 @@ export default function TableScreen() {
         </View>
       )}
 
-      {showdown && (
-        <ShowdownOverlay
-          visible
-          winners={showdown.winners}
-          potSize={showdown.potSize}
-          boardCards={showdown.boardCards}
-          nextHandIn={showdown.nextHandIn}
-          onDismiss={() => {
-            setShowdown(null);
-            setWinnerSeats([]);
-          }}
-        />
-      )}
+      <ShowdownOverlay
+        visible={!!showdown}
+        handId={showdown?.handId ?? ''}
+        winners={showdown?.winners ?? []}
+        potSize={showdown?.potSize ?? 0}
+        boardCards={showdown?.boardCards ?? ''}
+        nextHandIn={showdown?.nextHandIn ?? 3000}
+      />
 
       <Pressable
         style={styles.back}

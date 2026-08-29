@@ -14,7 +14,6 @@ export function CommunityCardsRow({ cards }: Props) {
   useEffect(() => {
     if (cards.length === 0) {
       prevCount.current = 0;
-      scales.length = 0;
       return;
     }
     while (scales.length < cards.length) {
