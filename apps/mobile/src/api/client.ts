@@ -65,14 +65,16 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   }
   if (!res.ok) {
     const payload = json.message;
+    const payloadObj =
+      payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : null;
     const messageKey =
-      (typeof payload === 'object' && payload?.messageKey) ||
-      json.messageKey ||
+      (payloadObj?.messageKey as string | undefined) ||
+      (json.messageKey as string | undefined) ||
       (typeof payload === 'string' ? payload : null) ||
-      json.message ||
+      (typeof json.message === 'string' ? json.message : null) ||
       'Request failed';
     const err = new Error(messageKey) as Error & { code?: string };
-    err.code = (typeof payload === 'object' && payload?.code) || json.code;
+    err.code = (payloadObj?.code as string | undefined) || (json.code as string | undefined);
     throw err;
   }
   return json.data as T;
