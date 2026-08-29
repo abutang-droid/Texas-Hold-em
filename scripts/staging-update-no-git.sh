@@ -86,7 +86,9 @@ sleep 2
 API_P="${API_PORT:-3000}"
 echo ""
 echo "==> Health:"
-curl -sf "http://127.0.0.1:${API_P}/health" && echo "" || echo "FAIL"
+curl -sf "http://127.0.0.1:${API_P}/health" && echo "" || echo "API health FAIL"
+ROOM_P="${ROOM_PORT:-3001}"
+curl -sf "http://127.0.0.1:${ROOM_P}/health" && echo "" || echo "Room health FAIL"
 
 echo "==> Register probe:"
 curl -sf -X POST "http://127.0.0.1:${API_P}/api/v1/auth/register" \
