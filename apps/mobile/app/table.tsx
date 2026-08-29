@@ -154,6 +154,14 @@ export default function TableScreen() {
     );
 
   useEffect(() => {
+    if (state.phase !== 'WAITING' || isPrivate) return;
+    const humans = state.seats.filter((s) => s.userId && !s.isBot).length;
+    if (humans >= 1 && state.seats.length < 2) {
+      setHandNotice(t('game.matching_opponents'));
+    }
+  }, [state.phase, state.seats, isPrivate, t]);
+
+  useEffect(() => {
     const token = getToken();
     if (!token || !roomId) return;
 
@@ -192,9 +200,18 @@ export default function TableScreen() {
           setConnectionStatus('disconnected');
           showNotice(t('table.connection_lost'), 0);
         } else {
-          if (ack?.error === 'IP_CONFLICT') {
-            Alert.alert(t('common.error'), t('errors.ip_conflict'));
-          }
+          const errKey =
+            ack?.error === 'IP_CONFLICT'
+              ? 'errors.ip_conflict'
+              : ack?.error === 'INSUFFICIENT_CHIPS'
+                ? 'errors.insufficient_chips'
+                : ack?.error === 'ROOM_FULL'
+                  ? 'errors.room_full'
+                  : null;
+          Alert.alert(
+            t('common.error'),
+            errKey ? t(errKey) : ack?.error ?? t('common.error'),
+          );
           router.back();
         }
       });

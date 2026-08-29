@@ -20,6 +20,7 @@
     "blinds": "盲注",
     "hand_start": "第 {{hand}} 手 — 小盲位 {{sb}}，大盲位 {{bb}}",
     "dealing_hole": "正在发底牌…",
+    "matching_opponents": "正在匹配对手…",
     "player_joined": "{{name}} 加入了牌桌",
     "player_left": "{{name}} 离开了牌桌",
     "community_dealt": "发出 {{phase}}",
@@ -72,6 +73,7 @@
     "emoji_official_only": "快捷表情仅适用于官方场",
     "emoji_rate_limit": "发送太频繁，请稍后再试",
     "ip_conflict": "同一网络下已有其他账号在此桌",
+    "room_full": "牌桌已满",
     "unauthorized": "请先登录",
     "account_blocked": "账号已被限制"
   },

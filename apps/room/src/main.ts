@@ -8,6 +8,7 @@ import {
   getRakeRate,
   findOfficialIpConflict,
   registerOfficialRoomIp,
+  clearOfficialRoomIp,
 } from '@texas-holdem/db';
 import type { ActionType } from '@texas-holdem/poker-engine';
 import { getTableEmoji, isValidTableEmojiId } from '@texas-holdem/shared';
@@ -112,10 +113,17 @@ async function handleJoin(
   const isNewSeat = !table.hasPlayer(userId);
 
   if (table.config.roomType === 'OFFICIAL' && isNewSeat) {
-    const conflictUserId = await findOfficialIpConflict(msg.roomId, clientIp, userId);
-    if (conflictUserId) {
-      emitError(socket, 'IP_CONFLICT', msg.requestId, 'errors.ip_conflict');
-      return { ok: false, error: 'IP_CONFLICT' };
+    try {
+      const conflictUserId = await findOfficialIpConflict(msg.roomId, clientIp, userId);
+      if (conflictUserId) {
+        if (table.hasPlayer(conflictUserId)) {
+          emitError(socket, 'IP_CONFLICT', msg.requestId, 'errors.ip_conflict');
+          return { ok: false, error: 'IP_CONFLICT' };
+        }
+        await clearOfficialRoomIp(msg.roomId, conflictUserId);
+      }
+    } catch (err) {
+      console.error('official IP check skipped:', err);
     }
   }
 
@@ -135,7 +143,11 @@ async function handleJoin(
     });
     userRoom.set(userId, msg.roomId);
     if (table.config.roomType === 'OFFICIAL' && isNewSeat) {
-      await registerOfficialRoomIp(msg.roomId, userId, clientIp);
+      try {
+        await registerOfficialRoomIp(msg.roomId, userId, clientIp);
+      } catch (err) {
+        console.error('registerOfficialRoomIp failed:', err);
+      }
     }
     ensureRoomTick(io, msg.roomId);
     onPlayerJoinedPrivateRoom(msg.roomId, userId, table);
@@ -161,7 +173,7 @@ export function startRoomServer(port: number): void {
   const httpServer = createServer((req, res) => {
     if (req.url === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.4.3' }));
+      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.4.4' }));
       return;
     }
     res.writeHead(404);
