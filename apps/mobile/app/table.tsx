@@ -192,6 +192,9 @@ export default function TableScreen() {
           setConnectionStatus('disconnected');
           showNotice(t('table.connection_lost'), 0);
         } else {
+          if (ack?.error === 'IP_CONFLICT') {
+            Alert.alert(t('common.error'), t('errors.ip_conflict'));
+          }
           router.back();
         }
       });
