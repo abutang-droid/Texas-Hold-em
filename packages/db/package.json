@@ -18,6 +18,7 @@
   "dependencies": {
     "@texas-holdem/shared": "workspace:*",
     "ioredis": "^5.6.1",
+    "jose": "^6.2.10",
     "pg": "^8.16.0"
   },
   "devDependencies": {

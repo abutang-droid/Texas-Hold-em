@@ -7,6 +7,7 @@ import { AuthField } from '../../src/components/auth/AuthField';
 import { Screen } from '../../src/components/ui/Screen';
 import { Card } from '../../src/components/ui/Card';
 import { Button } from '../../src/components/ui/Button';
+import { OAuthButtons } from '../../src/components/auth/OAuthButtons';
 import { showAlert } from '../../src/utils/alert';
 import { colors, spacing, typography } from '../../src/theme';
 
@@ -91,6 +92,16 @@ export default function LoginScreen() {
           <Text style={styles.link}>{t('auth.register_link')}</Text>
         </Pressable>
       </View>
+
+      <OAuthButtons
+        loading={loading}
+        onLoadingChange={setLoading}
+        onSuccess={() => router.replace('/')}
+        onError={(msg) => {
+          setFormError(msg);
+          showAlert(t('auth.error_title'), msg);
+        }}
+      />
 
       <Pressable onPress={onGuest} disabled={loading} style={styles.guestWrap}>
         <Text style={styles.guest}>{t('auth.guest_continue')}</Text>

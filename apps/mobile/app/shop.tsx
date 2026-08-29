@@ -11,6 +11,7 @@ import {
 import { Screen, ScreenHeader } from '../src/components/ui/Screen';
 import { Card } from '../src/components/ui/Card';
 import { Button } from '../src/components/ui/Button';
+import { purchaseNativeProduct, isNativeIapSupported } from '../src/iap/purchase';
 import { colors, spacing, typography } from '../src/theme';
 
 function sandboxReceipt(productId: string): string {
@@ -83,12 +84,25 @@ export default function ShopScreen() {
     setPurchasing(product.id);
     try {
       const channel = Platform.OS === 'android' ? 'GOOGLE_PLAY' : 'APPLE_IAP';
-      const receipt = sandboxMode ? sandboxReceipt(product.id) : '';
-      if (!sandboxMode) {
+      let receipt = '';
+      let productId = product.id;
+
+      if (sandboxMode) {
+        receipt = sandboxReceipt(product.id);
+      } else if (!isNativeIapSupported()) {
         Alert.alert(t('shop.native_only_title'), t('shop.native_only_body'));
         return;
+      } else {
+        const native = await purchaseNativeProduct(product.id);
+        if (!native) {
+          Alert.alert(t('shop.native_only_title'), t('shop.iap_unavailable'));
+          return;
+        }
+        receipt = native.receiptToken;
+        productId = native.productId;
       }
-      const res = await shopRecharge(channel, product.chips, `iap-${Date.now()}`, receipt, product.id);
+
+      const res = await shopRecharge(channel, product.chips, `iap-${Date.now()}`, receipt, productId);
       setBalance(res.chipsBalance);
       if (res.bonusChips > 0) {
         Alert.alert(t('shop.first_bonus_title'), t('shop.first_bonus_body', { bonus: res.bonusChips }));
@@ -96,7 +110,8 @@ export default function ShopScreen() {
         Alert.alert(t('shop.success_title'), t('shop.success_body', { chips: res.amount }));
       }
     } catch (e) {
-      Alert.alert('Error', (e as Error).message);
+      const msg = (e as Error).message;
+      Alert.alert(t('shop.iap_failed'), msg === 'INVALID_RECEIPT' ? t('shop.iap_unavailable') : msg);
     } finally {
       setPurchasing(null);
     }

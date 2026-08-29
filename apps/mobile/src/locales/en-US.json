@@ -63,6 +63,7 @@
     "weak_password": "Password must be at least 8 characters",
     "email_taken": "This email is already registered",
     "invalid_credentials": "Incorrect email or password",
+    "invalid_oauth": "Sign-in failed — please try again",
     "unauthorized": "Please sign in first",
     "account_blocked": "This account has been restricted"
   },
@@ -84,6 +85,11 @@
     "register_link": "Register",
     "login_link": "Sign in",
     "guest_continue": "Play as guest (no sign-up)",
+    "oauth_divider": "or continue with",
+    "google_sign_in": "Continue with Google",
+    "oauth_not_configured": "Google sign-in is not configured for this build",
+    "oauth_failed": "Sign-in was cancelled or failed",
+    "oauth_web_hint": "Configure EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID for web Google sign-in",
     "register_bonus": "🎁 New players receive 100 chips",
     "error_title": "Notice",
     "fill_required": "Please enter email and password",
@@ -168,6 +174,8 @@
     "success_body": "You received {{chips}} chips",
     "native_only_title": "Device purchase required",
     "native_only_body": "Real IAP requires an iOS or Android device via App Store / Google Play.",
+    "iap_unavailable": "In-app purchases are not available on this device",
+    "iap_failed": "Purchase could not be completed",
     "first_bonus_title": "First recharge bonus",
     "first_bonus_body": "You received {{bonus}} bonus chips!"
   },
