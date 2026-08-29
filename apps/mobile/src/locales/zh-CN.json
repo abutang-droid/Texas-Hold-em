@@ -16,12 +16,30 @@
   },
   "game": {
     "pot": "底池",
+    "blinds": "盲注",
+    "auto": "自动",
+    "raise_to": "加注至",
+    "next_hand": "{{seconds}} 秒后开始下一局",
+    "phase": {
+      "waiting": "等待中",
+      "preflop": "翻牌前",
+      "flop": "翻牌",
+      "turn": "转牌",
+      "river": "河牌",
+      "showdown": "摊牌",
+      "end": "本局结束"
+    },
+    "preset": {
+      "min": "最小",
+      "max": "最大"
+    },
     "action": {
       "fold": "弃牌",
       "check": "过牌",
       "call": "跟注",
       "raise": "加注",
-      "allIn": "全押"
+      "allIn": "全押",
+      "cancel": "取消"
     }
   },
   "bankruptcy": {
@@ -79,7 +97,8 @@
     "dissolve_vote_body": "赞成 {{current}}/{{required}}，剩余 {{seconds}} 秒",
     "dissolve_failed": "解散投票未通过",
     "room_dissolved": "房间已解散",
-    "report_sent": "举报已提交"
+    "report_sent": "举报已提交",
+    "back_lobby": "大厅"
   },
   "compliance": {
     "age_title": "年龄确认",

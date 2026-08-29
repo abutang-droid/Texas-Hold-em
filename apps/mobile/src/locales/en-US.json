@@ -16,12 +16,30 @@
   },
   "game": {
     "pot": "Pot",
+    "blinds": "Blinds",
+    "auto": "auto",
+    "raise_to": "Raise to",
+    "next_hand": "Next hand in {{seconds}}s",
+    "phase": {
+      "waiting": "Waiting",
+      "preflop": "Pre-flop",
+      "flop": "Flop",
+      "turn": "Turn",
+      "river": "River",
+      "showdown": "Showdown",
+      "end": "Hand complete"
+    },
+    "preset": {
+      "min": "Min",
+      "max": "Max"
+    },
     "action": {
       "fold": "Fold",
       "check": "Check",
       "call": "Call",
       "raise": "Raise",
-      "allIn": "All In"
+      "allIn": "All In",
+      "cancel": "Cancel"
     }
   },
   "bankruptcy": {
@@ -79,7 +97,8 @@
     "dissolve_vote_body": "Approvals {{current}}/{{required}} — {{seconds}}s left",
     "dissolve_failed": "Dissolve vote failed",
     "room_dissolved": "Room dissolved",
-    "report_sent": "Report submitted"
+    "report_sent": "Report submitted",
+    "back_lobby": "Lobby"
   },
   "compliance": {
     "age_title": "Age verification",

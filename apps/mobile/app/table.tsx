@@ -1,15 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { io, Socket } from 'socket.io-client';
 import { getToken, submitReport } from '../src/api/client';
 import { Table9Max, type SeatView } from '../src/components/Table9Max';
+import { ActionPanel } from '../src/components/ActionPanel';
+import { HandStatusBar } from '../src/components/HandStatusBar';
 import {
   PrivateTablePanels,
   type DissolveVoteState,
   type RebuyApproval,
 } from '../src/components/PrivateTablePanels';
+import type { HandEndNotice, LastAction, PokerAction, TurnContext } from '../src/types/table';
 
 const ROOM_URL = process.env.EXPO_PUBLIC_ROOM_URL ?? 'http://localhost:3001';
 
@@ -22,29 +25,33 @@ interface TableState {
   hostUserId?: string;
   buyInCap: number;
   paused: boolean;
+  phase: string;
+  handId: string | null;
+  blinds: { sb: number; bb: number };
+  actionDeadline: number | null;
 }
 
-function applySnapshot(
-  payload: TableState & { seats: SeatView[] },
-  setState: (s: TableState) => void,
-  setMyUserId: (id: string) => void,
-) {
-  setState({
+type SnapshotPayload = TableState & { seats: SeatView[] };
+
+function mapSnapshot(payload: SnapshotPayload, currentTurnSeat: number | null): TableState {
+  return {
     potTotal: payload.potTotal,
     communityCards: payload.communityCards,
-    currentTurnSeat: payload.currentTurnSeat,
-    seats: payload.seats.map((seat) => ({
+    currentTurnSeat: payload.currentTurnSeat ?? currentTurnSeat,
+    seats: (payload.seats ?? []).map((seat) => ({
       ...seat,
-      isActive: seat.seatIndex === payload.currentTurnSeat,
+      isActive: seat.seatIndex === (payload.currentTurnSeat ?? currentTurnSeat),
       isBot: seat.isBot,
     })),
     roomType: payload.roomType ?? 'OFFICIAL',
     hostUserId: payload.hostUserId,
     buyInCap: payload.buyInCap ?? 100,
     paused: payload.paused ?? false,
-  });
-  const me = payload.seats.find((x) => x.holeCards && x.holeCards[0] !== '**');
-  if (me?.userId) setMyUserId(me.userId);
+    phase: payload.phase ?? 'WAITING',
+    handId: payload.handId ?? null,
+    blinds: payload.blinds ?? { sb: 1, bb: 2 },
+    actionDeadline: payload.actionDeadline ?? null,
+  };
 }
 
 export default function TableScreen() {
@@ -62,22 +69,55 @@ export default function TableScreen() {
     roomType: 'OFFICIAL',
     buyInCap: 100,
     paused: false,
+    phase: 'WAITING',
+    handId: null,
+    blinds: { sb: 1, bb: 2 },
+    actionDeadline: null,
   });
   const [socket, setSocket] = useState<Socket | null>(null);
   const [myUserId, setMyUserId] = useState<string | null>(null);
+  const [turnContext, setTurnContext] = useState<TurnContext | null>(null);
+  const [lastAction, setLastAction] = useState<LastAction | null>(null);
+  const [handNotice, setHandNotice] = useState<string | null>(null);
   const [rebuyApproval, setRebuyApproval] = useState<RebuyApproval | null>(null);
   const [dissolveVote, setDissolveVote] = useState<DissolveVoteState | null>(null);
   const joinedRef = useRef(false);
   const myUserIdRef = useRef<string | null>(null);
+  const seatsRef = useRef<SeatView[]>([]);
+  const handNoticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    seatsRef.current = state.seats;
+  }, [state.seats]);
 
   useEffect(() => {
     myUserIdRef.current = myUserId;
   }, [myUserId]);
 
+  const applySnapshot = useCallback((payload: SnapshotPayload) => {
+    setState((prev) => mapSnapshot(payload, payload.currentTurnSeat ?? prev.currentTurnSeat));
+    const me = payload.seats?.find((x) => x.holeCards && x.holeCards[0] !== '**');
+    if (me?.userId) setMyUserId(me.userId);
+    const turnSeat = payload.currentTurnSeat;
+    if (turnSeat === null || turnSeat === undefined) {
+      setTurnContext(null);
+    } else if (me?.userId) {
+      const actor = payload.seats?.find((s) => s.seatIndex === turnSeat);
+      if (actor?.userId !== me.userId) setTurnContext(null);
+    }
+  }, []);
+
   const isPrivate = state.roomType === 'PRIVATE';
   const isHost = myUserId !== null && state.hostUserId === myUserId;
   const mySeat = state.seats.find((s) => s.userId === myUserId);
   const myChips = mySeat?.chips ?? 0;
+
+  const isMyTurn =
+    turnContext !== null &&
+    myUserId !== null &&
+    state.seats.some(
+      (seat) => seat.seatIndex === state.currentTurnSeat && seat.userId === myUserId,
+    );
 
   useEffect(() => {
     const token = getToken();
@@ -109,8 +149,73 @@ export default function TableScreen() {
       joinedRef.current = true;
     });
 
-    s.on('room_state_sync', (msg: { payload: TableState & { seats: SeatView[] } }) => {
-      applySnapshot(msg.payload, setState, setMyUserId);
+    s.on('room_state_sync', (msg: { payload: SnapshotPayload }) => {
+      applySnapshot(msg.payload);
+    });
+
+    s.on(
+      'action_turn',
+      (msg: {
+        payload: {
+          seatIndex: number;
+          deadline: number;
+          validActions: PokerAction[];
+          callAmount: number;
+          minRaise: number;
+          maxRaise: number;
+        };
+      }) => {
+        const p = msg.payload;
+        setTurnContext({
+          seatIndex: p.seatIndex,
+          deadline: p.deadline,
+          validActions: p.validActions,
+          callAmount: p.callAmount,
+          minRaise: p.minRaise,
+          maxRaise: p.maxRaise,
+        });
+        setState((prev) => ({
+          ...prev,
+          currentTurnSeat: p.seatIndex,
+          actionDeadline: p.deadline,
+          seats: prev.seats.map((seat) => ({
+            ...seat,
+            isActive: seat.seatIndex === p.seatIndex,
+          })),
+        }));
+      },
+    );
+
+    s.on(
+      'action_result',
+      (msg: {
+        payload: {
+          seatIndex: number;
+          userId: string;
+          actionType: string;
+          amount?: number;
+          autoAction?: boolean;
+        };
+      }) => {
+        const seat = seatsRef.current.find((x) => x.seatIndex === msg.payload.seatIndex);
+        setLastAction({
+          nickname: seat?.nickname ?? msg.payload.userId,
+          actionType: msg.payload.actionType,
+          amount: msg.payload.amount,
+          autoAction: msg.payload.autoAction,
+        });
+        if (msg.payload.userId === myUserIdRef.current) {
+          setTurnContext(null);
+        }
+      },
+    );
+
+    s.on('hand_ended', (msg: { payload: HandEndNotice }) => {
+      setTurnContext(null);
+      const secs = Math.ceil(msg.payload.nextHandIn / 1000);
+      setHandNotice(t('game.next_hand', { seconds: secs }));
+      if (handNoticeTimer.current) clearTimeout(handNoticeTimer.current);
+      handNoticeTimer.current = setTimeout(() => setHandNotice(null), msg.payload.nextHandIn);
     });
 
     s.on(
@@ -144,12 +249,9 @@ export default function TableScreen() {
       },
     );
 
-    s.on(
-      'dissolve_vote_update',
-      (msg: { payload: DissolveVoteState }) => {
-        setDissolveVote(msg.payload);
-      },
-    );
+    s.on('dissolve_vote_update', (msg: { payload: DissolveVoteState }) => {
+      setDissolveVote(msg.payload);
+    });
 
     s.on('dissolve_vote_failed', () => {
       setDissolveVote(null);
@@ -164,10 +266,11 @@ export default function TableScreen() {
     });
 
     return () => {
+      if (handNoticeTimer.current) clearTimeout(handNoticeTimer.current);
       s.emit('leave_room', { requestId: `leave-${Date.now()}` });
       s.disconnect();
     };
-  }, [roomId, buyInCapParam, router, t]);
+  }, [roomId, buyInCapParam, router, t, applySnapshot]);
 
   const emitAdmin = (action: string, targetUserId?: string) => {
     socket?.emit('room_admin_action', {
@@ -177,7 +280,8 @@ export default function TableScreen() {
     });
   };
 
-  const sendAction = (actionType: string, amount?: number) => {
+  const sendAction = (actionType: PokerAction, amount?: number) => {
+    setTurnContext(null);
     socket?.emit('player_action', { actionType, amount, requestId: `a-${Date.now()}` });
   };
 
@@ -224,12 +328,6 @@ export default function TableScreen() {
     }
   };
 
-  const isMyTurn =
-    myUserId !== null &&
-    state.seats.some(
-      (seat) => seat.seatIndex === state.currentTurnSeat && seat.userId === myUserId,
-    );
-
   return (
     <View style={styles.container}>
       <Table9Max
@@ -238,6 +336,14 @@ export default function TableScreen() {
         communityCards={state.communityCards}
         potLabel={t('game.pot')}
         heroUserId={myUserId}
+        turnDeadline={state.actionDeadline}
+      />
+
+      <HandStatusBar
+        phase={state.phase}
+        blinds={state.blinds}
+        lastAction={lastAction}
+        handNotice={handNotice}
       />
 
       <PrivateTablePanels
@@ -261,30 +367,12 @@ export default function TableScreen() {
         onReport={reportPlayer}
       />
 
-      {isMyTurn && (
-        <View style={styles.actions}>
-          <ActionBtn
-            label={t('game.action.fold')}
-            variant="fold"
-            onPress={() => sendAction('fold')}
-          />
-          <ActionBtn
-            label={t('game.action.check')}
-            variant="check"
-            onPress={() => sendAction('check')}
-          />
-          <ActionBtn
-            label={t('game.action.call')}
-            variant="call"
-            onPress={() => sendAction('call')}
-          />
-          <ActionBtn
-            label={t('game.action.raise')}
-            variant="raise"
-            onPress={() => sendAction('raise', 4)}
-          />
+      {isMyTurn && turnContext && (
+        <View style={styles.actionWrap}>
+          <ActionPanel turn={turnContext} onAction={sendAction} />
         </View>
       )}
+
       <Pressable
         style={styles.back}
         onPress={() => {
@@ -292,65 +380,21 @@ export default function TableScreen() {
           router.back();
         }}
       >
-        <Text style={styles.backText}>← Lobby</Text>
+        <Text style={styles.backText}>← {t('table.back_lobby')}</Text>
       </Pressable>
     </View>
   );
 }
 
-function ActionBtn({
-  label,
-  onPress,
-  variant,
-}: {
-  label: string;
-  onPress: () => void;
-  variant: 'fold' | 'check' | 'call' | 'raise';
-}) {
-  return (
-    <Pressable
-      style={({ pressed }) => [
-        styles.actionBtn,
-        styles[`btn_${variant}`],
-        pressed && styles.actionPressed,
-      ]}
-      onPress={onPress}
-    >
-      <Text style={[styles.actionText, variant === 'raise' && styles.actionTextDark]}>{label}</Text>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#121418' },
-  actions: {
+  actionWrap: {
     position: 'absolute',
-    bottom: 28,
+    bottom: 20,
     left: 16,
     right: 16,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(18,20,24,0.85)',
-    borderRadius: 12,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    zIndex: 20,
   },
-  actionBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    maxWidth: 100,
-  },
-  btn_fold: { backgroundColor: '#C62828' },
-  btn_check: { backgroundColor: '#424242' },
-  btn_call: { backgroundColor: '#2E7D32' },
-  btn_raise: { backgroundColor: '#C9A227' },
-  actionPressed: { opacity: 0.85, transform: [{ scale: 0.97 }] },
-  actionText: { color: '#fff', fontWeight: '700', fontSize: 13 },
-  actionTextDark: { color: '#1A1A1A' },
   back: {
     position: 'absolute',
     top: 16,
