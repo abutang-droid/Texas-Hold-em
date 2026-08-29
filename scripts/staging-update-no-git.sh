@@ -64,6 +64,9 @@ if ! grep -q "auth/register" apps/api/src/main.ts; then
   exit 1
 fi
 
+echo "==> Clean stale dist (avoid old poker-engine exports after rsync)"
+rm -rf apps/*/dist packages/*/dist
+
 echo "==> pnpm install"
 pnpm install
 
@@ -84,11 +87,15 @@ pm2 save
 
 sleep 2
 API_P="${API_PORT:-3000}"
+ROOM_P="${ROOM_PORT:-3001}"
 echo ""
 echo "==> Health:"
 curl -sf "http://127.0.0.1:${API_P}/health" && echo "" || echo "API health FAIL"
-ROOM_P="${ROOM_PORT:-3001}"
 curl -sf "http://127.0.0.1:${ROOM_P}/health" && echo "" || echo "Room health FAIL"
+
+if ! curl -sf "http://127.0.0.1:${ROOM_P}/health" | grep -q '"version":"0.4'; then
+  echo "WARN: room version still old — check: pm2 logs th-room --lines 30" >&2
+fi
 
 echo "==> Register probe:"
 curl -sf -X POST "http://127.0.0.1:${API_P}/api/v1/auth/register" \
