@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, ActivityIndicator, Alert, Modal } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import {
@@ -11,7 +11,45 @@ import {
   acknowledgeMigration,
   type UserProfile,
 } from '../src/api/client';
-import { designTokens } from '@texas-holdem/shared';
+import { Screen } from '../src/components/ui/Screen';
+import { Card } from '../src/components/ui/Card';
+import { Button } from '../src/components/ui/Button';
+import { GameModal } from '../src/components/ui/GameModal';
+import { colors, spacing, typography } from '../src/theme';
+
+function AvatarBadge({ nickname, level }: { nickname: string; level: number }) {
+  const initial = (nickname[0] ?? '?').toUpperCase();
+  return (
+    <View style={styles.avatarRow}>
+      <View style={styles.avatar}>
+        <Text style={styles.avatarText}>{initial}</Text>
+      </View>
+      <View>
+        <Text style={styles.nickname}>{nickname}</Text>
+        <View style={styles.levelPill}>
+          <Text style={styles.levelText}>Lv.{level}</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function MenuTile({
+  label,
+  icon,
+  onPress,
+}: {
+  label: string;
+  icon: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable style={({ pressed }) => [styles.tile, pressed && styles.tilePressed]} onPress={onPress}>
+      <Text style={styles.tileIcon}>{icon}</Text>
+      <Text style={styles.tileLabel}>{label}</Text>
+    </Pressable>
+  );
+}
 
 export default function LobbyScreen() {
   const { t } = useTranslation();
@@ -68,118 +106,166 @@ export default function LobbyScreen() {
   };
 
   if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator color={designTokens.color.brand.secondary} />
-        <Text style={styles.muted}>{t('common.loading')}</Text>
-      </View>
-    );
+    return <Screen loading loadingLabel={t('common.loading')} />;
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.nickname}>{user?.nickname}</Text>
-        <Text style={styles.balance}>
-          {t('lobby.balance')}: {user?.chipsBalance} {t('common.chips')}
-        </Text>
-        <Pressable onPress={() => router.push('/settings')}>
-          <Text style={styles.settingsLink}>{t('settings.title')}</Text>
+    <Screen scroll contentStyle={styles.content}>
+      <View style={styles.topBar}>
+        {user ? <AvatarBadge nickname={user.nickname} level={user.level} /> : null}
+        <Pressable onPress={() => router.push('/settings')} hitSlop={12}>
+          <Text style={styles.gear}>⚙</Text>
         </Pressable>
       </View>
 
+      <Card elevated style={styles.balanceCard}>
+        <Text style={styles.balanceLabel}>{t('lobby.balance')}</Text>
+        <Text style={styles.balanceValue}>
+          {user?.chipsBalance.toLocaleString()}
+          <Text style={styles.balanceUnit}> {t('common.chips')}</Text>
+        </Text>
+        {user ? (
+          <Text style={styles.expText}>
+            {t('lobby.exp')}: {user.totalExp} · {t('lobby.level')} {user.level}
+          </Text>
+        ) : null}
+      </Card>
+
+      <Button
+        label={t('lobby.quick_start')}
+        onPress={onQuickStart}
+        fullWidth
+        style={styles.heroBtn}
+      />
+
+      <View style={styles.menuGrid}>
+        <MenuTile icon="🛒" label={t('lobby.recharge')} onPress={() => router.push('/shop')} />
+        <MenuTile icon="🔒" label={t('lobby.private')} onPress={() => router.push('/private')} />
+        <MenuTile
+          icon="🏆"
+          label={t('lobby.leaderboard')}
+          onPress={() => router.push('/leaderboard')}
+        />
+        <MenuTile icon="⚙" label={t('settings.title')} onPress={() => router.push('/settings')} />
+      </View>
+
       {profitTop.length > 0 && (
-        <View style={styles.lbCard}>
-          <Text style={styles.lbTitle}>{t('lobby.weekly_top')}</Text>
+        <Card style={styles.lbCard}>
+          <View style={styles.lbHeader}>
+            <Text style={styles.lbTitle}>{t('lobby.weekly_top')}</Text>
+            <Pressable onPress={() => router.push('/leaderboard')}>
+              <Text style={styles.lbMore}>{t('lobby.view_all')}</Text>
+            </Pressable>
+          </View>
           {profitTop.map((row, i) => (
-            <Text key={i} style={styles.lbRow}>
-              {i + 1}. {row.nickname} +{row.score}
-            </Text>
+            <View key={i} style={styles.lbRow}>
+              <Text style={[styles.lbRank, i === 0 && styles.lbRankGold]}>{i + 1}</Text>
+              <Text style={styles.lbName} numberOfLines={1}>
+                {row.nickname}
+              </Text>
+              <Text style={styles.lbScore}>+{row.score.toLocaleString()}</Text>
+            </View>
           ))}
-        </View>
+        </Card>
       )}
 
-      <Pressable style={styles.primaryBtn} onPress={onQuickStart}>
-        <Text style={styles.primaryText}>{t('lobby.quick_start')}</Text>
-      </Pressable>
+      <GameModal
+        visible={ageRequired}
+        title={t('compliance.age_title')}
+        body={t('compliance.age_confirm')}
+        confirmLabel={t('compliance.age_agree')}
+        onConfirm={confirmAge}
+      />
 
-      <Pressable style={styles.secondaryBtn} onPress={() => router.push('/shop')}>
-        <Text style={styles.secondaryText}>{t('lobby.recharge')}</Text>
-      </Pressable>
-
-      <Pressable style={styles.secondaryBtn} onPress={() => router.push('/private')}>
-        <Text style={styles.secondaryText}>{t('lobby.private')}</Text>
-      </Pressable>
-
-      <Modal visible={ageRequired} transparent animationType="fade">
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>{t('compliance.age_title')}</Text>
-            <Text style={styles.modalBody}>{t('compliance.age_confirm')}</Text>
-            <Pressable style={styles.primaryBtn} onPress={confirmAge}>
-              <Text style={styles.primaryText}>{t('compliance.age_agree')}</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal visible={!!migrationMsg} transparent animationType="fade">
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>{t('compliance.migration_title')}</Text>
-            <Text style={styles.modalBody}>{migrationMsg}</Text>
-            <Pressable style={styles.primaryBtn} onPress={confirmMigration}>
-              <Text style={styles.primaryText}>{t('compliance.migration_agree')}</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
-    </View>
+      <GameModal
+        visible={!!migrationMsg}
+        title={t('compliance.migration_title')}
+        body={migrationMsg ?? ''}
+        confirmLabel={t('compliance.migration_agree')}
+        onConfirm={confirmMigration}
+      />
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#121418', padding: 24, justifyContent: 'center' },
-  center: { flex: 1, backgroundColor: '#121418', alignItems: 'center', justifyContent: 'center' },
-  muted: { color: '#9E9E9E', marginTop: 12 },
-  header: { marginBottom: 24, alignItems: 'center' },
-  nickname: { color: '#F5F5F5', fontSize: 24, fontWeight: '600' },
-  balance: { color: '#C9A227', fontSize: 18, marginTop: 8 },
-  settingsLink: { color: '#9E9E9E', marginTop: 8, fontSize: 14 },
-  lbCard: {
-    backgroundColor: '#1E2128',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 24,
-  },
-  lbTitle: { color: '#C9A227', fontWeight: '700', marginBottom: 8 },
-  lbRow: { color: '#F5F5F5', marginBottom: 4 },
-  primaryBtn: {
-    backgroundColor: '#C9A227',
-    height: 56,
-    borderRadius: 8,
+  content: { paddingTop: spacing.md },
+  topBar: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
+    justifyContent: 'space-between',
+    marginBottom: spacing.xl,
   },
-  primaryText: { color: '#1A1A1A', fontSize: 18, fontWeight: '700' },
-  secondaryBtn: {
-    borderWidth: 1,
-    borderColor: '#C9A227',
+  avatarRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  avatar: {
+    width: 48,
     height: 48,
-    borderRadius: 8,
+    borderRadius: 24,
+    backgroundColor: colors.brand.primary,
+    borderWidth: 2,
+    borderColor: colors.brand.secondary,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
   },
-  secondaryText: { color: '#C9A227', fontSize: 16 },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'center',
-    padding: 24,
+  avatarText: { ...typography.h2, color: colors.brand.secondary },
+  nickname: { ...typography.h2, color: colors.text.primary },
+  levelPill: {
+    alignSelf: 'flex-start',
+    marginTop: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    backgroundColor: 'rgba(201,162,39,0.15)',
   },
-  modalCard: { backgroundColor: '#1E2128', borderRadius: 12, padding: 20 },
-  modalTitle: { color: '#F5F5F5', fontSize: 18, fontWeight: '700', marginBottom: 12 },
-  modalBody: { color: '#9E9E9E', lineHeight: 22, marginBottom: 20 },
+  levelText: { ...typography.micro, color: colors.brand.secondary },
+  gear: { fontSize: 22, color: colors.text.secondary },
+  balanceCard: { marginBottom: spacing.xl, alignItems: 'center' },
+  balanceLabel: { ...typography.caption, color: colors.text.secondary, marginBottom: spacing.sm },
+  balanceValue: { ...typography.display, color: colors.brand.secondary },
+  balanceUnit: { ...typography.h2, color: colors.text.secondary },
+  expText: { ...typography.micro, color: colors.text.secondary, marginTop: spacing.sm },
+  heroBtn: { minHeight: 56, marginBottom: spacing.xl },
+  menuGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+    marginBottom: spacing.xl,
+  },
+  tile: {
+    width: '47%',
+    backgroundColor: colors.bg.card,
+    borderRadius: 12,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+    alignItems: 'center',
+  },
+  tilePressed: { opacity: 0.85 },
+  tileIcon: { fontSize: 28, marginBottom: spacing.sm },
+  tileLabel: { ...typography.caption, color: colors.text.primary, fontWeight: '600' },
+  lbCard: { marginBottom: spacing.xl },
+  lbHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  lbTitle: { ...typography.h2, color: colors.brand.secondary },
+  lbMore: { ...typography.micro, color: colors.text.secondary },
+  lbRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.05)',
+  },
+  lbRank: {
+    width: 24,
+    ...typography.caption,
+    color: colors.text.secondary,
+    fontWeight: '700',
+  },
+  lbRankGold: { color: colors.brand.secondary },
+  lbName: { flex: 1, ...typography.body, color: colors.text.primary },
+  lbScore: { ...typography.caption, color: colors.semantic.success, fontWeight: '600' },
 });

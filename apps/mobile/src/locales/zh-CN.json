@@ -8,7 +8,11 @@
     "recharge": "充值",
     "private": "私人场",
     "weekly_top": "本周盈利榜",
-    "balance": "余额"
+    "balance": "余额",
+    "leaderboard": "排行榜",
+    "view_all": "查看全部",
+    "exp": "经验",
+    "level": "等级"
   },
   "game": {
     "pot": "底池",
@@ -111,5 +115,13 @@
     "native_only_body": "正式 IAP 需在 iOS/Android 真机上通过 App Store / Google Play 购买。",
     "first_bonus_title": "首充赠送",
     "first_bonus_body": "额外获得 {{bonus}} 筹码！"
+  },
+  "leaderboard": {
+    "title": "排行榜",
+    "back": "返回大厅",
+    "profit": "周盈利榜",
+    "biggest_pot": "最大底池",
+    "updated": "更新于 {{time}}",
+    "empty": "暂无排名，先去玩几局吧！"
   }
 }

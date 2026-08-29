@@ -8,7 +8,11 @@
     "recharge": "Recharge",
     "private": "Private Room",
     "weekly_top": "Weekly Top",
-    "balance": "Balance"
+    "balance": "Balance",
+    "leaderboard": "Leaderboard",
+    "view_all": "View all",
+    "exp": "EXP",
+    "level": "Level"
   },
   "game": {
     "pot": "Pot",
@@ -111,5 +115,13 @@
     "native_only_body": "Real IAP requires an iOS or Android device via App Store / Google Play.",
     "first_bonus_title": "First recharge bonus",
     "first_bonus_body": "You received {{bonus}} bonus chips!"
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "back": "Lobby",
+    "profit": "Weekly Profit",
+    "biggest_pot": "Biggest Pot",
+    "updated": "Updated {{time}}",
+    "empty": "No rankings yet — play a few hands!"
   }
 }
