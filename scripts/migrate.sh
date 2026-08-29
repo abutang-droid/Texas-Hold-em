@@ -13,7 +13,7 @@ PSQL=(psql -h "${POSTGRES_HOST:-localhost}" -p "${POSTGRES_PORT:-5432}" -U "${PO
 echo "Applying migrations..."
 for f in "$ROOT"/infra/migrations/*.sql; do
   echo "  -> $(basename "$f")"
-  "${PSQL[@]}" -f "$f" || true
+  "${PSQL[@]}" -f "$f"
 done
 
 echo "Migrations done."
