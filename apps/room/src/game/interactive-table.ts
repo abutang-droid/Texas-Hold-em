@@ -351,21 +351,37 @@ export class InteractiveTable {
     if (this.config.roomType === 'PRIVATE') return;
     if (this.botFillTimer) clearTimeout(this.botFillTimer);
     if (this.realPlayerCount < 1) return;
-    this.botFillTimer = setTimeout(() => {
+
+    const maybeAddBot = (): boolean => {
       const reals = this.players.filter((p) => !p.isBot).length;
       const total = this.players.length;
       if (reals >= 1 && total < 3 && total < this.config.maxSeats) {
         const botId = `bot_${Date.now()}_${total}`;
         this.addPlayer(botId, BOT_NAMES[total % BOT_NAMES.length], this.config.buyInCap, true);
+        return true;
       }
-      if (
-        this.players.length < 3 &&
-        this.players.filter((p) => !p.isBot).length >= 1 &&
-        this.players.length < this.config.maxSeats
-      ) {
-        this.scheduleBotFill();
-      }
-    }, 5000);
+      return false;
+    };
+
+    // Seat one bot immediately so a solo quick-start can begin within ~1s (v1.0 P99 ≤5s).
+    maybeAddBot();
+
+    if (
+      this.players.length < 3 &&
+      this.players.filter((p) => !p.isBot).length >= 1 &&
+      this.players.length < this.config.maxSeats
+    ) {
+      this.botFillTimer = setTimeout(() => {
+        maybeAddBot();
+        if (
+          this.players.length < 3 &&
+          this.players.filter((p) => !p.isBot).length >= 1 &&
+          this.players.length < this.config.maxSeats
+        ) {
+          this.scheduleBotFill();
+        }
+      }, 2500);
+    }
   }
 
   private tryStartHand(): void {

@@ -20,6 +20,7 @@
     "blinds": "Blinds",
     "hand_start": "Hand #{{hand}} — SB seat {{sb}}, BB seat {{bb}}",
     "dealing_hole": "Dealing hole cards…",
+    "matching_opponents": "Finding opponents…",
     "player_joined": "{{name}} joined the table",
     "player_left": "{{name}} left the table",
     "community_dealt": "{{phase}} dealt",
@@ -72,6 +73,7 @@
     "emoji_official_only": "Quick emojis are only available at official tables",
     "emoji_rate_limit": "Please wait a moment before sending another emoji",
     "ip_conflict": "Another account on your network is already at this table",
+    "room_full": "This table is full",
     "unauthorized": "Please sign in first",
     "account_blocked": "This account has been restricted"
   },
