@@ -2,10 +2,12 @@
   "common": {
     "chips": "筹码",
     "loading": "加载中...",
-    "error": "加载失败"
+    "error": "加载失败",
+    "ok": "确定"
   },
   "lobby": {
     "quick_start": "快速开始",
+    "quick_start_loading": "正在进入…",
     "recharge": "充值",
     "private": "私人场",
     "weekly_top": "本周盈利榜",
@@ -75,7 +77,12 @@
     "ip_conflict": "同一网络下已有其他账号在此桌",
     "room_full": "牌桌已满",
     "unauthorized": "请先登录",
-    "account_blocked": "账号已被限制"
+    "account_blocked": "账号已被限制",
+    "age_required": "请先确认年满 18 周岁",
+    "migration_required": "请先阅读并同意公测迁移公告",
+    "network_timeout": "请求超时，请检查网络连接",
+    "network_unreachable": "无法连接服务器，请检查 API 地址与 WiFi",
+    "request_failed": "请求失败"
   },
   "auth": {
     "login_title": "登录",

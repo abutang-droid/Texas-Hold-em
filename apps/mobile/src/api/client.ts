@@ -57,7 +57,30 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     ...(options.headers as Record<string, string>),
   };
   if (token) headers.Authorization = `Bearer ${token}`;
-  const res = await fetch(`${API_URL}${path}`, { ...options, headers });
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15000);
+
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+  } catch (e) {
+    if ((e as Error).name === 'AbortError') {
+      const err = new Error('errors.network_timeout') as Error & { code?: string };
+      err.code = 'NETWORK_TIMEOUT';
+      throw err;
+    }
+    const err = new Error('errors.network_unreachable') as Error & { code?: string };
+    err.code = 'NETWORK_ERROR';
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+
   let json: Record<string, unknown>;
   try {
     json = (await res.json()) as Record<string, unknown>;
@@ -73,12 +96,21 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
       (json.messageKey as string | undefined) ||
       (typeof payload === 'string' ? payload : null) ||
       (typeof json.message === 'string' ? json.message : null) ||
-      'Request failed';
+      'errors.request_failed';
     const err = new Error(messageKey) as Error & { code?: string };
     err.code = (payloadObj?.code as string | undefined) || (json.code as string | undefined);
     throw err;
   }
   return json.data as T;
+}
+
+/** Map API error message keys to i18n; falls back to raw message. */
+export function formatApiError(message: string, t: (key: string) => string): string {
+  if (message.startsWith('errors.')) {
+    const translated = t(message);
+    return translated !== message ? translated : message;
+  }
+  return message;
 }
 
 export async function guestLogin(deviceId?: string) {

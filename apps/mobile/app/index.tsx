@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Alert, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import {
@@ -9,6 +9,7 @@ import {
   declareAge,
   acknowledgeMigration,
   getProfile,
+  formatApiError,
   type UserProfile,
 } from '../src/api/client';
 import { Screen } from '../src/components/ui/Screen';
@@ -17,6 +18,15 @@ import { Button } from '../src/components/ui/Button';
 import { GameModal } from '../src/components/ui/GameModal';
 import { Avatar } from '../src/components/Avatar';
 import { colors, spacing, typography } from '../src/theme';
+
+function showUserMessage(title: string, body: string) {
+  if (Platform.OS === 'web') {
+    // Alert.alert is unreliable on some web targets
+    window.alert(`${title}\n\n${body}`);
+    return;
+  }
+  Alert.alert(title, body);
+}
 
 function ProfileBadge({
   user,
@@ -59,10 +69,15 @@ export default function LobbyScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [starting, setStarting] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [profitTop, setProfitTop] = useState<Array<{ nickname: string; score: number }>>([]);
   const [migrationMsg, setMigrationMsg] = useState<string | null>(null);
   const [ageRequired, setAgeRequired] = useState(false);
+  const [complianceBusy, setComplianceBusy] = useState(false);
+  const [errorModal, setErrorModal] = useState<{ title: string; body: string } | null>(null);
+
+  const compliancePending = ageRequired || !!migrationMsg;
 
   const init = useCallback(async () => {
     try {
@@ -73,40 +88,71 @@ export default function LobbyScreen() {
       if (compliance.migrationRequired) setMigrationMsg(compliance.migrationMessage);
       if (!compliance.ageVerified) setAgeRequired(true);
     } catch (e) {
-      Alert.alert('Error', (e as Error).message);
+      showUserMessage(t('common.error'), formatApiError((e as Error).message, t));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     init();
   }, [init]);
 
   const onQuickStart = async () => {
-    if (!user || user.chipsBalance < 2) {
-      Alert.alert(t('bankruptcy.title'), '', [
-        { text: t('bankruptcy.cta_recharge'), onPress: () => router.push('/shop') },
-        { text: t('bankruptcy.cta_lobby') },
-      ]);
+    if (starting) return;
+
+    // Compliance modals are already on screen — avoid silent web alerts behind them.
+    if (compliancePending) return;
+    if (!user) {
+      showUserMessage(t('common.error'), t('errors.unauthorized'));
       return;
     }
+    if (user.chipsBalance < 2) {
+      showUserMessage(t('bankruptcy.title'), t('errors.insufficient_chips'));
+      return;
+    }
+
+    setStarting(true);
     try {
       const match = await quickStart();
-      router.push({ pathname: '/table', params: { roomId: match.roomId } });
+      router.push({
+        pathname: '/table',
+        params: { roomId: match.roomId, buyInCap: String(match.buyInCap ?? 100) },
+      });
     } catch (e) {
-      Alert.alert('Error', (e as Error).message);
+      const msg = formatApiError((e as Error).message, t);
+      setErrorModal({ title: t('common.error'), body: msg });
+    } finally {
+      setStarting(false);
     }
   };
 
   const confirmAge = async () => {
-    await declareAge();
-    setAgeRequired(false);
+    if (complianceBusy) return;
+    setComplianceBusy(true);
+    try {
+      await declareAge();
+      setAgeRequired(false);
+    } catch (e) {
+      const msg = formatApiError((e as Error).message, t);
+      setErrorModal({ title: t('common.error'), body: msg });
+    } finally {
+      setComplianceBusy(false);
+    }
   };
 
   const confirmMigration = async () => {
-    await acknowledgeMigration();
-    setMigrationMsg(null);
+    if (complianceBusy) return;
+    setComplianceBusy(true);
+    try {
+      await acknowledgeMigration();
+      setMigrationMsg(null);
+    } catch (e) {
+      const msg = formatApiError((e as Error).message, t);
+      setErrorModal({ title: t('common.error'), body: msg });
+    } finally {
+      setComplianceBusy(false);
+    }
   };
 
   if (loading) {
@@ -136,11 +182,18 @@ export default function LobbyScreen() {
       </Card>
 
       <Button
-        label={t('lobby.quick_start')}
+        label={starting ? t('lobby.quick_start_loading') : t('lobby.quick_start')}
         onPress={onQuickStart}
+        loading={starting}
+        disabled={starting || compliancePending}
         fullWidth
         style={styles.heroBtn}
       />
+      {compliancePending ? (
+        <Text style={styles.complianceHint}>
+          {ageRequired ? t('errors.age_required') : t('errors.migration_required')}
+        </Text>
+      ) : null}
 
       <View style={styles.menuGrid}>
         <MenuTile icon="🛒" label={t('lobby.recharge')} onPress={() => router.push('/shop')} />
@@ -177,16 +230,26 @@ export default function LobbyScreen() {
         visible={ageRequired}
         title={t('compliance.age_title')}
         body={t('compliance.age_confirm')}
-        confirmLabel={t('compliance.age_agree')}
+        confirmLabel={complianceBusy ? t('common.loading') : t('compliance.age_agree')}
         onConfirm={confirmAge}
+        confirmDisabled={complianceBusy}
       />
 
       <GameModal
-        visible={!!migrationMsg}
+        visible={!!migrationMsg && !ageRequired}
         title={t('compliance.migration_title')}
         body={migrationMsg ?? ''}
-        confirmLabel={t('compliance.migration_agree')}
+        confirmLabel={complianceBusy ? t('common.loading') : t('compliance.migration_agree')}
         onConfirm={confirmMigration}
+        confirmDisabled={complianceBusy}
+      />
+
+      <GameModal
+        visible={!!errorModal}
+        title={errorModal?.title ?? ''}
+        body={errorModal?.body ?? ''}
+        confirmLabel={t('common.ok')}
+        onConfirm={() => setErrorModal(null)}
       />
     </Screen>
   );
@@ -228,7 +291,13 @@ const styles = StyleSheet.create({
   balanceValue: { ...typography.display, color: colors.brand.secondary },
   balanceUnit: { ...typography.h2, color: colors.text.secondary },
   expText: { ...typography.micro, color: colors.text.secondary, marginTop: spacing.sm },
-  heroBtn: { minHeight: 56, marginBottom: spacing.xl },
+  heroBtn: { minHeight: 56, marginBottom: spacing.sm },
+  complianceHint: {
+    ...typography.micro,
+    color: colors.brand.secondary,
+    textAlign: 'center',
+    marginBottom: spacing.xl,
+  },
   menuGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
