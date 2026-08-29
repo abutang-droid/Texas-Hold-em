@@ -4,16 +4,17 @@
 
 ## 当前阶段
 
-**Phase 4 进行中** — v1.1 公测（IAP / 双榜 / 合规 / 运营三板斧）
+**v1.1 公测准备中** — 代码已合入 `main`，Staging 全量回归 → 生产化（IAP/OAuth）
 
 | 模块 | 状态 |
 |---|---|
-| `poker-engine` | ✅ 16 单测通过 |
+| `poker-engine` | ✅ 16 单测 |
 | `packages/db` | ✅ PostgreSQL + Redis |
-| `apps/api` | ✅ 官方场 + 私人场 + Admin API |
+| `apps/api` | ✅ 官方场 + 私人场 + Admin + IAP 沙盒 |
 | `apps/room` | ✅ 官方/私人桌 + 房主管理 |
-| `apps/mobile` | ✅ 大厅 / 牌桌 / 私人场 |
+| `apps/mobile` | ✅ 大厅 / 牌桌 / 私人场 / 深链接 / 图标 |
 | `apps/admin` | ✅ 运营后台 Web UI |
+| **Staging** | 🚧 `192.168.31.53` 已部署，待全量回归 |
 
 ## 快速开始
 
