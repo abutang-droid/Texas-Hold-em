@@ -1,6 +1,23 @@
+import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, radius, spacing, typography } from '../theme';
 import { PlayingCard } from './ui/PlayingCard';
+
+function SeatCountdown({ deadline }: { deadline: number }) {
+  const [sec, setSec] = useState(0);
+  useEffect(() => {
+    const tick = () => setSec(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
+    tick();
+    const id = setInterval(tick, 250);
+    return () => clearInterval(id);
+  }, [deadline]);
+  if (sec <= 0) return null;
+  return (
+    <View style={styles.countdown}>
+      <Text style={[styles.countdownText, sec <= 5 && styles.countdownUrgent]}>{sec}</Text>
+    </View>
+  );
+}
 
 /** 9-max elliptical seat positions (%, %) */
 const SEAT_POSITIONS: Array<{ top: string; left: string }> = [
@@ -20,6 +37,8 @@ export interface SeatView {
   userId?: string;
   nickname: string;
   chips: number;
+  betThisRound?: number;
+  status?: string;
   isActive?: boolean;
   isBot?: boolean;
   holeCards?: string[];
@@ -31,6 +50,7 @@ interface Props {
   communityCards: string[];
   potLabel: string;
   heroUserId?: string | null;
+  turnDeadline?: number | null;
 }
 
 export function Table9Max({
@@ -39,6 +59,7 @@ export function Table9Max({
   communityCards,
   potLabel,
   heroUserId,
+  turnDeadline,
 }: Props) {
   return (
     <View style={styles.container}>
@@ -86,13 +107,21 @@ export function Table9Max({
                       ))}
                     </View>
                   )}
-                  <View style={[styles.seatBadge, seat?.isActive && styles.seatBadgeActive]}>
+                  <View style={[styles.seatBadge, seat?.isActive && styles.seatBadgeActive, isHero && styles.seatHeroBadge]}>
                     <Text style={styles.seatName} numberOfLines={1}>
                       {seat?.nickname ?? '—'}
                       {seat?.isBot ? ' 🤖' : ''}
                     </Text>
                     {seat ? (
                       <Text style={styles.seatChips}>{seat.chips.toLocaleString()}</Text>
+                    ) : null}
+                    {seat && (seat.betThisRound ?? 0) > 0 ? (
+                      <View style={styles.betChip}>
+                        <Text style={styles.betChipText}>{seat.betThisRound}</Text>
+                      </View>
+                    ) : null}
+                    {seat?.isActive && turnDeadline ? (
+                      <SeatCountdown deadline={turnDeadline} />
                     ) : null}
                   </View>
                 </View>
@@ -179,6 +208,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   seatBadge: {
+    position: 'relative',
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 6,
@@ -193,6 +223,34 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     backgroundColor: 'rgba(201,162,39,0.15)',
   },
+  seatHeroBadge: {
+    borderColor: colors.semantic.info,
+  },
   seatName: { ...typography.micro, color: colors.text.primary, maxWidth: 80 },
   seatChips: { ...typography.micro, color: colors.brand.secondary, fontWeight: '700', marginTop: 2 },
+  betChip: {
+    marginTop: 4,
+    backgroundColor: 'rgba(201,162,39,0.9)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+    minWidth: 24,
+    alignItems: 'center',
+  },
+  betChipText: { ...typography.micro, color: '#1A1A1A', fontWeight: '700', fontSize: 10 },
+  countdown: {
+    position: 'absolute',
+    top: -10,
+    right: -6,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.brand.secondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  countdownText: { fontSize: 11, fontWeight: '800', color: '#1A1A1A' },
+  countdownUrgent: { color: colors.semantic.danger },
 });
