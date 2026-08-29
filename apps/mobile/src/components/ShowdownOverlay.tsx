@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Modal, View, Text, StyleSheet, Animated } from 'react-native';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { HandWinner } from '../types/table';
 import { colors, radius, spacing, typography } from '../theme';
@@ -13,6 +13,9 @@ interface Props {
   nextHandIn: number;
 }
 
+/** Tracks hands already animated (survives visible toggles). */
+const animatedHands = new Set<string>();
+
 export function ShowdownOverlay({
   visible,
   handId,
@@ -24,12 +27,17 @@ export function ShowdownOverlay({
   const { t } = useTranslation();
   const fade = useRef(new Animated.Value(0)).current;
   const slide = useRef(new Animated.Value(40)).current;
-  const animatedHandId = useRef<string | null>(null);
 
   useEffect(() => {
     if (!visible || !handId) return;
-    if (animatedHandId.current === handId) return;
-    animatedHandId.current = handId;
+    if (animatedHands.has(handId)) {
+      fade.setValue(1);
+      slide.setValue(0);
+      return;
+    }
+    animatedHands.add(handId);
+    if (animatedHands.size > 30) animatedHands.clear();
+
     fade.setValue(0);
     slide.setValue(40);
     Animated.parallel([
@@ -38,14 +46,17 @@ export function ShowdownOverlay({
     ]).start();
   }, [visible, handId, fade, slide]);
 
-  useEffect(() => {
-    if (!visible) animatedHandId.current = null;
-  }, [visible]);
+  if (!visible && !handId) return null;
 
   const board = boardCards.trim() ? boardCards.split(/\s+/) : [];
 
   return (
-    <Modal transparent visible={visible} animationType="none">
+    <View
+      style={styles.overlay}
+      pointerEvents={visible ? 'auto' : 'none'}
+      accessibilityElementsHidden={!visible}
+      importantForAccessibility={visible ? 'auto' : 'no-hide-descendants'}
+    >
       <Animated.View style={[styles.backdrop, { opacity: visible ? fade : 0 }]}>
         <Animated.View style={[styles.card, { transform: [{ translateY: slide }] }]}>
           <Text style={styles.title}>{t('showdown.title')}</Text>
@@ -79,16 +90,22 @@ export function ShowdownOverlay({
           </Text>
         </Animated.View>
       </Animated.View>
-    </Modal>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 100,
+    justifyContent: 'center',
+    padding: spacing.xl,
+  },
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.72)',
     justifyContent: 'center',
-    padding: spacing.xl,
+    borderRadius: radius.lg,
   },
   card: {
     backgroundColor: colors.bg.card,
