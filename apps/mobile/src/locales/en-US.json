@@ -71,6 +71,7 @@
     "invalid_avatar": "Please choose a preset avatar",
     "emoji_official_only": "Quick emojis are only available at official tables",
     "emoji_rate_limit": "Please wait a moment before sending another emoji",
+    "ip_conflict": "Another account on your network is already at this table",
     "unauthorized": "Please sign in first",
     "account_blocked": "This account has been restricted"
   },
@@ -140,7 +141,11 @@
     "dissolve_failed": "Dissolve vote failed",
     "room_dissolved": "Room dissolved",
     "report_sent": "Report submitted",
-    "back_lobby": "Lobby"
+    "back_lobby": "Lobby",
+    "reconnecting": "Reconnecting…",
+    "reconnected": "Back online",
+    "connection_lost": "Connection lost",
+    "retry_connection": "Retry"
   },
   "compliance": {
     "age_title": "Age verification",

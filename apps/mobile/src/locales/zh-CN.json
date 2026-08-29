@@ -71,6 +71,7 @@
     "invalid_avatar": "请选择预设头像",
     "emoji_official_only": "快捷表情仅适用于官方场",
     "emoji_rate_limit": "发送太频繁，请稍后再试",
+    "ip_conflict": "同一网络下已有其他账号在此桌",
     "unauthorized": "请先登录",
     "account_blocked": "账号已被限制"
   },
@@ -140,7 +141,11 @@
     "dissolve_failed": "解散投票未通过",
     "room_dissolved": "房间已解散",
     "report_sent": "举报已提交",
-    "back_lobby": "大厅"
+    "back_lobby": "大厅",
+    "reconnecting": "正在重连…",
+    "reconnected": "已恢复连接",
+    "connection_lost": "连接已断开",
+    "retry_connection": "重试"
   },
   "compliance": {
     "age_title": "年龄确认",

@@ -62,6 +62,8 @@ function mapSnapshot(payload: SnapshotPayload, currentTurnSeat: number | null): 
   };
 }
 
+type ConnectionStatus = 'connected' | 'reconnecting' | 'disconnected';
+
 export default function TableScreen() {
   const { roomId, buyInCap: buyInCapParam } = useLocalSearchParams<{
     roomId: string;
@@ -99,6 +101,8 @@ export default function TableScreen() {
   >([]);
   const [animateHoleDeal, setAnimateHoleDeal] = useState(false);
   const [seatEmojis, setSeatEmojis] = useState<Record<number, string>>({});
+  const [connectionStatus, setConnectionStatus] =
+    useState<ConnectionStatus>('connected');
   const joinedRef = useRef(false);
   const myUserIdRef = useRef<string | null>(null);
   const seatsRef = useRef<SeatView[]>([]);
@@ -157,30 +161,65 @@ export default function TableScreen() {
       auth: { token },
       transports: ['websocket'],
       reconnection: true,
-      reconnectionAttempts: 10,
+      reconnectionAttempts: 20,
       reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
     });
     setSocket(s);
 
     const buyIn = buyInCapParam ? Number(buyInCapParam) : 100;
+
+    const showNotice = (text: string, autoDismissMs = 2500) => {
+      setHandNotice(text);
+      if (handNoticeTimer.current) clearTimeout(handNoticeTimer.current);
+      if (autoDismissMs > 0) {
+        handNoticeTimer.current = setTimeout(() => setHandNotice(null), autoDismissMs);
+      }
+    };
 
     const join = (reconnect = false) => {
       const event = reconnect ? 'reconnect_room' : 'join_room';
       const payload = reconnect
         ? { roomId, requestId: `reconnect-${Date.now()}` }
         : { roomId, buyInAmount: buyIn, requestId: `join-${Date.now()}` };
-      s.emit(event, payload, (ack: { ok: boolean }) => {
-        if (!ack?.ok && !reconnect) router.back();
+      s.emit(event, payload, (ack: { ok: boolean; error?: string }) => {
+        if (ack?.ok) {
+          setConnectionStatus('connected');
+          if (reconnect) showNotice(t('table.reconnected'));
+          return;
+        }
+        if (reconnect) {
+          setConnectionStatus('disconnected');
+          showNotice(t('table.connection_lost'), 0);
+        } else {
+          router.back();
+        }
       });
     };
 
     const onConnect = () => {
+      setConnectionStatus('connected');
       join(joinedRef.current);
       joinedRef.current = true;
     };
 
+    const onDisconnect = () => {
+      setConnectionStatus('reconnecting');
+      showNotice(t('table.reconnecting'), 0);
+    };
+
+    const onReconnectAttempt = () => {
+      setConnectionStatus('reconnecting');
+    };
+
+    const onReconnectFailed = () => {
+      setConnectionStatus('disconnected');
+      showNotice(t('table.connection_lost'), 0);
+    };
+
     const onRoomState = (msg: { payload: SnapshotPayload }) => {
       applySnapshot(msg.payload);
+      setConnectionStatus('connected');
     };
 
     const onActionTurn = (msg: {
@@ -439,6 +478,9 @@ export default function TableScreen() {
     };
 
     s.on('connect', onConnect);
+    s.on('disconnect', onDisconnect);
+    s.io.on('reconnect_attempt', onReconnectAttempt);
+    s.io.on('reconnect_failed', onReconnectFailed);
     s.on('room_state_sync', onRoomState);
     s.on('action_turn', onActionTurn);
     s.on('action_result', onActionResult);
@@ -462,6 +504,9 @@ export default function TableScreen() {
       for (const timer of emojiTimers.current.values()) clearTimeout(timer);
       emojiTimers.current.clear();
       s.off('connect', onConnect);
+      s.off('disconnect', onDisconnect);
+      s.io.off('reconnect_attempt', onReconnectAttempt);
+      s.io.off('reconnect_failed', onReconnectFailed);
       s.off('room_state_sync', onRoomState);
       s.off('action_turn', onActionTurn);
       s.off('action_result', onActionResult);
@@ -500,6 +545,32 @@ export default function TableScreen() {
   const sendEmoji = (emojiId: string) => {
     socket?.emit('send_emoji', { emojiId, requestId: `emoji-${Date.now()}` });
   };
+
+  const retryConnection = useCallback(() => {
+    if (!socket || !roomId) return;
+    setConnectionStatus('reconnecting');
+    setHandNotice(t('table.reconnecting'));
+    const finish = (ok: boolean) => {
+      if (ok) {
+        setConnectionStatus('connected');
+        setHandNotice(t('table.reconnected'));
+        if (handNoticeTimer.current) clearTimeout(handNoticeTimer.current);
+        handNoticeTimer.current = setTimeout(() => setHandNotice(null), 2000);
+      } else {
+        setConnectionStatus('disconnected');
+        setHandNotice(t('table.connection_lost'));
+      }
+    };
+    if (socket.connected) {
+      socket.emit(
+        'reconnect_room',
+        { roomId, requestId: `reconnect-${Date.now()}` },
+        (ack: { ok: boolean }) => finish(!!ack?.ok),
+      );
+    } else {
+      socket.connect();
+    }
+  }, [socket, roomId, t]);
 
   const requestRebuy = () => {
     const amount = Math.min(state.buyInCap, Math.max(10, state.buyInCap - myChips));
@@ -570,7 +641,17 @@ export default function TableScreen() {
         blinds={state.blinds}
         lastAction={lastAction}
         handNotice={handNotice}
+        connectionStatus={connectionStatus}
       />
+
+      {connectionStatus === 'disconnected' && (
+        <View style={styles.connectionBanner}>
+          <Text style={styles.connectionText}>{t('table.connection_lost')}</Text>
+          <Pressable style={styles.retryBtn} onPress={retryConnection}>
+            <Text style={styles.retryText}>{t('table.retry_connection')}</Text>
+          </Pressable>
+        </View>
+      )}
 
       <PrivateTablePanels
         isPrivate={isPrivate}
@@ -646,6 +727,29 @@ const styles = StyleSheet.create({
   emojiWrapAboveActions: {
     bottom: 120,
   },
+  connectionBanner: {
+    position: 'absolute',
+    bottom: 88,
+    left: 16,
+    right: 16,
+    zIndex: 25,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(180,40,40,0.92)',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  connectionText: { color: '#fff', fontWeight: '600', flex: 1 },
+  retryBtn: {
+    marginLeft: 12,
+    backgroundColor: '#fff',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  retryText: { color: '#8B1A1A', fontWeight: '700', fontSize: 13 },
   back: {
     position: 'absolute',
     top: 16,

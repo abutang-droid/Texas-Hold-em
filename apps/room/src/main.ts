@@ -6,10 +6,13 @@ import {
   findPrivateRoomByRoomId,
   findUserById,
   getRakeRate,
+  findOfficialIpConflict,
+  registerOfficialRoomIp,
 } from '@texas-holdem/db';
 import type { ActionType } from '@texas-holdem/poker-engine';
 import { getTableEmoji, isValidTableEmojiId } from '@texas-holdem/shared';
 import { createServer } from 'node:http';
+import { getClientIp } from './client-ip.js';
 import {
   broadcastState,
   cacheRequestResult,
@@ -105,6 +108,16 @@ async function handleJoin(
   const actualBuyIn = Math.min(cap, Math.floor(msg.buyInAmount ?? cap));
   const userRow = await findUserById(Number(userId));
   const avatarUrl = userRow?.avatar_url ?? null;
+  const clientIp = getClientIp(socket);
+  const isNewSeat = !table.hasPlayer(userId);
+
+  if (table.config.roomType === 'OFFICIAL' && isNewSeat) {
+    const conflictUserId = await findOfficialIpConflict(msg.roomId, clientIp, userId);
+    if (conflictUserId) {
+      emitError(socket, 'IP_CONFLICT', msg.requestId, 'errors.ip_conflict');
+      return { ok: false, error: 'IP_CONFLICT' };
+    }
+  }
 
   try {
     const { seat } = await joinRoomFlow({
@@ -121,6 +134,9 @@ async function handleJoin(
       },
     });
     userRoom.set(userId, msg.roomId);
+    if (table.config.roomType === 'OFFICIAL' && isNewSeat) {
+      await registerOfficialRoomIp(msg.roomId, userId, clientIp);
+    }
     ensureRoomTick(io, msg.roomId);
     onPlayerJoinedPrivateRoom(msg.roomId, userId, table);
     const result = { ok: true as const, seatIndex: seat };
@@ -133,7 +149,9 @@ async function handleJoin(
         ? 'INSUFFICIENT_CHIPS'
         : message === 'ROOM_FULL'
           ? 'ROOM_FULL'
-          : 'INVALID_ACTION';
+          : message === 'IP_CONFLICT'
+            ? 'IP_CONFLICT'
+            : 'INVALID_ACTION';
     emitError(socket, code, msg.requestId);
     return { ok: false, error: message };
   }
@@ -143,7 +161,7 @@ export function startRoomServer(port: number): void {
   const httpServer = createServer((req, res) => {
     if (req.url === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.4.2' }));
+      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.4.3' }));
       return;
     }
     res.writeHead(404);
