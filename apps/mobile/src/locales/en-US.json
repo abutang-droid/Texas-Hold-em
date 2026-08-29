@@ -77,7 +77,9 @@
     "room_code": "6-digit room code",
     "join_btn": "Join",
     "two_player_blocked": "2-player games require 10 official hands first",
-    "official_hands": "Official hands played: {{count}}"
+    "official_hands": "Official hands played: {{count}}",
+    "joining_room": "Joining room…",
+    "join_failed": "Could not join room"
   },
   "table": {
     "paused": "Game paused",

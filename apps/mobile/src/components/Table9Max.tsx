@@ -4,6 +4,7 @@ import { colors, radius, spacing, typography } from '../theme';
 import { PlayingCard } from './ui/PlayingCard';
 import { CommunityCardsRow } from './CommunityCardsRow';
 import { PotDisplay } from './PotDisplay';
+import { ChipFlyLayer, type ChipFlyEvent } from './ChipFlyLayer';
 
 function SeatCountdown({ deadline }: { deadline: number }) {
   const [sec, setSec] = useState(0);
@@ -54,6 +55,8 @@ interface Props {
   heroUserId?: string | null;
   turnDeadline?: number | null;
   winnerSeats?: number[];
+  chipFlyEvents?: ChipFlyEvent[];
+  onChipFlyDone?: (id: string) => void;
 }
 
 export function Table9Max({
@@ -64,9 +67,12 @@ export function Table9Max({
   heroUserId,
   turnDeadline,
   winnerSeats = [],
+  chipFlyEvents = [],
+  onChipFlyDone,
 }: Props) {
   return (
     <View style={styles.container}>
+      <ChipFlyLayer events={chipFlyEvents} onDone={(id) => onChipFlyDone?.(id)} />
       <View style={styles.railOuter}>
         <View style={styles.railHighlight} />
         <View style={styles.rail}>

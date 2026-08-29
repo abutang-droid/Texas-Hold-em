@@ -4,9 +4,12 @@
     "slug": "texas-holdem",
     "version": "0.2.0",
     "orientation": "landscape",
+    "icon": "./assets/icon.png",
     "scheme": "texasholdem",
     "userInterfaceStyle": "dark",
     "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
       "backgroundColor": "#121418"
     },
     "ios": {
@@ -15,12 +18,28 @@
     },
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#121418"
       },
-      "package": "com.texasholdem.app"
+      "package": "com.texasholdem.app",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": false,
+          "data": [
+            {
+              "scheme": "texasholdem",
+              "host": "room",
+              "pathPrefix": "/"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
-      "bundler": "metro"
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png"
     },
     "plugins": ["expo-router", "expo-localization"]
   }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Alert, Share } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import {
   createPrivateRoom,
@@ -41,6 +41,7 @@ function LabeledInput({
 export default function PrivateRoomScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { code: codeParam } = useLocalSearchParams<{ code?: string }>();
   const [loading, setLoading] = useState(true);
   const [permission, setPermission] = useState<{
     hasPermission: boolean;
@@ -57,8 +58,13 @@ export default function PrivateRoomScreen() {
     roomCode: string;
     roomId: string;
     inviteText: string;
+    deepLink: string;
     buyInCap: number;
   } | null>(null);
+
+  useEffect(() => {
+    if (codeParam) setRoomCode(String(codeParam).trim().toUpperCase());
+  }, [codeParam]);
 
   useEffect(() => {
     getPrivatePermission()
@@ -96,6 +102,7 @@ export default function PrivateRoomScreen() {
         roomCode: room.roomCode,
         roomId: room.roomId,
         inviteText: room.inviteText,
+        deepLink: room.deepLink,
         buyInCap: room.buyInCap,
       });
     } catch (e) {
@@ -123,7 +130,8 @@ export default function PrivateRoomScreen() {
 
   const onShare = async () => {
     if (!created) return;
-    await Share.share({ message: created.inviteText });
+    const message = `${created.inviteText}\n${created.deepLink}`;
+    await Share.share({ message, url: created.deepLink });
   };
 
   if (loading) {
@@ -183,6 +191,7 @@ export default function PrivateRoomScreen() {
           <Text style={styles.sectionTitle}>{t('private.room_created')}</Text>
           <Text style={styles.code}>{created.roomCode}</Text>
           <Text style={styles.inviteText}>{created.inviteText}</Text>
+          <Text style={styles.deepLink}>{created.deepLink}</Text>
           <View style={styles.row}>
             <Button label={t('private.share')} onPress={onShare} variant="secondary" style={styles.half} />
             <Button
@@ -248,7 +257,8 @@ const styles = StyleSheet.create({
     letterSpacing: 8,
     marginVertical: spacing.md,
   },
-  inviteText: { ...typography.caption, color: colors.text.secondary, marginBottom: spacing.lg, lineHeight: 20 },
+  inviteText: { ...typography.caption, color: colors.text.secondary, marginBottom: spacing.sm, lineHeight: 20 },
+  deepLink: { ...typography.micro, color: colors.semantic.info, marginBottom: spacing.lg, textAlign: 'center' },
   row: { flexDirection: 'row', gap: spacing.md },
   half: { flex: 1 },
   error: { ...typography.body, color: colors.semantic.danger, textAlign: 'center' },

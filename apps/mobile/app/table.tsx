@@ -84,6 +84,9 @@ export default function TableScreen() {
   const [winnerSeats, setWinnerSeats] = useState<number[]>([]);
   const [rebuyApproval, setRebuyApproval] = useState<RebuyApproval | null>(null);
   const [dissolveVote, setDissolveVote] = useState<DissolveVoteState | null>(null);
+  const [chipFlyEvents, setChipFlyEvents] = useState<
+    Array<{ id: string; seatIndex: number; amount: number }>
+  >([]);
   const joinedRef = useRef(false);
   const myUserIdRef = useRef<string | null>(null);
   const seatsRef = useRef<SeatView[]>([]);
@@ -213,6 +216,20 @@ export default function TableScreen() {
         amount: msg.payload.amount,
         autoAction: msg.payload.autoAction,
       });
+      const betAmount = msg.payload.amount ?? 0;
+      if (
+        betAmount > 0 &&
+        ['call', 'raise', 'all_in'].includes(msg.payload.actionType)
+      ) {
+        setChipFlyEvents((prev) => [
+          ...prev,
+          {
+            id: `chip-${Date.now()}-${msg.payload.seatIndex}`,
+            seatIndex: msg.payload.seatIndex,
+            amount: betAmount,
+          },
+        ]);
+      }
       if (msg.payload.userId === myUserIdRef.current) {
         setTurnContext(null);
       }
@@ -394,6 +411,10 @@ export default function TableScreen() {
         heroUserId={myUserId}
         turnDeadline={state.actionDeadline}
         winnerSeats={winnerSeats}
+        chipFlyEvents={chipFlyEvents}
+        onChipFlyDone={(id) =>
+          setChipFlyEvents((prev) => prev.filter((e) => e.id !== id))
+        }
       />
 
       <HandStatusBar

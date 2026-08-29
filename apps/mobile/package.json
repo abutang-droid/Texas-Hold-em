@@ -8,7 +8,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "tsc -p tsconfig.json --noEmit"
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "generate-icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
     "@babel/runtime": "^8.0.0",
@@ -32,6 +33,7 @@
     "@babel/core": "^7.27.1",
     "@types/node": "^22.15.3",
     "@types/react": "~18.3.20",
+    "sharp": "^0.35.4",
     "typescript": "^5.8.3"
   }
 }
