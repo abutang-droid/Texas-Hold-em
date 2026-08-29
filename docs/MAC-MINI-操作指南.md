@@ -187,6 +187,19 @@ ssh uoto@192.168.31.53
 
 在服务器里执行（**没有 brew，用 bash 脚本**）：
 
+**推荐（任意目录均可，自动进入 `~/Texas-Hold-em`）：**
+
+```bash
+curl -fsSL "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main/scripts/staging-server-deploy.sh" | bash -s main
+```
+
+或已在项目目录时：
+
+```bash
+cd ~/Texas-Hold-em
+bash scripts/staging-update-no-git.sh main
+```
+
 **若 `git pull` 报 `not a git repository`（zip 安装）— 用下面整段更新：**
 
 ```bash
