@@ -61,27 +61,45 @@ interface Props {
   chipFlyEvents?: ChipFlyEvent[];
   animateHoleDeal?: boolean;
   seatEmojis?: Record<number, string>;
+  phase?: string;
   onChipFlyDone?: (id: string) => void;
 }
 
-function HoleCardsRow({ cards, animate }: { cards: string[]; animate?: boolean }) {
-  const scale = useRef(new Animated.Value(animate ? 0.5 : 1)).current;
-  const opacity = useRef(new Animated.Value(animate ? 0 : 1)).current;
+function HoleCardsRow({
+  cards,
+  animate,
+  dealDelayMs = 0,
+  faceDown,
+}: {
+  cards: string[];
+  animate?: boolean;
+  dealDelayMs?: number;
+  faceDown?: boolean;
+}) {
+  const slide = useRef(new Animated.Value(animate ? -14 : 0)).current;
+  const opacity = useRef(new Animated.Value(animate ? 0.25 : 1)).current;
 
   useEffect(() => {
-    if (!animate) return;
-    scale.setValue(0.5);
-    opacity.setValue(0);
-    Animated.parallel([
-      Animated.spring(scale, { toValue: 1, friction: 7, useNativeDriver: true }),
-      Animated.timing(opacity, { toValue: 1, duration: 320, useNativeDriver: true }),
+    if (!animate) {
+      slide.setValue(0);
+      opacity.setValue(1);
+      return;
+    }
+    slide.setValue(-16);
+    opacity.setValue(0.25);
+    Animated.sequence([
+      Animated.delay(dealDelayMs),
+      Animated.parallel([
+        Animated.spring(slide, { toValue: 0, friction: 7, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 1, duration: 280, useNativeDriver: true }),
+      ]),
     ]).start();
-  }, [animate, scale, opacity]);
+  }, [animate, dealDelayMs, opacity, slide]);
 
   return (
-    <Animated.View style={[styles.holeCards, { opacity, transform: [{ scale }] }]}>
+    <Animated.View style={[styles.holeCards, { opacity, transform: [{ translateY: slide }] }]}>
       {cards.map((c, i) => (
-        <PlayingCard key={i} code={c} size="sm" />
+        <PlayingCard key={i} code={c} size="sm" faceDown={faceDown || c === '**'} />
       ))}
     </Animated.View>
   );
@@ -101,6 +119,7 @@ export function Table9Max({
   chipFlyEvents = [],
   animateHoleDeal = false,
   seatEmojis = {},
+  phase = 'WAITING',
   onChipFlyDone,
 }: Props) {
   return (
@@ -118,10 +137,20 @@ export function Table9Max({
             {SEAT_POSITIONS.map((pos, idx) => {
               const seat = seats.find((s) => s.seatIndex === idx);
               const isHero = heroUserId && seat?.userId === heroUserId;
-              const hasVisibleCards =
+              const inHand =
+                !!seat &&
+                phase !== 'WAITING' &&
+                seat.status !== 'SIT_OUT' &&
+                seat.status !== 'FOLDED';
+              const heroOrRevealed =
                 seat?.holeCards &&
                 seat.holeCards[0] !== '**' &&
                 (isHero || seat.revealed);
+              const holeCards = heroOrRevealed
+                ? seat!.holeCards!
+                : inHand
+                  ? ['**', '**']
+                  : null;
               const isWinner = winnerSeats.includes(idx);
               const isDealer = buttonSeat === idx;
               const isSb = sbSeat === idx;
@@ -152,10 +181,12 @@ export function Table9Max({
                       <Text style={styles.blindBadgeText}>BB</Text>
                     </View>
                   ) : null}
-                  {hasVisibleCards && (
+                  {holeCards && (
                     <HoleCardsRow
-                      cards={seat.holeCards!}
-                      animate={animateHoleDeal && !!isHero}
+                      cards={holeCards}
+                      animate={animateHoleDeal}
+                      dealDelayMs={idx * 70}
+                      faceDown={!heroOrRevealed}
                     />
                   )}
                   {seatEmojis[idx] ? (

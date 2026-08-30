@@ -36,15 +36,18 @@ if [ ! -d "${REPO}/apps/mobile" ]; then
   exit 1
 fi
 
-echo "==> Syncing call-loop client files from ${BRANCH}"
+echo "==> Syncing table client files from ${BRANCH}"
 download "apps/mobile/app/table.tsx"
 download "apps/mobile/src/components/ActionPanel.tsx"
 download "apps/mobile/src/components/ChipFlyLayer.tsx"
+download "apps/mobile/src/components/CommunityCardsRow.tsx"
+download "apps/mobile/src/components/Table9Max.tsx"
 download "apps/mobile/src/components/TurnTimer.tsx"
+download "apps/mobile/src/components/ui/PlayingCard.tsx"
 
 echo ""
 echo "Client files updated."
-echo "Staging Room must be 0.4.8. On this Mac (same WiFi):"
+echo "Staging Room must be 0.4.9 (5 bots + deal animation). On this Mac (same WiFi):"
 echo "  bash ${REPO}/scripts/staging-remote-deploy.sh ${BRANCH}"
 echo "Or on uoto@tex:"
 echo "  ZIP_URL=https://ghfast.top/https://github.com/${SLUG}/archive/refs/heads/${BRANCH}.zip \\"

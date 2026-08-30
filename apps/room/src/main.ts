@@ -177,7 +177,7 @@ export function startRoomServer(port: number): void {
   const httpServer = createServer((req, res) => {
     if (req.url === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.4.8' }));
+      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.4.9' }));
       return;
     }
     res.writeHead(404);

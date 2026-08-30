@@ -38,10 +38,43 @@ interface TableState {
 
 type SnapshotPayload = TableState & { seats: SeatView[] };
 
+function normalizeCardCode(raw: unknown): string | null {
+  if (typeof raw === 'string') {
+    const code = raw.trim();
+    if (code.length >= 2 && code !== '**') return code;
+    return null;
+  }
+  if (raw && typeof raw === 'object' && 'rank' in raw && 'suit' in raw) {
+    const card = raw as { rank?: string; suit?: string };
+    if (card.rank && card.suit) return `${card.rank}${card.suit}`;
+  }
+  return null;
+}
+
+function normalizeBoard(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map(normalizeCardCode).filter((c): c is string => c !== null);
+}
+
+/** Don't let a stale/empty snapshot wipe a live board (blank community cards). */
+function mergeCommunity(
+  prev: string[],
+  incoming: string[],
+  prevHandId: string | null,
+  nextHandId: string | null,
+  phase: string,
+): string[] {
+  if (nextHandId && prevHandId && nextHandId !== prevHandId) return incoming;
+  if (phase === 'WAITING') return incoming;
+  if (incoming.length === 0 && prev.length > 0) return prev;
+  if (incoming.length < prev.length) return prev;
+  return incoming;
+}
+
 function mapSnapshot(payload: SnapshotPayload, currentTurnSeat: number | null): TableState {
   return {
     potTotal: payload.potTotal,
-    communityCards: payload.communityCards,
+    communityCards: normalizeBoard(payload.communityCards),
     currentTurnSeat: payload.currentTurnSeat ?? currentTurnSeat,
     buttonSeat: payload.buttonSeat ?? 0,
     sbSeat: payload.sbSeat ?? null,
@@ -112,6 +145,7 @@ export default function TableScreen() {
   const actionInFlightRef = useRef(false);
   const actionLockTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ignoreTurnUntilRef = useRef(0);
+  const lastSeqRef = useRef(0);
 
   const clearActionLock = useCallback(() => {
     actionInFlightRef.current = false;
@@ -140,7 +174,17 @@ export default function TableScreen() {
   }, [myUserId]);
 
   const applySnapshot = useCallback((payload: SnapshotPayload) => {
-    setState((prev) => mapSnapshot(payload, payload.currentTurnSeat ?? prev.currentTurnSeat));
+    setState((prev) => {
+      const mapped = mapSnapshot(payload, payload.currentTurnSeat ?? prev.currentTurnSeat);
+      mapped.communityCards = mergeCommunity(
+        prev.communityCards,
+        mapped.communityCards,
+        prev.handId,
+        mapped.handId,
+        mapped.phase,
+      );
+      return mapped;
+    });
     const me = payload.seats?.find((x) => x.holeCards && x.holeCards[0] !== '**');
     if (me?.userId) setMyUserId(me.userId);
     const turnSeat = payload.currentTurnSeat;
@@ -248,7 +292,11 @@ export default function TableScreen() {
       showNotice(t('table.connection_lost'), 0);
     };
 
-    const onRoomState = (msg: { payload: SnapshotPayload }) => {
+    const onRoomState = (msg: { seq?: number; payload: SnapshotPayload }) => {
+      if (typeof msg.seq === 'number') {
+        if (msg.seq < lastSeqRef.current) return;
+        lastSeqRef.current = msg.seq;
+      }
       applySnapshot(msg.payload);
       setConnectionStatus('connected');
     };
@@ -385,9 +433,12 @@ export default function TableScreen() {
       const p = msg.payload;
       setState((prev) => ({
         ...prev,
+        handId: p.handId ?? prev.handId,
         buttonSeat: p.buttonSeat,
         sbSeat: p.sbSeat,
         bbSeat: p.bbSeat,
+        communityCards: [],
+        phase: 'PRE_FLOP',
         seats: prev.seats.map((s) => ({ ...s, revealed: false })),
       }));
       setHandNotice(
@@ -407,12 +458,26 @@ export default function TableScreen() {
       handNoticeTimer.current = setTimeout(() => {
         setHandNotice(null);
         setAnimateHoleDeal(false);
-      }, 1500);
+      }, 2200);
     };
 
     const onCommunityDealt = (msg: {
-      payload: { phase: string; cards: string[] };
+      payload: { phase: string; cards: string[]; boardCards?: string[] };
     }) => {
+      const incoming = normalizeBoard(msg.payload.boardCards ?? msg.payload.cards);
+      setState((prev) => ({
+        ...prev,
+        phase: msg.payload.phase || prev.phase,
+        communityCards: mergeCommunity(
+          prev.communityCards,
+          incoming.length >= prev.communityCards.length
+            ? incoming
+            : [...prev.communityCards, ...normalizeBoard(msg.payload.cards)],
+          prev.handId,
+          prev.handId,
+          msg.payload.phase || prev.phase,
+        ),
+      }));
       const phaseKey =
         msg.payload.phase === 'FLOP'
           ? 'game.phase.flop'
@@ -421,7 +486,7 @@ export default function TableScreen() {
             : 'game.phase.river';
       setHandNotice(t('game.community_dealt', { phase: t(phaseKey) }));
       if (handNoticeTimer.current) clearTimeout(handNoticeTimer.current);
-      handNoticeTimer.current = setTimeout(() => setHandNotice(null), 1500);
+      handNoticeTimer.current = setTimeout(() => setHandNotice(null), 2200);
     };
 
     const onShowdownResult = (msg: {
@@ -681,6 +746,7 @@ export default function TableScreen() {
         communityCards={state.communityCards}
         potLabel={t('game.pot')}
         heroUserId={myUserId}
+        phase={state.phase}
         buttonSeat={state.buttonSeat}
         sbSeat={state.sbSeat}
         bbSeat={state.bbSeat}

@@ -154,7 +154,14 @@ export interface HandEndSummary {
   results: Array<{ userId: string; profit: number; isBot: boolean }>;
 }
 
-const BOT_NAMES = ['Mike_D', 'PokerKing88', 'LuckyAce', 'RiverRat', 'ChipStack', 'BluffMaster'];
+const BOT_NAMES = [
+  'Mike_D',
+  'PokerKing88',
+  'LuckyAce',
+  'RiverRat',
+  'ChipStack',
+  'BluffMaster',
+];
 
 export interface TableConfig {
   roomType: 'OFFICIAL' | 'PRIVATE';
@@ -264,6 +271,9 @@ export class InteractiveTable {
     }
     this.avatarByUserId.delete(userId);
     this.players.splice(idx, 1);
+    if (!p.isBot && this.realPlayerCount === 0) {
+      this.players = this.players.filter((pl) => !pl.isBot);
+    }
     return chips;
   }
 
@@ -367,50 +377,45 @@ export class InteractiveTable {
     if (!isBot) {
       this.realPlayerCount += 1;
       this.avatarByUserId.set(userId, avatarUrl ?? null);
+      this.fillOfficialBots();
     }
-    this.scheduleBotFill();
     this.tryStartHand();
     return seat;
   }
 
-  private scheduleBotFill(): void {
+  /** Official test tables: 1 human + 5 bots (6-max full). Never seat bots mid-hand. */
+  private fillOfficialBots(): void {
     if (this.config.roomType === 'PRIVATE') return;
-    if (this.botFillTimer) clearTimeout(this.botFillTimer);
     if (this.realPlayerCount < 1) return;
-
-    const maybeAddBot = (): boolean => {
-      const reals = this.players.filter((p) => !p.isBot).length;
-      const total = this.players.length;
-      if (reals >= 1 && total < 3 && total < this.config.maxSeats) {
-        const botId = `bot_${Date.now()}_${total}`;
-        this.addPlayer(botId, BOT_NAMES[total % BOT_NAMES.length], this.config.buyInCap, true);
-        return true;
-      }
-      return false;
-    };
-
-    // Seat one bot immediately so a solo quick-start can begin within ~1s (v1.0 P99 ≤5s).
-    maybeAddBot();
-
-    if (
-      this.players.length < 3 &&
-      this.players.filter((p) => !p.isBot).length >= 1 &&
-      this.players.length < this.config.maxSeats
-    ) {
-      this.botFillTimer = setTimeout(() => {
-        maybeAddBot();
-        if (
-          this.players.length < 3 &&
-          this.players.filter((p) => !p.isBot).length >= 1 &&
-          this.players.length < this.config.maxSeats
-        ) {
-          this.scheduleBotFill();
-        }
-      }, 2500);
+    if (this.phase !== 'WAITING' && this.phase !== 'END_HAND') return;
+    if (this.botFillTimer) {
+      clearTimeout(this.botFillTimer);
+      this.botFillTimer = null;
+    }
+    while (this.players.length < this.config.maxSeats) {
+      const n = this.players.length;
+      const botId = `bot_${Date.now()}_${n}`;
+      const used = new Set(this.players.map((p) => p.seatIndex));
+      let seat = 0;
+      while (used.has(seat) && seat < this.config.maxSeats) seat += 1;
+      if (seat >= this.config.maxSeats) break;
+      this.players.push({
+        seatIndex: seat,
+        userId: botId,
+        nickname: BOT_NAMES[n % BOT_NAMES.length],
+        chips: this.config.buyInCap,
+        betThisRound: 0,
+        totalBetInHand: 0,
+        status: 'ACTIVE',
+        holeCards: [],
+        isBot: true,
+        timeBankMs: 0,
+      });
     }
   }
 
   private tryStartHand(): void {
+    this.fillOfficialBots();
     if (this.paused) return;
     const active = this.players.filter((p) => p.status !== 'SIT_OUT' && p.chips > 0);
     if (active.length < 2 || this.phase !== 'WAITING' && this.phase !== 'END_HAND') return;

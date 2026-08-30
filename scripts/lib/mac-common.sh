@@ -208,9 +208,11 @@ apps/mobile/src/theme/index.ts
 apps/mobile/src/utils/alert.ts
 apps/mobile/src/components/Table9Max.tsx
 apps/mobile/src/components/ChipFlyLayer.tsx
+apps/mobile/src/components/CommunityCardsRow.tsx
 apps/mobile/src/components/ActionPanel.tsx
 apps/mobile/src/components/TurnTimer.tsx
 apps/mobile/src/components/HandStatusBar.tsx
+apps/mobile/src/components/ui/PlayingCard.tsx
 apps/mobile/src/components/ui/GameModal.tsx
 apps/mobile/src/components/ui/Button.tsx
 apps/mobile/src/components/ui/Screen.tsx
