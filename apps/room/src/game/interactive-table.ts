@@ -190,6 +190,7 @@ export class InteractiveTable {
   private currentBet = 0;
   private minRaise = 2;
   private turnStartedAt = 0;
+  private botActAt = 0;
   private reachedFlop = false;
   private actionDeadline: number | null = null;
   private botFillTimer: ReturnType<typeof setTimeout> | null = null;
@@ -519,6 +520,7 @@ export class InteractiveTable {
     const actor = this.players.find((pl) => pl.seatIndex === this.currentSeat);
     const bank = actor && !actor.isBot ? (actor.timeBankMs ?? TIME_BANK_MS) : 0;
     this.actionDeadline = this.turnStartedAt + ACTION_TIME_MS + bank;
+    this.botActAt = actor?.isBot ? this.turnStartedAt + 900 + Math.floor(Math.random() * 1400) : 0;
   }
 
   private consumeTimeBank(player: PlayerState): void {
@@ -836,6 +838,7 @@ export class InteractiveTable {
     }
 
     const timedOut = Date.now() > this.actionDeadline;
+    if (p.isBot && Date.now() < this.botActAt) return null;
     if (!p.isBot && !timedOut) return null;
 
     const valid = getValidActions({

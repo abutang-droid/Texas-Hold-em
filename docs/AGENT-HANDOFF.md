@@ -126,11 +126,11 @@ https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em
 | 服务 | 端口 | 检查 |
 |------|------|------|
 | API | 3000 | `curl http://192.168.31.53:3000/health` |
-| Room | 3001 | `curl http://192.168.31.53:3001/health` → `version` 应为 **0.4.7**（跟注循环修复后） |
+| Room | 3001 | `curl http://192.168.31.53:3001/health` → `version` 应为 **0.4.8**（跟注循环：机器人不再立刻加注） |
 | Admin | 5173 | 浏览器；密钥 = 服务器 `.env` 的 `ADMIN_API_KEY` |
 
 **Room 版本曾卡在 0.4.1**：dist 未重建 / PM2 未重启。  
-修复脚本：`scripts/staging-redeploy-room.sh`（期望 version `0.4.7`）
+修复脚本：`scripts/staging-redeploy-room.sh`（期望 version `0.4.8`）
 
 **部署曾失败点**：`migrate.sh` 宿主机无 `psql` → 已改为 `docker exec th-postgres`；migrate 失败不阻塞 PM2（PR #18）
 
@@ -244,7 +244,7 @@ cd /workspace && pnpm --filter @texas-holdem/shared build
 1. **在 Mac 或 `uoto@tex` 部署规则分支**（Cloud Agent 连不上 `192.168.31.53`）
    - Mac：`bash scripts/staging-remote-deploy.sh cursor/poker-rules-6max-9b0a`
    - 服务器：`curl -fsSL "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/cursor/poker-rules-6max-9b0a/scripts/staging-server-deploy.sh" | bash -s cursor/poker-rules-6max-9b0a`
-   - 成功：`curl http://192.168.31.53:3001/health` → `"version":"0.4.7"`
+   - 成功：`curl http://192.168.31.53:3001/health` → `"version":"0.4.8"`
 2. **Mac 启动 Expo 做桌测**：`bash scripts/mac-mobile-dev.sh` → 登录 → 大厅 → Quick Start（HU Button=SB、20s 计时）
 3. 更新 `MAC-MINI-操作指南.md` 的分支说明 → `main` + `mac-start-mobile.sh`
 4. 修复 CI pnpm version 冲突（可选，不阻塞用户玩）

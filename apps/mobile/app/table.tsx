@@ -111,6 +111,7 @@ export default function TableScreen() {
   const shownHandsRef = useRef(new Set<string>());
   const actionInFlightRef = useRef(false);
   const actionLockTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const ignoreTurnUntilRef = useRef(0);
 
   const clearActionLock = useCallback(() => {
     actionInFlightRef.current = false;
@@ -263,11 +264,27 @@ export default function TableScreen() {
       };
     }) => {
       if (actionInFlightRef.current) return;
+      const wait = ignoreTurnUntilRef.current - Date.now();
+      if (wait > 0) {
+        const delayed = msg.payload;
+        setTimeout(() => {
+          if (actionInFlightRef.current || Date.now() < ignoreTurnUntilRef.current) return;
+          setTurnContext({
+            seatIndex: delayed.seatIndex,
+            deadline: delayed.deadline,
+            validActions: delayed.validActions.filter((a) => a !== 'call' || delayed.callAmount > 0),
+            callAmount: delayed.callAmount,
+            minRaise: delayed.minRaise,
+            maxRaise: delayed.maxRaise,
+          });
+        }, wait);
+        return;
+      }
       const p = msg.payload;
       setTurnContext({
         seatIndex: p.seatIndex,
         deadline: p.deadline,
-        validActions: p.validActions,
+        validActions: p.validActions.filter((a) => a !== 'call' || p.callAmount > 0),
         callAmount: p.callAmount,
         minRaise: p.minRaise,
         maxRaise: p.maxRaise,
@@ -314,6 +331,7 @@ export default function TableScreen() {
         ]);
       }
       if (msg.payload.userId === myUserIdRef.current) {
+        ignoreTurnUntilRef.current = Date.now() + 800;
         clearActionLock();
         setTurnContext(null);
       }

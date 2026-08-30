@@ -177,7 +177,7 @@ export function startRoomServer(port: number): void {
   const httpServer = createServer((req, res) => {
     if (req.url === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.4.7' }));
+      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.4.8' }));
       return;
     }
     res.writeHead(404);
@@ -297,13 +297,6 @@ export function startRoomServer(port: number): void {
         if (!mySeat) return;
         try {
           table.act(mySeat.seatIndex, msg.actionType, msg.amount, false);
-
-          let safety = 0;
-          while (safety < 20) {
-            safety += 1;
-            const ticked = table.tick();
-            if (!ticked) break;
-          }
           broadcastState(io, roomId, table);
           cacheRequestResult(msg.requestId, { ok: true });
         } catch {

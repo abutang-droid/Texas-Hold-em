@@ -11,7 +11,7 @@ cd "$ROOT"
 
 REPO="abutang-droid/Texas-Hold-em"
 BRANCH="${1:-main}"
-EXPECTED_ROOM_VERSION="${EXPECTED_ROOM_VERSION:-0.4.7}"
+EXPECTED_ROOM_VERSION="${EXPECTED_ROOM_VERSION:-0.4.8}"
 
 zip_candidates=()
 if [ -n "${ZIP_URL:-}" ]; then

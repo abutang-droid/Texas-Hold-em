@@ -193,7 +193,7 @@ ssh uoto@192.168.31.53
 curl -fsSL "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main/scripts/staging-server-deploy.sh" | bash -s main
 ```
 
-**部署 6-max 规则校正（PR #32，Room 0.4.7）— 在 Mac 上：**
+**部署 6-max 规则校正（PR #32，Room 0.4.8）— 在 Mac 上：**
 
 ```bash
 cd ~/Texas-Hold-em
@@ -208,7 +208,14 @@ curl -fsSL "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/T
 curl -s http://127.0.0.1:3001/health
 ```
 
-成功应看到 `"version":"0.4.7"`。
+成功应看到 `"version":"0.4.8"`。
+
+跟注按钮转圈 / 点一下立刻又要跟：先更新 Mac 客户端再部署 Room：
+
+```bash
+curl -fsSL "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/cursor/poker-rules-6max-9b0a/scripts/mac-fix-call-loop.sh" -o /tmp/mac-fix-call.sh
+bash /tmp/mac-fix-call.sh
+```
 
 或已在项目目录时：
 

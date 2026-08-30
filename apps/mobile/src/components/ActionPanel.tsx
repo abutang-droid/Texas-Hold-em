@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, LayoutChangeEvent } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { PokerAction, TurnContext } from '../types/table';
@@ -30,11 +30,22 @@ export function ActionPanel({ turn, onAction }: Props) {
   }, [turn.minRaise, turn.maxRaise]);
 
   const [raiseTotal, setRaiseTotal] = useState(turn.minRaise);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    setBusy(false);
+  }, [turn.seatIndex, turn.deadline, turn.callAmount]);
+
+  const fire = (action: PokerAction, amount?: number) => {
+    if (busy) return;
+    setBusy(true);
+    onAction(action, amount);
+  };
 
   const can = (a: PokerAction) => turn.validActions.includes(a);
   const canRaise = can('raise') && turn.maxRaise > turn.minRaise;
   const canCheck = can('check');
-  const canCall = can('call');
+  const canCall = can('call') && turn.callAmount > 0;
   const canFold = can('fold');
   const canAllIn = can('all_in');
 
@@ -53,7 +64,7 @@ export function ActionPanel({ turn, onAction }: Props) {
   );
 
   const confirmRaise = () => {
-    onAction('raise', raiseTotal);
+    fire('raise', raiseTotal);
     setRaiseMode(false);
   };
 
@@ -110,7 +121,7 @@ export function ActionPanel({ turn, onAction }: Props) {
             <ActionBtn
               label={t('game.action.allIn')}
               variant="allin"
-              onPress={() => onAction('all_in')}
+              onPress={() => fire('all_in')}
             />
           )}
           <ActionBtn label={t('game.action.raise')} variant="raise" onPress={confirmRaise} flex />
@@ -124,18 +135,18 @@ export function ActionPanel({ turn, onAction }: Props) {
       <TurnTimer deadline={turn.deadline} />
       <View style={styles.row}>
         {canFold && (
-          <ActionBtn label={t('game.action.fold')} variant="fold" onPress={() => onAction('fold')} flex />
+          <ActionBtn label={t('game.action.fold')} variant="fold" onPress={() => fire('fold')} flex />
         )}
         {canCheck && (
           <ActionBtn
             label={t('game.action.check')}
             variant="check"
-            onPress={() => onAction('check')}
+            onPress={() => fire('check')}
             flex
           />
         )}
         {canCall && (
-          <ActionBtn label={callLabel} variant="call" onPress={() => onAction('call')} flex />
+          <ActionBtn label={callLabel} variant="call" onPress={() => fire('call')} flex />
         )}
         {canRaise && (
           <ActionBtn
@@ -152,7 +163,7 @@ export function ActionPanel({ turn, onAction }: Props) {
           <ActionBtn
             label={t('game.action.allIn')}
             variant="allin"
-            onPress={() => onAction('all_in')}
+            onPress={() => fire('all_in')}
             flex
           />
         )}
