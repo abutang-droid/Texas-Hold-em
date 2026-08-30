@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Start Expo web dev server on Mac (builds shared, clears cache).
+# Mac: sync mobile client from GitHub mirror (no git pull). Then build shared.
 #
-#   cd ~/Texas-Hold-em && bash scripts/mac-mobile-dev.sh
-#   cd ~/Texas-Hold-em && bash /tmp/mac-dev.sh
+#   cd ~/Texas-Hold-em && bash scripts/mac-sync-mobile.sh
+#   cd ~/Texas-Hold-em && bash /tmp/mac-sync.sh
 set -euo pipefail
 
 MAC_SCRIPT_SELF="${BASH_SOURCE[0]:-$0}"
@@ -20,8 +20,12 @@ _load_mac_common() {
     return 0
   fi
   tmp="/tmp/mac-common-$$.sh"
-  curl -fsSL --retry 2 "${MIRROR_BASE}/scripts/lib/mac-common.sh" -o "${tmp}"
-  printf '%s\n' "${tmp}"
+  if curl -fsSL --retry 2 "${MIRROR_BASE}/scripts/lib/mac-common.sh" -o "${tmp}"; then
+    printf '%s\n' "${tmp}"
+    return 0
+  fi
+  echo "ERROR: cannot load mac-common.sh — check network" >&2
+  return 1
 }
 
 # shellcheck source=lib/mac-common.sh
@@ -30,14 +34,11 @@ source "$(_load_mac_common)"
 ROOT="$(require_repo_root "${MAC_SCRIPT_SELF}")"
 cd "${ROOT}"
 
+sync_mobile_from_mirror "${ROOT}"
 ensure_mobile_env "${ROOT}"
 build_shared_package
-clear_expo_cache "${ROOT}"
+verify_mobile_index "${ROOT}"
 
-echo "==> Root: ${ROOT}"
-echo "==> API:  $(grep EXPO_PUBLIC_API_URL apps/mobile/.env || true)"
-echo "==> Room: $(grep EXPO_PUBLIC_ROOM_URL apps/mobile/.env || true)"
-echo "==> Start Expo: http://localhost:8081"
-
-cd apps/mobile
-exec npx expo start --clear
+echo ""
+echo "==> Sync complete. Start:"
+echo "    bash scripts/mac-mobile-dev.sh"
