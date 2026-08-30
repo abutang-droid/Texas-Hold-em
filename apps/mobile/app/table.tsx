@@ -15,7 +15,7 @@ import {
   type DissolveVoteState,
   type RebuyApproval,
 } from '../src/components/PrivateTablePanels';
-import type { HandEndPayload, LastAction, PokerAction, TurnContext } from '../src/types/table';
+import type { HandEndPayload, LastAction, PokerAction, SeatAction, TurnContext } from '../src/types/table';
 
 const ROOM_URL = process.env.EXPO_PUBLIC_ROOM_URL ?? 'http://localhost:3001';
 
@@ -150,6 +150,7 @@ export default function TableScreen() {
   >([]);
   const [animateHoleDeal, setAnimateHoleDeal] = useState(false);
   const [seatEmojis, setSeatEmojis] = useState<Record<number, string>>({});
+  const [seatActions, setSeatActions] = useState<Record<number, SeatAction>>({});
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>('connected');
   const joinedRef = useRef(false);
@@ -396,6 +397,13 @@ export default function TableScreen() {
         amount: msg.payload.amount,
         autoAction: msg.payload.autoAction,
       });
+      setSeatActions((prev) => ({
+        ...prev,
+        [msg.payload.seatIndex]: {
+          type: msg.payload.actionType,
+          amount: msg.payload.amount,
+        },
+      }));
       const betAmount = msg.payload.amount ?? 0;
       if (
         betAmount > 0 &&
@@ -462,6 +470,11 @@ export default function TableScreen() {
       }
       setShowdown(null);
       setWinnerSeats([]);
+      const blinds = msg.payload.blindsPosted;
+      setSeatActions({
+        [msg.payload.sbSeat]: { type: 'sb', amount: blinds?.sb },
+        [msg.payload.bbSeat]: { type: 'bb', amount: blinds?.bb },
+      });
       const p = msg.payload;
       setState((prev) => ({
         ...prev,
@@ -516,6 +529,13 @@ export default function TableScreen() {
           : msg.payload.phase === 'TURN'
             ? 'game.phase.turn'
             : 'game.phase.river';
+      setSeatActions((prev) => {
+        const next: Record<number, SeatAction> = {};
+        for (const [key, value] of Object.entries(prev)) {
+          if (value.type === 'fold' || value.type === 'all_in') next[Number(key)] = value;
+        }
+        return next;
+      });
       setHandNotice(t('game.community_dealt', { phase: t(phaseKey) }));
       if (handNoticeTimer.current) clearTimeout(handNoticeTimer.current);
       handNoticeTimer.current = setTimeout(() => setHandNotice(null), 2200);
@@ -845,6 +865,7 @@ export default function TableScreen() {
         animateHoleDeal={animateHoleDeal}
         seatEmojis={seatEmojis}
         emptySeatLabel={t('table.seat_empty')}
+        seatActions={seatActions}
         onSeatPress={isOfficialSpectator ? sitDown : undefined}
         onChipFlyDone={(id) =>
           setChipFlyEvents((prev) => prev.filter((e) => e.id !== id))

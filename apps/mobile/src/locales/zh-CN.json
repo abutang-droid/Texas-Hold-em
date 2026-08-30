@@ -47,8 +47,12 @@
       "check": "过牌",
       "call": "跟注",
       "raise": "加注",
+      "bet": "下注",
       "allIn": "全押",
-      "cancel": "取消"
+      "cancel": "取消",
+      "sb": "小盲",
+      "bb": "大盲",
+      "thinking": "行动中"
     }
   },
   "bankruptcy": {

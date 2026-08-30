@@ -23,6 +23,11 @@ export interface LastAction {
   autoAction?: boolean;
 }
 
+export interface SeatAction {
+  type: string;
+  amount?: number;
+}
+
 export interface HandWinner {
   seatIndex: number;
   userId: string;

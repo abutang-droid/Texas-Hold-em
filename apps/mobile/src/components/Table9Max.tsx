@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Animated, Pressable } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { colors, radius, spacing, typography } from '../theme';
 import { PlayingCard } from './ui/PlayingCard';
 import { CommunityCardsRow } from './CommunityCardsRow';
 import { PotDisplay } from './PotDisplay';
 import { ChipFlyLayer, type ChipFlyEvent } from './ChipFlyLayer';
 import { Avatar } from './Avatar';
+import type { SeatAction } from '../types/table';
 
 function SeatCountdown({ deadline }: { deadline: number }) {
   const [sec, setSec] = useState(0);
@@ -65,7 +67,69 @@ interface Props {
   onChipFlyDone?: (id: string) => void;
   onSeatPress?: (seatIndex: number) => void;
   emptySeatLabel?: string;
+  seatActions?: Record<number, SeatAction>;
 }
+
+const ACTION_I18N: Record<string, string> = {
+  fold: 'game.action.fold',
+  check: 'game.action.check',
+  call: 'game.action.call',
+  raise: 'game.action.raise',
+  bet: 'game.action.bet',
+  all_in: 'game.action.allIn',
+  sb: 'game.action.sb',
+  bb: 'game.action.bb',
+  thinking: 'game.action.thinking',
+};
+
+function actionTone(type: string): 'fold' | 'check' | 'call' | 'raise' | 'allin' | 'blind' | 'turn' {
+  if (type === 'fold') return 'fold';
+  if (type === 'check') return 'check';
+  if (type === 'call') return 'call';
+  if (type === 'raise' || type === 'bet') return 'raise';
+  if (type === 'all_in') return 'allin';
+  if (type === 'sb' || type === 'bb') return 'blind';
+  if (type === 'thinking') return 'turn';
+  return 'check';
+}
+
+function SeatActionBadge({ action }: { action: SeatAction }) {
+  const { t } = useTranslation();
+  const key = ACTION_I18N[action.type] ?? 'game.action.check';
+  const showAmt =
+    action.amount != null &&
+    action.amount > 0 &&
+    ['call', 'raise', 'bet', 'all_in', 'sb', 'bb'].includes(action.type);
+  const tone = actionTone(action.type);
+  return (
+    <View style={[styles.actionBadge, ACTION_BG[tone]]}>
+      <Text style={[styles.actionBadgeText, ACTION_FG[tone]]} numberOfLines={1}>
+        {t(key)}
+        {showAmt ? ` ${action.amount}` : ''}
+      </Text>
+    </View>
+  );
+}
+
+const ACTION_BG = {
+  fold: { backgroundColor: 'rgba(80,80,80,0.92)' },
+  check: { backgroundColor: 'rgba(70,120,180,0.92)' },
+  call: { backgroundColor: 'rgba(46,125,50,0.92)' },
+  raise: { backgroundColor: 'rgba(201,162,39,0.95)' },
+  allin: { backgroundColor: 'rgba(180,40,40,0.95)' },
+  blind: { backgroundColor: 'rgba(40,40,40,0.88)' },
+  turn: { backgroundColor: 'rgba(201,162,39,0.95)' },
+} as const;
+
+const ACTION_FG = {
+  fold: { color: '#E0E0E0' },
+  check: { color: '#fff' },
+  call: { color: '#fff' },
+  raise: { color: '#1A1A1A' },
+  allin: { color: '#fff' },
+  blind: { color: '#F3E6B8' },
+  turn: { color: '#1A1A1A' },
+} as const;
 
 function HoleCardsRow({
   cards,
@@ -125,6 +189,7 @@ export function Table9Max({
   onChipFlyDone,
   onSeatPress,
   emptySeatLabel,
+  seatActions = {},
 }: Props) {
   return (
     <View style={styles.container}>
@@ -160,6 +225,16 @@ export function Table9Max({
               const isSb = sbSeat === idx;
               const isBb = bbSeat === idx;
               const canSit = !seat && !!onSeatPress;
+              const streetAction =
+                seatActions[idx] ??
+                (seat?.status === 'FOLDED'
+                  ? { type: 'fold' }
+                  : seat?.status === 'ALL_IN'
+                    ? { type: 'all_in' }
+                    : undefined);
+              const badgeAction = seat?.isActive
+                ? { type: 'thinking' }
+                : streetAction;
               return (
                 <Pressable
                   key={idx}
@@ -214,7 +289,8 @@ export function Table9Max({
                     {seat ? (
                       <Text style={styles.seatChips}>{seat.chips.toLocaleString()}</Text>
                     ) : null}
-                    {seat && (seat.betThisRound ?? 0) > 0 ? (
+                    {seat && badgeAction ? <SeatActionBadge action={badgeAction} /> : null}
+                    {seat && (seat.betThisRound ?? 0) > 0 && (!streetAction || seat.isActive) ? (
                       <View style={styles.betChip}>
                         <Text style={styles.betChipText}>{seat.betThisRound}</Text>
                       </View>
@@ -391,6 +467,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   betChipText: { ...typography.micro, color: '#1A1A1A', fontWeight: '700', fontSize: 10 },
+  actionBadge: {
+    marginTop: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    minWidth: 36,
+    alignItems: 'center',
+  },
+  actionBadgeText: {
+    ...typography.micro,
+    fontWeight: '800',
+    fontSize: 10,
+  },
   countdown: {
     position: 'absolute',
     top: -10,

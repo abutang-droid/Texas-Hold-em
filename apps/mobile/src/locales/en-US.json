@@ -47,8 +47,12 @@
       "check": "Check",
       "call": "Call",
       "raise": "Raise",
+      "bet": "Bet",
       "allIn": "All In",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "sb": "SB",
+      "bb": "BB",
+      "thinking": "Acting"
     }
   },
   "bankruptcy": {
