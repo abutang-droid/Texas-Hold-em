@@ -228,7 +228,14 @@
     "title": "Showdown",
     "board": "Board",
     "pot": "Pot",
-    "no_winner": "Hand complete"
+    "no_winner": "Hand complete",
+    "headline_win": "{{name}} wins the hand",
+    "headline_split": "{{names}} split the pot",
+    "main_pot": "Main pot",
+    "side_pot": "Side pot {{n}}",
+    "pot_win": "{{name}} wins {{pot}} {{amount}}",
+    "pot_split": "{{names}} split {{pot}} {{amount}}",
+    "refund_line": "{{name}} uncalled bet returned {{amount}}"
   },
   "leaderboard": {
     "title": "Leaderboard",

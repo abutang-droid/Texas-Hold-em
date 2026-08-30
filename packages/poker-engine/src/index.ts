@@ -15,6 +15,17 @@ export type { HandScore, EvaluatedHand } from './eval/hand-evaluator.js';
 // Pots & rake
 export { calculateSidePots, totalPotAmount } from './pot/side-pot.js';
 export type { PotSlice, PlayerBetState } from './pot/side-pot.js';
+export {
+  buildContestedSettlementView,
+  buildUncontestedSettlementView,
+  settlementPauseMs,
+  uncalledExcess,
+} from './pot/settlement-view.js';
+export type {
+  SettlementView,
+  SettlementPotLine,
+  SettlementRefund,
+} from './pot/settlement-view.js';
 export { calculateRake, OFFICIAL_RAKE_RATE, PRIVATE_RAKE_RATE } from './pot/rake.js';
 export type { RakeInput, RakeResult } from './pot/rake.js';
 

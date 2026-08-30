@@ -126,11 +126,11 @@ https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em
 | 服务 | 端口 | 检查 |
 |------|------|------|
 | API | 3000 | `curl http://192.168.31.53:3000/health` |
-| Room | 3001 | `curl http://192.168.31.53:3001/health` → `version` 应为 **0.5.1**（官方场先进场观战，5 机器人开打） |
+| Room | 3001 | `curl http://192.168.31.53:3001/health` → `version` 应为 **0.5.2**（官方场先进场观战，5 机器人开打） |
 | Admin | 5173 | 浏览器；密钥 = 服务器 `.env` 的 `ADMIN_API_KEY` |
 
 **Room 版本曾卡在 0.4.1**：dist 未重建 / PM2 未重启。  
-修复脚本：`scripts/staging-redeploy-room.sh`（期望 version `0.5.1`）
+修复脚本：`scripts/staging-redeploy-room.sh`（期望 version `0.5.2`）
 
 **部署曾失败点**：`migrate.sh` 宿主机无 `psql` → 已改为 `docker exec th-postgres`；migrate 失败不阻塞 PM2（PR #18）
 
@@ -241,9 +241,9 @@ cd /workspace && pnpm --filter @texas-holdem/shared build
 
 ## 12. 下一步建议（按优先级）
 
-1. **家庭服务器 `uoto@192.168.31.53` 部署 Room 0.5.1**（不要在 Mac mini 上跑）
+1. **家庭服务器 `uoto@192.168.31.53` 部署 Room 0.5.2**（不要在 Mac mini 上跑）
    - `ZIP_URL="https://ghfast.top/https://github.com/abutang-droid/Texas-Hold-em/archive/refs/heads/cursor/poker-rules-6max-9b0a.zip" bash scripts/staging-update-no-git.sh cursor/poker-rules-6max-9b0a`
-   - 成功：服务器上 `curl http://127.0.0.1:3001/health` → `"version":"0.5.1"`
+   - 成功：服务器上 `curl http://127.0.0.1:3001/health` → `"version":"0.5.2"`
 2. **Mac mini 只跑客户端**：`bash /tmp/mac-fix-call.sh` 或 `bash scripts/mac-mobile-dev.sh` → 登录 → 大厅 → Quick Start
 3. 更新 `MAC-MINI-操作指南.md` 的分支说明 → `main` + `mac-start-mobile.sh`
 4. 修复 CI pnpm version 冲突（可选，不阻塞用户玩）

@@ -61,19 +61,38 @@ export function wireTableHandlers(table: InteractiveTable, io: Server, roomId: s
 
   table.setHandEndHandler((summary) => {
     void persistHandEnd(summary).catch((err) => console.error('hand persist failed', err));
+    const nickOf = (userId: string, seatIndex: number) =>
+      summary.playerSnapshot[userId]?.nickname ?? `Seat ${seatIndex + 1}`;
     io.to(roomId).emit('hand_ended', {
       seq: nextSeq(roomId),
       serverTs: Date.now(),
       payload: {
         handId: summary.handId,
-        nextHandIn: 3000,
+        nextHandIn: summary.settlement.nextHandIn,
         potSize: summary.potSize,
         boardCards: summary.boardCards,
         winners: summary.winners.map((w) => ({
           seatIndex: w.seatIndex,
           userId: w.userId,
           winAmount: w.winAmount,
-          nickname: summary.playerSnapshot[w.userId]?.nickname ?? `Seat ${w.seatIndex + 1}`,
+          nickname: nickOf(w.userId, w.seatIndex),
+        })),
+        refunds: summary.settlement.refunds.map((r) => ({
+          seatIndex: r.seatIndex,
+          userId: r.userId,
+          amount: r.amount,
+          nickname: nickOf(r.userId, r.seatIndex),
+        })),
+        pots: summary.settlement.pots.map((pot) => ({
+          kind: pot.kind,
+          sideIndex: pot.sideIndex,
+          amount: pot.amount,
+          winners: pot.winners.map((w) => ({
+            seatIndex: w.seatIndex,
+            userId: w.userId,
+            amount: w.amount,
+            nickname: nickOf(w.userId, w.seatIndex),
+          })),
         })),
       },
     });

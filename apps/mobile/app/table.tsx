@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { io, Socket } from 'socket.io-client';
 import { getToken, restoreSession, submitReport } from '../src/api/client';
 import { Table9Max, type SeatView } from '../src/components/Table9Max';
+import type { ChipFlyEvent } from '../src/components/ChipFlyLayer';
 import { ActionPanel } from '../src/components/ActionPanel';
 import { HandStatusBar } from '../src/components/HandStatusBar';
 import { ShowdownOverlay } from '../src/components/ShowdownOverlay';
@@ -171,9 +172,7 @@ export default function TableScreen() {
   const [winnerSeats, setWinnerSeats] = useState<number[]>([]);
   const [rebuyApproval, setRebuyApproval] = useState<RebuyApproval | null>(null);
   const [dissolveVote, setDissolveVote] = useState<DissolveVoteState | null>(null);
-  const [chipFlyEvents, setChipFlyEvents] = useState<
-    Array<{ id: string; seatIndex: number; amount: number }>
-  >([]);
+  const [chipFlyEvents, setChipFlyEvents] = useState<ChipFlyEvent[]>([]);
   const [animateHoleDeal, setAnimateHoleDeal] = useState(false);
   const [seatEmojis, setSeatEmojis] = useState<Record<number, string>>({});
   const [seatActions, setSeatActions] = useState<Record<number, SeatAction>>({});
@@ -477,6 +476,8 @@ export default function TableScreen() {
         potSize: p.potSize ?? 0,
         boardCards: p.boardCards ?? '',
         winners: p.winners ?? [],
+        refunds: p.refunds ?? [],
+        pots: p.pots ?? [],
       };
       setShowdown((prev) => (prev?.handId === handId ? prev : payload));
       setWinnerSeats(payload.winners.map((w) => w.seatIndex));
@@ -990,6 +991,20 @@ export default function TableScreen() {
         potSize={showdown?.potSize ?? 0}
         boardCards={showdown?.boardCards ?? ''}
         nextHandIn={showdown?.nextHandIn ?? 3000}
+        refunds={showdown?.refunds ?? []}
+        pots={showdown?.pots ?? []}
+        onStep={(info) => {
+          setWinnerSeats(info.seatIndexes);
+          setChipFlyEvents((prev) => [
+            ...prev,
+            ...info.seatIndexes.map((seatIndex, i) => ({
+              id: `payout-${Date.now()}-${seatIndex}-${i}`,
+              seatIndex,
+              amount: info.amounts[i] ?? info.amounts[0] ?? 0,
+              direction: 'out' as const,
+            })),
+          ]);
+        }}
       />
 
       <View style={styles.topActions}>

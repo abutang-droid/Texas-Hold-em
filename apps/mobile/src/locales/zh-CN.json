@@ -228,7 +228,14 @@
     "title": "摊牌结算",
     "board": "公共牌",
     "pot": "底池",
-    "no_winner": "本局结束"
+    "no_winner": "本局结束",
+    "headline_win": "{{name}} 赢下本局",
+    "headline_split": "{{names}} 平分底池",
+    "main_pot": "主池",
+    "side_pot": "边池 {{n}}",
+    "pot_win": "{{name}} 赢得{{pot}} {{amount}}",
+    "pot_split": "{{names}} 平分{{pot}} {{amount}}",
+    "refund_line": "{{name}} 退回未跟注筹码 {{amount}}"
   },
   "leaderboard": {
     "title": "排行榜",

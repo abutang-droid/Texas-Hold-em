@@ -35,10 +35,33 @@ export interface HandWinner {
   winAmount: number;
 }
 
+export interface SettlementRefund {
+  seatIndex: number;
+  userId: string;
+  nickname: string;
+  amount: number;
+}
+
+export interface SettlementPotWinner {
+  seatIndex: number;
+  userId: string;
+  nickname: string;
+  amount: number;
+}
+
+export interface SettlementPot {
+  kind: 'main' | 'side';
+  sideIndex?: number;
+  amount: number;
+  winners: SettlementPotWinner[];
+}
+
 export interface HandEndPayload {
   handId: string;
   nextHandIn: number;
   potSize: number;
   boardCards: string;
   winners: HandWinner[];
+  refunds?: SettlementRefund[];
+  pots?: SettlementPot[];
 }

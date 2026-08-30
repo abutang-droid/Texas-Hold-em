@@ -58,8 +58,8 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     overflow: 'hidden',
   },
-  fill: { height: '100%', backgroundColor: colors.brand.secondary, borderRadius: 3 },
+  fill: { height: '100%', backgroundColor: '#1E88E5', borderRadius: 3 },
   fillUrgent: { backgroundColor: colors.semantic.danger },
-  label: { ...typography.micro, color: colors.brand.secondary, fontWeight: '700', minWidth: 28 },
+  label: { ...typography.micro, color: '#90CAF9', fontWeight: '700', minWidth: 28 },
   labelUrgent: { color: colors.semantic.danger },
 });

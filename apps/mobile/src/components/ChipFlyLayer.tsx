@@ -18,6 +18,7 @@ export interface ChipFlyEvent {
   id: string;
   seatIndex: number;
   amount: number;
+  direction?: 'in' | 'out';
 }
 
 interface Props {
@@ -30,7 +31,9 @@ function FlyingChip({ event, onDone }: { event: ChipFlyEvent; onDone: () => void
   const opacity = useRef(new Animated.Value(1)).current;
   const onDoneRef = useRef(onDone);
   onDoneRef.current = onDone;
-  const from = SEAT_POSITIONS[event.seatIndex] ?? POT;
+  const seat = SEAT_POSITIONS[event.seatIndex] ?? POT;
+  const from = event.direction === 'out' ? POT : seat;
+  const to = event.direction === 'out' ? seat : POT;
 
   useEffect(() => {
     progress.setValue(0);
@@ -48,11 +51,11 @@ function FlyingChip({ event, onDone }: { event: ChipFlyEvent; onDone: () => void
 
   const top = progress.interpolate({
     inputRange: [0, 1],
-    outputRange: [`${from.top}%`, `${POT.top}%`],
+    outputRange: [`${from.top}%`, `${to.top}%`],
   });
   const left = progress.interpolate({
     inputRange: [0, 1],
-    outputRange: [`${from.left}%`, `${POT.left}%`],
+    outputRange: [`${from.left}%`, `${to.left}%`],
   });
   const scale = progress.interpolate({
     inputRange: [0, 0.5, 1],

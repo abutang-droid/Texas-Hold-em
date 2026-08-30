@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { InteractiveTable } from './interactive-table.js';
+import { InteractiveTable, type HandEndSummary } from './interactive-table.js';
 
 describe('official spectator flow', () => {
   it('starts a live 5-bot game when a spectator joins', () => {
@@ -117,6 +117,35 @@ describe('official spectator flow', () => {
     const asFolder = table.getPublicState(folder.userId);
     const winnerSeen = asFolder.seats.find((s) => s.userId === winner.userId);
     assert.equal(winnerSeen?.holeCards?.[0], '**');
+  });
+
+  it('exposes refunds and pot lines after an uneven all-in', () => {
+    const table = new InteractiveTable('SD3', {
+      roomType: 'PRIVATE',
+      maxSeats: 6,
+      smallBlind: 1,
+      bigBlind: 2,
+      buyInCap: 100,
+    });
+    let summary: HandEndSummary | undefined;
+    table.setHandEndHandler((s) => {
+      summary = s;
+    });
+    table.addPlayer('u1', 'Short', 40);
+    table.addPlayer('u2', 'Deep', 100);
+    let safety = 0;
+    while (table.getPublicState().phase !== 'END_HAND' && safety < 6) {
+      safety += 1;
+      const turn = table.getCurrentTurnSeat();
+      assert.ok(turn !== null);
+      table.act(turn, 'all_in');
+    }
+    assert.ok(summary);
+    assert.ok(summary.settlement.pots.length >= 1);
+    assert.equal(summary.settlement.pots[0].kind, 'main');
+    assert.ok(summary.settlement.nextHandIn >= 4800);
+    const returned = summary.settlement.refunds.reduce((s, r) => s + r.amount, 0);
+    assert.ok(returned > 0);
   });
 
   it('sits immediately when the table is waiting', () => {

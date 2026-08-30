@@ -19,6 +19,9 @@ import {
   calculateSidePots,
   calculateRake,
   distributePotToWinners,
+  buildContestedSettlementView,
+  buildUncontestedSettlementView,
+  settlementPauseMs,
   assignBlindSeats,
   firstToActSeat,
   dealOrderFromButton,
@@ -30,7 +33,6 @@ import {
 } from '@texas-holdem/poker-engine';
 import {
   ACTION_TIME_MS,
-  HAND_PAUSE_MS,
   MAX_TABLE_SEATS,
   OFFICIAL_BIG_BLIND,
   OFFICIAL_MAX_BUY_IN,
@@ -153,6 +155,16 @@ export interface HandEndSummary {
   buyInCap: number;
   rakeAmount: number;
   winners: Array<{ seatIndex: number; userId: string; winAmount: number }>;
+  settlement: {
+    nextHandIn: number;
+    refunds: Array<{ seatIndex: number; userId: string; amount: number }>;
+    pots: Array<{
+      kind: 'main' | 'side';
+      sideIndex?: number;
+      amount: number;
+      winners: Array<{ seatIndex: number; userId: string; amount: number }>;
+    }>;
+  };
   actions: HandActionRecord[];
   playerSnapshot: Record<string, { nickname: string; chips: number; isBot: boolean }>;
   results: Array<{ userId: string; profit: number; isBot: boolean }>;
@@ -900,6 +912,15 @@ export class InteractiveTable {
     const totalPot = this.getPotTotal();
     let rakeAmount = 0;
     const winners: HandEndSummary['winners'] = [];
+    const playerBets = this.players.map((p) => ({
+      seatIndex: p.seatIndex,
+      totalBet: p.totalBetInHand,
+    }));
+    let settlementView = buildUncontestedSettlementView({
+      winnerSeat: active[0]?.seatIndex ?? 0,
+      distributablePot: 0,
+      playerBets,
+    });
 
     if (active.length === 1) {
       const rake = calculateRake({
@@ -913,6 +934,11 @@ export class InteractiveTable {
         seatIndex: active[0].seatIndex,
         userId: active[0].userId,
         winAmount: rake.distributablePot,
+      });
+      settlementView = buildUncontestedSettlementView({
+        winnerSeat: active[0].seatIndex,
+        distributablePot: rake.distributablePot,
+        playerBets,
       });
     } else if (active.length > 1) {
       const pots = calculateSidePots(
@@ -945,6 +971,11 @@ export class InteractiveTable {
           winAmount: w.winAmount,
         });
       }
+      settlementView = buildContestedSettlementView({
+        pots,
+        breakdown: settlement.potBreakdown,
+        playerBets,
+      });
     }
 
     this.phase = 'END_HAND';
@@ -978,6 +1009,8 @@ export class InteractiveTable {
           isBot: p.isBot,
         };
       }
+      const userIdOf = (seatIndex: number) =>
+        this.players.find((pl) => pl.seatIndex === seatIndex)?.userId ?? '';
       this.onHandEnd({
         handId: this.handId,
         roomId: this.roomId,
@@ -987,12 +1020,31 @@ export class InteractiveTable {
         buyInCap: this.config.buyInCap,
         rakeAmount,
         winners,
+        settlement: {
+          nextHandIn: settlementPauseMs(settlementView),
+          refunds: settlementView.refunds.map((r) => ({
+            seatIndex: r.seatIndex,
+            userId: userIdOf(r.seatIndex),
+            amount: r.amount,
+          })),
+          pots: settlementView.pots.map((pot) => ({
+            kind: pot.kind,
+            sideIndex: pot.sideIndex,
+            amount: pot.amount,
+            winners: pot.winners.map((w) => ({
+              seatIndex: w.seatIndex,
+              userId: userIdOf(w.seatIndex),
+              amount: w.amount,
+            })),
+          })),
+        },
         actions: [...this.actionLog],
         playerSnapshot,
         results,
       });
     }
 
+    const pauseMs = settlementPauseMs(settlementView);
     setTimeout(() => {
       this.finishingHand = false;
       for (const uid of [...this.pendingKick]) {
@@ -1002,7 +1054,7 @@ export class InteractiveTable {
       this.phase = 'WAITING';
       this.tryStartHand();
       this.requestBroadcast();
-    }, HAND_PAUSE_MS);
+    }, pauseMs);
   }
 
   private advanceButtonSeat(): void {
