@@ -200,17 +200,15 @@ export default function TableScreen() {
       );
       return mapped;
     });
-    if (payload.mySeatIndex != null) {
-      const seated = payload.seats?.find((s) => s.seatIndex === payload.mySeatIndex);
-      if (seated?.userId) setMyUserId(seated.userId);
-    } else {
-      const me = payload.seats?.find((x) => x.holeCards && x.holeCards[0] !== '**');
-      if (me?.userId) setMyUserId(me.userId);
-    }
+    const me =
+      payload.mySeatIndex != null
+        ? payload.seats?.find((s) => s.seatIndex === payload.mySeatIndex)
+        : payload.seats?.find((x) => x.holeCards && x.holeCards[0] !== '**');
+    if (me?.userId) setMyUserId(me.userId);
     const turnSeat = payload.currentTurnSeat;
-    if (turnSeat === null || turnSeat === undefined) {
+    if (turnSeat === null || turnSeat === undefined || !me?.userId) {
       setTurnContext(null);
-    } else if (me?.userId) {
+    } else {
       const actor = payload.seats?.find((s) => s.seatIndex === turnSeat);
       if (actor?.userId !== me.userId) setTurnContext(null);
     }
