@@ -1,11 +1,35 @@
 #!/usr/bin/env bash
 # Download only changed mobile source files via mirror (no full zip — saves disk).
-# Use when git pull and mac-update-mobile-mirror.sh both fail (disk full / github blocked).
+# Safe to curl to /tmp: resolves repo from $PWD or ~/Texas-Hold-em (not script path).
 #
 #   cd ~/Texas-Hold-em && bash scripts/mac-update-mobile-files-mirror.sh
+#   cd ~/Texas-Hold-em && bash /tmp/mac-files.sh
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+resolve_repo_root() {
+  if [ -n "${TH_REPO_ROOT:-}" ] && [ -f "${TH_REPO_ROOT}/apps/mobile/app/index.tsx" ]; then
+    (cd "${TH_REPO_ROOT}" && pwd)
+    return 0
+  fi
+  if [ -f "${PWD}/apps/mobile/app/index.tsx" ]; then
+    (cd "${PWD}" && pwd)
+    return 0
+  fi
+  local script_dir
+  script_dir="$(cd "$(dirname "${1:-$0}")" && pwd)"
+  if [ -f "${script_dir}/../apps/mobile/app/index.tsx" ]; then
+    (cd "${script_dir}/.." && pwd)
+    return 0
+  fi
+  if [ -f "${HOME}/Texas-Hold-em/apps/mobile/app/index.tsx" ]; then
+    (cd "${HOME}/Texas-Hold-em" && pwd)
+    return 0
+  fi
+  echo "ERROR: cannot find repo root. Run: cd ~/Texas-Hold-em && bash $0" >&2
+  return 1
+}
+
+ROOT="$(resolve_repo_root "$0")"
 cd "$ROOT"
 
 BASE="${MIRROR_BASE:-https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main}"
@@ -26,6 +50,7 @@ FILES=(
 )
 
 echo "==> Mobile file sync via mirror (no zip)"
+echo "    Root: ${ROOT}"
 echo "    Base: ${BASE}"
 
 for rel in "${FILES[@]}"; do

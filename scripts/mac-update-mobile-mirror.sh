@@ -5,7 +5,10 @@
 #   cd ~/Texas-Hold-em && bash scripts/mac-update-mobile-mirror.sh
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=lib/resolve-repo-root.sh
+source "${SCRIPT_DIR}/lib/resolve-repo-root.sh"
+ROOT="$(resolve_repo_root "$0")"
 cd "$ROOT"
 
 REPO="abutang-droid/Texas-Hold-em"
