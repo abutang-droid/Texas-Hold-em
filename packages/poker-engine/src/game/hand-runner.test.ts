@@ -16,9 +16,9 @@ describe('HandRunner', () => {
     expect(totalChips + rake).toBe(200);
   });
 
-  it('runs 9-max table', () => {
-    const runner = new HandRunner({ maxSeats: 9 });
-    const specs = Array.from({ length: 9 }, (_, i) => ({
+  it('runs 6-max table', () => {
+    const runner = new HandRunner({ maxSeats: 6 });
+    const specs = Array.from({ length: 6 }, (_, i) => ({
       seatIndex: i,
       userId: `u${i}`,
       nickname: `Player${i}`,
@@ -26,8 +26,8 @@ describe('HandRunner', () => {
       isBot: true,
     }));
     runner.initPlayers(specs);
-    const result = runner.runToCompletion('H009');
-    expect(result.players).toHaveLength(9);
+    const result = runner.runToCompletion('H006');
+    expect(result.players).toHaveLength(6);
     expect(result.log.some((e) => e.type === 'HAND_START')).toBe(true);
     expect(result.log.some((e) => e.type === 'HAND_END')).toBe(true);
   });

@@ -60,7 +60,7 @@ export class HandRunner {
 
   constructor(config: Partial<TableConfig> = {}) {
     this.config = {
-      maxSeats: 9,
+      maxSeats: 6,
       smallBlind: 1,
       bigBlind: 2,
       rakeRate: 0.05,

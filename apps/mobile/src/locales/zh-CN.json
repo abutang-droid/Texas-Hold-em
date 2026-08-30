@@ -58,7 +58,7 @@
   },
   "onboarding": {
     "title": "欢迎来到德州扑克",
-    "step1": "快速开始即可匹配官方 9 人桌，不足时 Bot 自动补位。",
+    "step1": "快速开始即可匹配官方 6 人桌，不足时 Bot 自动补位。",
     "step2": "新玩家注册即送 100 筹码，可在牌桌内完成买入。",
     "step3": "支持弃牌、过牌、跟注、加注等标准操作，祝你好运！",
     "next": "下一步",
@@ -82,7 +82,8 @@
     "migration_required": "请先阅读并同意公测迁移公告",
     "network_timeout": "请求超时，请检查网络连接",
     "network_unreachable": "无法连接服务器，请检查 API 地址与 WiFi",
-    "request_failed": "请求失败"
+    "request_failed": "请求失败",
+    "table_six_only": "牌桌固定为 6 人场"
   },
   "auth": {
     "login_title": "登录",
@@ -116,7 +117,7 @@
     "grant_permission": "同意协议并开通",
     "create": "创建房间",
     "create_btn": "建房",
-    "max_seats": "人数上限 (2-9)",
+    "max_seats": "6 人桌（固定）",
     "buy_in_cap": "带入上限",
     "room_created": "建房成功",
     "share": "分享邀请",

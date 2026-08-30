@@ -24,6 +24,8 @@ export {
 } from './table-emojis.js';
 export type { TableEmojiPreset } from './table-emojis.js';
 
+export { MAX_TABLE_SEATS, MIN_TABLE_SEATS } from './table-config.js';
+
 export type PlayerActionType = 'fold' | 'check' | 'call' | 'raise' | 'all_in';
 
 export type GamePhase =

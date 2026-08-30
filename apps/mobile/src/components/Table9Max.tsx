@@ -23,17 +23,14 @@ function SeatCountdown({ deadline }: { deadline: number }) {
   );
 }
 
-/** 9-max elliptical seat positions (%, %) */
+/** 6-max elliptical seat positions (%, %) */
 const SEAT_POSITIONS: Array<{ top: string; left: string }> = [
   { top: '72%', left: '50%' },
   { top: '62%', left: '82%' },
-  { top: '38%', left: '90%' },
-  { top: '18%', left: '72%' },
+  { top: '22%', left: '78%' },
   { top: '12%', left: '50%' },
-  { top: '18%', left: '28%' },
-  { top: '38%', left: '10%' },
+  { top: '22%', left: '22%' },
   { top: '62%', left: '18%' },
-  { top: '72%', left: '35%' },
 ];
 
 export interface SeatView {
