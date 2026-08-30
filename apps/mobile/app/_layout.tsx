@@ -1,7 +1,7 @@
 import '../src/i18n';
 import { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { Stack, useRootNavigationState, useSegments, Redirect } from 'expo-router';
+import { Stack, useRootNavigationState, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { hydrateOnboarding, isOnboardingComplete } from '../src/storage/onboarding';
 import {
@@ -13,25 +13,29 @@ import {
 } from '../src/api/client';
 import { colors } from '../src/theme';
 
-function NavigationGuards({ bootReady }: { bootReady: boolean }) {
+const LAYOUT_REV = '2026-08-30-nav2';
+
+function NavigationGuards({ bootReady, authTick }: { bootReady: boolean; authTick: number }) {
+  const router = useRouter();
   const segments = useSegments();
   const rootNavigationState = useRootNavigationState();
-  const navReady = !!rootNavigationState?.key;
 
-  if (!bootReady || !navReady) return null;
+  useEffect(() => {
+    if (!bootReady || !rootNavigationState?.key) return;
 
-  const top = segments[0];
-  const inAuth = top === 'auth';
-  const inOnboarding = top === 'onboarding';
-  const hasToken = !!getToken();
+    const top = segments[0];
+    const inAuth = top === 'auth';
+    const inOnboarding = top === 'onboarding';
+    const hasToken = !!getToken();
 
-  if (!hasToken && !inAuth) {
-    return <Redirect href="/auth/login" />;
-  }
-
-  if (hasToken && !isOnboardingComplete() && !inOnboarding) {
-    return <Redirect href="/onboarding" />;
-  }
+    if (!hasToken && !inAuth) {
+      router.replace('/auth/login');
+      return;
+    }
+    if (hasToken && !isOnboardingComplete() && !inOnboarding) {
+      router.replace('/onboarding');
+    }
+  }, [bootReady, rootNavigationState?.key, segments, router, authTick]);
 
   return null;
 }
@@ -41,6 +45,9 @@ export default function RootLayout() {
   const [authTick, setAuthTick] = useState(0);
 
   useEffect(() => {
+    if (__DEV__) {
+      console.log(`[mobile] layout ${LAYOUT_REV}`);
+    }
     const bump = () => setAuthTick((n) => n + 1);
     setUnauthorizedHandler(() => {
       void logout().then(bump);
@@ -53,13 +60,11 @@ export default function RootLayout() {
     };
   }, []);
 
-  void authTick;
-
   return (
     <>
       <StatusBar style="light" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#121418' } }} />
-      <NavigationGuards bootReady={bootReady} />
+      <NavigationGuards bootReady={bootReady} authTick={authTick} />
       {!bootReady ? (
         <View style={styles.bootOverlay} pointerEvents="auto">
           <ActivityIndicator size="large" color={colors.brand.secondary} />

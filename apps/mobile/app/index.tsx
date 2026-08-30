@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Alert, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useRouter, Redirect } from 'expo-router';
+import { useRouter } from 'expo-router';
 import {
   quickStart,
   getLeaderboard,
@@ -81,6 +81,7 @@ export default function LobbyScreen() {
   const compliancePending = ageRequired || !!migrationMsg;
 
   const init = useCallback(async () => {
+    if (!getToken()) return;
     try {
       const profile = await getProfile();
       setUser(profile);
@@ -99,7 +100,11 @@ export default function LobbyScreen() {
   }, [t]);
 
   useEffect(() => {
-    init();
+    if (!getToken()) {
+      setLoading(false);
+      return;
+    }
+    void init();
   }, [init]);
 
   const onQuickStart = async () => {
@@ -159,12 +164,12 @@ export default function LobbyScreen() {
     }
   };
 
-  if (loading) {
+  if (!getToken()) {
     return <Screen loading loadingLabel={t('common.loading')} />;
   }
 
-  if (!getToken()) {
-    return <Redirect href="/auth/login" />;
+  if (loading) {
+    return <Screen loading loadingLabel={t('common.loading')} />;
   }
 
   return (
