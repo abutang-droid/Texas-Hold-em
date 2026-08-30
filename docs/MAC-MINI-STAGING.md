@@ -66,6 +66,21 @@ bash scripts/mac-staging-check.sh
 bash scripts/mac-staging-mobile.sh
 ```
 
+**无法 git pull 时（国内网络）** — 一条命令同步并启动：
+
+```bash
+cd ~/Texas-Hold-em
+curl -fsSL "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main/scripts/mac-start-mobile.sh" -o /tmp/mac-start.sh
+bash /tmp/mac-start.sh
+```
+
+或分两步（**仅 sync 不会启动 Expo，必须再跑 dev**）：
+
+```bash
+curl -fsSL ".../mac-sync-mobile.sh" -o /tmp/mac-sync.sh && bash /tmp/mac-sync.sh
+curl -fsSL ".../mac-mobile-dev.sh" -o /tmp/mac-dev.sh && bash /tmp/mac-dev.sh
+```
+
 或手动：
 
 ```bash
@@ -113,6 +128,8 @@ http://192.168.31.53:5173
 |------|------|
 | Ping 不通 | Mac 与服务器是否同一 WiFi；路由器是否隔离 AP |
 | API ✗ | 服务器上 `pm2 status`、`docker compose ps` |
+| 执行 sync 后没启动 | **正常** — sync 只更新文件；需再跑 `mac-mobile-dev.sh` 或直接用 `mac-start-mobile.sh` |
+| Expo 没起来 / 终端无 Metro 日志 | `cd ~/Texas-Hold-em` 后重跑 dev；检查 `pnpm`/`node`；`lsof -i :8081` 看端口是否被占 |
 | Expo 白屏 / 连不上 | 确认 `apps/mobile/.env` 已创建；重启 `expo start --clear` |
 | Web 报 shared 找不到 | 项目根执行 `pnpm build` |
 | 真机 HTTP 被拦 | 优先用 **Expo Web** 或 **模拟器**；真机后期需 HTTPS / 开发构建 |

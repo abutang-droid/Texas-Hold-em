@@ -18,9 +18,9 @@ require_pnpm
 
 bash scripts/mac-staging-check.sh
 ensure_mobile_env "${ROOT}"
+ensure_workspace_deps "${ROOT}"
 
-echo ">>> pnpm install & build"
-pnpm install
+echo ">>> pnpm build"
 pnpm build
 
 echo ""
@@ -28,9 +28,6 @@ echo ">>> 启动 Expo（连接 Staging）"
 echo "    API:  $(grep EXPO_PUBLIC_API_URL apps/mobile/.env)"
 echo "    Room: $(grep EXPO_PUBLIC_ROOM_URL apps/mobile/.env)"
 echo ""
-echo "  Web:    http://localhost:8081/auth/login"
-echo ""
 
 clear_expo_cache "${ROOT}"
-cd apps/mobile
-exec npx expo start --clear
+start_expo_dev_server "${ROOT}"

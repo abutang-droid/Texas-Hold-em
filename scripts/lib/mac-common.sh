@@ -77,6 +77,13 @@ EOF
 }
 
 # --- dependencies ---
+require_node() {
+  if ! command -v node >/dev/null 2>&1; then
+    echo "ERROR: node not found. Install: brew install node@20" >&2
+    exit 1
+  fi
+}
+
 require_pnpm() {
   if ! command -v pnpm >/dev/null 2>&1; then
     echo "ERROR: pnpm not found. Install: npm install -g pnpm@10" >&2
@@ -84,10 +91,69 @@ require_pnpm() {
   fi
 }
 
+ensure_workspace_deps() {
+  local root="$1"
+  require_node
+  require_pnpm
+  cd "${root}"
+
+  if [ ! -d node_modules ]; then
+    echo "==> Installing dependencies (node_modules missing — first run?)"
+    pnpm install
+    return 0
+  fi
+
+  if [ ! -x node_modules/.bin/expo ] && [ ! -f apps/mobile/node_modules/.bin/expo ] 2>/dev/null; then
+    echo "==> Installing dependencies (expo CLI missing)"
+    pnpm install
+  fi
+}
+
 build_shared_package() {
   require_pnpm
   echo "==> Building @texas-holdem/shared"
   pnpm --filter @texas-holdem/shared build
+}
+
+free_expo_port() {
+  local port="${1:-8081}"
+  if ! command -v lsof >/dev/null 2>&1; then
+    return 0
+  fi
+  if lsof -nP -iTCP:"${port}" -sTCP:LISTEN >/dev/null 2>&1; then
+    echo "==> Port ${port} is in use — stopping old Metro/Expo"
+    lsof -tiTCP:"${port}" -sTCP:LISTEN | xargs kill -9 2>/dev/null || true
+    sleep 1
+  fi
+}
+
+start_expo_dev_server() {
+  local root="$1"
+  local port="${EXPO_PORT:-8081}"
+
+  if [ ! -d "${root}/apps/mobile" ]; then
+    echo "ERROR: apps/mobile not found under ${root}" >&2
+    return 1
+  fi
+
+  free_expo_port "${port}"
+
+  echo ""
+  echo "============================================"
+  echo " Starting Expo (Metro)"
+  echo "============================================"
+  echo "  Root: ${root}"
+  echo "  Web:  http://localhost:${port}"
+  echo "  Login path: http://localhost:${port}/auth/login"
+  echo ""
+  echo "  In this terminal: press w to open web browser"
+  echo "  Stop server: Ctrl+C"
+  echo "============================================"
+  echo ""
+
+  cd "${root}/apps/mobile"
+  # --port avoids interactive prompt when 8081 was taken; free_expo_port handles stale Metro.
+  exec npx expo start --clear --port "${port}"
 }
 
 clear_expo_cache() {
