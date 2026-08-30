@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import { View, Text, StyleSheet, Animated, Pressable } from 'react-native';
 import { colors, radius, spacing, typography } from '../theme';
 import { PlayingCard } from './ui/PlayingCard';
 import { CommunityCardsRow } from './CommunityCardsRow';
@@ -63,6 +63,8 @@ interface Props {
   seatEmojis?: Record<number, string>;
   phase?: string;
   onChipFlyDone?: (id: string) => void;
+  onSeatPress?: (seatIndex: number) => void;
+  emptySeatLabel?: string;
 }
 
 function HoleCardsRow({
@@ -121,6 +123,8 @@ export function Table9Max({
   seatEmojis = {},
   phase = 'WAITING',
   onChipFlyDone,
+  onSeatPress,
+  emptySeatLabel,
 }: Props) {
   return (
     <View style={styles.container}>
@@ -155,9 +159,12 @@ export function Table9Max({
               const isDealer = buttonSeat === idx;
               const isSb = sbSeat === idx;
               const isBb = bbSeat === idx;
+              const canSit = !seat && !!onSeatPress;
               return (
-                <View
+                <Pressable
                   key={idx}
+                  disabled={!canSit}
+                  onPress={() => onSeatPress?.(idx)}
                   style={[
                     styles.seat,
                     { top: pos.top as `${number}%`, left: pos.left as `${number}%` },
@@ -194,14 +201,14 @@ export function Table9Max({
                       <Text style={styles.emojiBubbleText}>{seatEmojis[idx]}</Text>
                     </View>
                   ) : null}
-                  <View style={[styles.seatBadge, seat?.isActive && styles.seatBadgeActive, isHero && styles.seatHeroBadge, isWinner && styles.seatWinnerBadge]}>
+                  <View style={[styles.seatBadge, seat?.isActive && styles.seatBadgeActive, isHero && styles.seatHeroBadge, isWinner && styles.seatWinnerBadge, canSit && styles.seatEmptyTappable]}>
                     {seat ? (
                       <View style={styles.avatarWrap}>
                         <Avatar nickname={seat.nickname} avatarUrl={seat.avatarUrl} size="sm" />
                       </View>
                     ) : null}
                     <Text style={styles.seatName} numberOfLines={1}>
-                      {seat?.nickname ?? '—'}
+                      {seat?.nickname ?? (canSit ? emptySeatLabel ?? '坐下' : '—')}
                       {seat?.isBot ? ' 🤖' : ''}
                     </Text>
                     {seat ? (
@@ -216,7 +223,7 @@ export function Table9Max({
                       <SeatCountdown deadline={turnDeadline} />
                     ) : null}
                   </View>
-                </View>
+                </Pressable>
               );
             })}
           </View>
@@ -356,6 +363,11 @@ const styles = StyleSheet.create({
   },
   seatHeroBadge: {
     borderColor: colors.semantic.info,
+  },
+  seatEmptyTappable: {
+    borderColor: 'rgba(201,162,39,0.65)',
+    borderStyle: 'dashed',
+    backgroundColor: 'rgba(201,162,39,0.12)',
   },
   seatWinnerBadge: {
     borderColor: colors.brand.secondary,

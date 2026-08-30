@@ -2,7 +2,6 @@ import { InteractiveTable, type TableConfig } from './game/interactive-table.js'
 import {
   verifyAccessToken,
   buyInChips,
-  cashOutChips,
   findPrivateRoomByRoomId,
   findUserById,
   getRakeRate,
@@ -23,6 +22,9 @@ import {
   leaveRoomFlow,
   nextSeq,
   resolveReconnectRoom,
+  sitDownFlow,
+  spectateRoomFlow,
+  standUpFlow,
   wireTableHandlers,
 } from './room-protocol.js';
 import {
@@ -104,8 +106,10 @@ async function handleJoin(
   userId: string,
   nickname: string,
   msg: { roomId: string; buyInAmount?: number; requestId?: string },
-): Promise<{ ok: boolean; seatIndex?: number; error?: string }> {
-  const cached = getCachedRequest<{ ok: boolean; seatIndex: number }>(msg.requestId);
+): Promise<{ ok: boolean; seatIndex?: number; role?: 'spectator' | 'player'; error?: string }> {
+  const cached = getCachedRequest<{ ok: boolean; seatIndex: number; role?: 'spectator' | 'player' }>(
+    msg.requestId,
+  );
   if (cached) return cached;
 
   const table = await getOrCreateRoom(msg.roomId, io);
@@ -113,49 +117,42 @@ async function handleJoin(
   const actualBuyIn = Math.min(cap, Math.floor(msg.buyInAmount ?? cap));
   const userRow = await findUserById(Number(userId));
   const avatarUrl = userRow?.avatar_url ?? null;
-  const clientIp = getClientIp(socket);
-  const isNewSeat = !table.hasPlayer(userId);
-
-  if (table.config.roomType === 'OFFICIAL' && isNewSeat) {
-    try {
-      const conflictUserId = await findOfficialIpConflict(msg.roomId, clientIp, userId);
-      if (conflictUserId) {
-        if (table.hasPlayer(conflictUserId)) {
-          emitError(socket, 'IP_CONFLICT', msg.requestId, 'errors.ip_conflict');
-          return { ok: false, error: 'IP_CONFLICT' };
-        }
-        await clearOfficialRoomIp(msg.roomId, conflictUserId);
-      }
-    } catch (err) {
-      console.error('official IP check skipped:', err);
-    }
-  }
 
   try {
-    const { seat } = await joinRoomFlow({
+    if (table.hasPlayer(userId) || table.config.roomType === 'PRIVATE') {
+      const { seat, role } = await joinRoomFlow({
+        io,
+        socket,
+        table,
+        roomId: msg.roomId,
+        userId,
+        nickname,
+        buyIn: actualBuyIn,
+        avatarUrl,
+        buyInFn: async () => {
+          await buyInChips(Number(userId), actualBuyIn, `${msg.roomId}:${userId}:join:${Date.now()}`);
+        },
+      });
+      userRoom.set(userId, msg.roomId);
+      ensureRoomTick(io, msg.roomId);
+      onPlayerJoinedPrivateRoom(msg.roomId, userId, table);
+      const result = { ok: true as const, seatIndex: seat, role };
+      cacheRequestResult(msg.requestId, result);
+      return result;
+    }
+
+    const { seat, role } = await spectateRoomFlow({
       io,
       socket,
       table,
       roomId: msg.roomId,
       userId,
       nickname,
-      buyIn: actualBuyIn,
       avatarUrl,
-      buyInFn: async () => {
-        await buyInChips(Number(userId), actualBuyIn, `${msg.roomId}:${userId}`);
-      },
     });
     userRoom.set(userId, msg.roomId);
-    if (table.config.roomType === 'OFFICIAL' && isNewSeat) {
-      try {
-        await registerOfficialRoomIp(msg.roomId, userId, clientIp);
-      } catch (err) {
-        console.error('registerOfficialRoomIp failed:', err);
-      }
-    }
     ensureRoomTick(io, msg.roomId);
-    onPlayerJoinedPrivateRoom(msg.roomId, userId, table);
-    const result = { ok: true as const, seatIndex: seat };
+    const result = { ok: true as const, seatIndex: seat, role };
     cacheRequestResult(msg.requestId, result);
     return result;
   } catch (e) {
@@ -165,19 +162,46 @@ async function handleJoin(
         ? 'INSUFFICIENT_CHIPS'
         : message === 'ROOM_FULL'
           ? 'ROOM_FULL'
-          : message === 'IP_CONFLICT'
-            ? 'IP_CONFLICT'
-            : 'INVALID_ACTION';
+          : message === 'SEAT_TAKEN'
+            ? 'SEAT_TAKEN'
+            : message === 'IP_CONFLICT'
+              ? 'IP_CONFLICT'
+              : 'INVALID_ACTION';
     emitError(socket, code, msg.requestId);
     return { ok: false, error: message };
   }
+}
+
+async function guardOfficialSitIp(
+  socket: Socket,
+  table: InteractiveTable,
+  roomId: string,
+  userId: string,
+  requestId?: string,
+): Promise<{ ok: false; error: string } | null> {
+  if (table.config.roomType !== 'OFFICIAL') return null;
+  const clientIp = getClientIp(socket);
+  try {
+    const conflictUserId = await findOfficialIpConflict(roomId, clientIp, userId);
+    if (conflictUserId) {
+      if (table.hasPlayer(conflictUserId)) {
+        emitError(socket, 'IP_CONFLICT', requestId, 'errors.ip_conflict');
+        return { ok: false, error: 'IP_CONFLICT' };
+      }
+      await clearOfficialRoomIp(roomId, conflictUserId);
+    }
+    await registerOfficialRoomIp(roomId, userId, clientIp);
+  } catch (err) {
+    console.error('official IP check skipped:', err);
+  }
+  return null;
 }
 
 export function startRoomServer(port: number): void {
   const httpServer = createServer((req, res) => {
     if (req.url === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.4.9' }));
+      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.5.0' }));
       return;
     }
     res.writeHead(404);
@@ -217,7 +241,8 @@ export function startRoomServer(port: number): void {
       'reconnect_room',
       async (msg: { roomId?: string; requestId?: string }, ack?: (r: unknown) => void) => {
         const roomId = await resolveReconnectRoom(userId, msg.roomId);
-        if (!roomId || !rooms.get(roomId)?.hasPlayer(userId)) {
+        const existing = roomId ? rooms.get(roomId) : undefined;
+        if (!roomId || !existing || !existing.isPresent(userId)) {
           emitError(socket, 'ROOM_NOT_FOUND', msg.requestId);
           ack?.({ ok: false, error: 'ROOM_NOT_FOUND' });
           return;
@@ -251,9 +276,6 @@ export function startRoomServer(port: number): void {
           table,
           roomId,
           userId,
-          cashOutFn: async (chips) => {
-            await cashOutChips(Number(userId), chips, `${roomId}:${userId}:leave`);
-          },
         });
         userRoom.delete(userId);
         ack?.({ ok: true });
@@ -278,6 +300,77 @@ export function startRoomServer(port: number): void {
         ack?.({ ok: true });
       },
     );
+
+    socket.on(
+      'sit_down',
+      async (
+        msg: { requestId?: string; buyInAmount?: number; seatIndex?: number },
+        ack?: (r: unknown) => void,
+      ) => {
+        const roomId = userRoom.get(userId);
+        const table = roomId ? rooms.get(roomId) : undefined;
+        if (!roomId || !table) {
+          emitError(socket, 'ROOM_NOT_FOUND', msg.requestId);
+          ack?.({ ok: false, error: 'ROOM_NOT_FOUND' });
+          return;
+        }
+        if (table.hasPlayer(userId)) {
+          ack?.({ ok: true, seatIndex: table.getPublicState(userId).mySeatIndex, nextHand: false });
+          return;
+        }
+        const cap = table.config.buyInCap;
+        const actualBuyIn = Math.min(cap, Math.floor(msg.buyInAmount ?? cap));
+        const ipBlocked = await guardOfficialSitIp(socket, table, roomId, userId, msg.requestId);
+        if (ipBlocked) {
+          ack?.(ipBlocked);
+          return;
+        }
+        try {
+          const userRow = await findUserById(Number(userId));
+          const result = await sitDownFlow({
+            io,
+            socket,
+            table,
+            roomId,
+            userId,
+            nickname,
+            buyIn: actualBuyIn,
+            avatarUrl: userRow?.avatar_url ?? null,
+            seatIndex: msg.seatIndex,
+            buyInFn: async () => {
+              await buyInChips(Number(userId), actualBuyIn, `${roomId}:${userId}:sit:${Date.now()}`);
+            },
+          });
+          ack?.({ ok: true, ...result });
+        } catch (e) {
+          const message = (e as Error).message;
+          const code =
+            message === 'INSUFFICIENT_CHIPS'
+              ? 'INSUFFICIENT_CHIPS'
+              : message === 'ROOM_FULL'
+                ? 'ROOM_FULL'
+                : message === 'SEAT_TAKEN'
+                  ? 'SEAT_TAKEN'
+                  : message === 'ALREADY_SEATED'
+                    ? 'ALREADY_SEATED'
+                    : 'INVALID_ACTION';
+          emitError(socket, code, msg.requestId);
+          ack?.({ ok: false, error: message });
+        }
+      },
+    );
+
+    socket.on('stand_up', async (msg: { requestId?: string } | undefined, ack?: (r: unknown) => void) => {
+      const roomId = userRoom.get(userId);
+      const table = roomId ? rooms.get(roomId) : undefined;
+      if (!roomId || !table) {
+        emitError(socket, 'ROOM_NOT_FOUND', msg?.requestId);
+        ack?.({ ok: false, error: 'ROOM_NOT_FOUND' });
+        return;
+      }
+      const result = await standUpFlow({ io, table, roomId, userId });
+      ack?.(result);
+    });
 
     socket.on(
       'player_action',

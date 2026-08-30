@@ -10,6 +10,7 @@ import {
   getUserActiveRoom,
   checkHandForChipDumping,
   clearOfficialRoomIp,
+  cashOutChips,
 } from '@texas-holdem/db';
 import type { ActionType } from '@texas-holdem/poker-engine';
 import type { HandEndSummary, InteractiveTable, TableEvent } from './game/interactive-table.js';
@@ -46,9 +47,14 @@ export function getCachedRequest<T>(requestId: string | undefined): T | undefine
 }
 
 export function wireTableHandlers(table: InteractiveTable, io: Server, roomId: string): void {
-  table.setOnPlayerRemoved((userId) => {
+  table.setOnPlayerRemoved((userId, chips) => {
+    if (chips > 0) {
+      void cashOutChips(Number(userId), chips, `${roomId}:${userId}:out:${Date.now()}`).catch(
+        (err: unknown) => console.error('cashOutChips failed', err),
+      );
+    }
     if (table.config.roomType !== 'OFFICIAL') return;
-    void clearOfficialRoomIp(roomId, userId).catch((err) =>
+    void clearOfficialRoomIp(roomId, userId).catch((err: unknown) =>
       console.error('clearOfficialRoomIp failed', err),
     );
   });
@@ -259,6 +265,14 @@ function emitActionTurnIfNeeded(
   });
 }
 
+function emitSelfState(socket: Socket, table: InteractiveTable, roomId: string, userId: string): void {
+  const seq = nextSeq(roomId);
+  const serverTs = Date.now();
+  const payload = table.getPublicState(userId);
+  socket.emit('room_state_sync', { seq, serverTs, payload });
+  emitActionTurnIfNeeded(socket, table, seq, serverTs, userId);
+}
+
 export async function joinRoomFlow(opts: {
   io: Server;
   socket: Socket;
@@ -269,7 +283,7 @@ export async function joinRoomFlow(opts: {
   buyIn: number;
   buyInFn: () => Promise<void>;
   avatarUrl?: string | null;
-}): Promise<{ seat: number }> {
+}): Promise<{ seat: number; role: 'player' }> {
   const { io, socket, table, roomId, userId, nickname, buyIn, buyInFn, avatarUrl } = opts;
   let seat: number;
   let isNewPlayer = false;
@@ -285,12 +299,7 @@ export async function joinRoomFlow(opts: {
 
   await setUserActiveRoom(Number(userId), roomId);
   socket.join(roomId);
-
-  const seq = nextSeq(roomId);
-  const serverTs = Date.now();
-  const payload = table.getPublicState(userId);
-  socket.emit('room_state_sync', { seq, serverTs, payload });
-  emitActionTurnIfNeeded(socket, table, seq, serverTs, userId);
+  emitSelfState(socket, table, roomId, userId);
 
   if (isNewPlayer) {
     io.to(roomId).emit('player_joined', {
@@ -309,7 +318,83 @@ export async function joinRoomFlow(opts: {
 
   broadcastState(io, roomId, table);
 
-  return { seat };
+  return { seat, role: 'player' };
+}
+
+export async function spectateRoomFlow(opts: {
+  io: Server;
+  socket: Socket;
+  table: InteractiveTable;
+  roomId: string;
+  userId: string;
+  nickname: string;
+  avatarUrl?: string | null;
+}): Promise<{ seat: number; role: 'spectator' }> {
+  const { io, socket, table, roomId, userId, nickname, avatarUrl } = opts;
+  table.addSpectator(userId, nickname, avatarUrl);
+  table.ensureOfficialGameRunning();
+  await setUserActiveRoom(Number(userId), roomId);
+  socket.join(roomId);
+  emitSelfState(socket, table, roomId, userId);
+  broadcastState(io, roomId, table);
+  return { seat: -1, role: 'spectator' };
+}
+
+export async function sitDownFlow(opts: {
+  io: Server;
+  socket: Socket;
+  table: InteractiveTable;
+  roomId: string;
+  userId: string;
+  nickname: string;
+  buyIn: number;
+  buyInFn: () => Promise<void>;
+  avatarUrl?: string | null;
+  seatIndex?: number;
+}): Promise<{ seat: number; nextHand: boolean }> {
+  const { io, socket, table, roomId, userId, nickname, buyIn, buyInFn, avatarUrl, seatIndex } = opts;
+  if (table.hasPlayer(userId)) throw new Error('ALREADY_SEATED');
+  const empty = table.emptySeatIndexes();
+  if (empty.length === 0) throw new Error('ROOM_FULL');
+  if (seatIndex !== undefined && !empty.includes(seatIndex)) throw new Error('SEAT_TAKEN');
+  await buyInFn();
+  const { seat, nextHand } = table.sitDown(userId, nickname, buyIn, avatarUrl, seatIndex);
+  emitSelfState(socket, table, roomId, userId);
+  io.to(roomId).emit('player_joined', {
+    seq: nextSeq(roomId),
+    serverTs: Date.now(),
+    payload: {
+      seatIndex: seat,
+      userId,
+      nickname,
+      chips: buyIn,
+      isBot: false,
+      avatarUrl: avatarUrl ?? null,
+    },
+  });
+  broadcastState(io, roomId, table);
+  return { seat, nextHand };
+}
+
+export async function standUpFlow(opts: {
+  io: Server;
+  table: InteractiveTable;
+  roomId: string;
+  userId: string;
+}): Promise<{ ok: boolean; deferred?: boolean }> {
+  const { io, table, roomId, userId } = opts;
+  if (!table.hasPlayer(userId)) return { ok: true };
+  const result = table.standUp(userId);
+  table.ensureOfficialGameRunning();
+  broadcastState(io, roomId, table);
+  if (!result.deferred) {
+    io.to(roomId).emit('player_left', {
+      seq: nextSeq(roomId),
+      serverTs: Date.now(),
+      payload: { userId },
+    });
+  }
+  return { ok: true, deferred: result.deferred };
 }
 
 export async function leaveRoomFlow(opts: {
@@ -318,20 +403,25 @@ export async function leaveRoomFlow(opts: {
   table: InteractiveTable;
   roomId: string;
   userId: string;
-  cashOutFn: (chips: number) => Promise<void>;
 }): Promise<void> {
-  const { io, socket, table, roomId, userId, cashOutFn } = opts;
-  if (!table.hasPlayer(userId)) return;
-  const chips = table.removePlayer(userId);
-  await cashOutFn(chips);
+  const { io, socket, table, roomId, userId } = opts;
+  const wasSeated = table.hasPlayer(userId);
+  if (wasSeated) {
+    table.leaveSeat(userId);
+  } else {
+    table.removeSpectator(userId);
+  }
+  table.ensureOfficialGameRunning();
   await clearUserActiveRoom(Number(userId));
   socket.leave(roomId);
   broadcastState(io, roomId, table);
-  io.to(roomId).emit('player_left', {
-    seq: nextSeq(roomId),
-    serverTs: Date.now(),
-    payload: { userId },
-  });
+  if (wasSeated) {
+    io.to(roomId).emit('player_left', {
+      seq: nextSeq(roomId),
+      serverTs: Date.now(),
+      payload: { userId },
+    });
+  }
 }
 
 export async function resolveReconnectRoom(userId: string, roomId?: string): Promise<string | null> {

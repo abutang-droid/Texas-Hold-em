@@ -69,6 +69,10 @@ export interface PublicTableState {
   currentTurnSeat: number | null;
   actionDeadline: number | null;
   mySeatIndex: number | null;
+  role: 'spectator' | 'player' | null;
+  pendingSitIn: boolean;
+  emptySeats: number[];
+  spectators: Array<{ userId: string; nickname: string; avatarUrl: string | null }>;
   seats: Array<{
     seatIndex: number;
     userId: string;
@@ -204,7 +208,11 @@ export class InteractiveTable {
   private realPlayerCount = 0;
   private paused = false;
   private pendingKick = new Set<string>();
-  private onPlayerRemoved?: (userId: string) => void;
+  private pendingSitIn = new Set<string>();
+  private pendingStandUp = new Set<string>();
+  private spectators = new Map<string, { userId: string; nickname: string; avatarUrl: string | null }>();
+  private finishingHand = false;
+  private onPlayerRemoved?: (userId: string, chips: number) => void;
 
   constructor(roomId: string, config?: Partial<TableConfig>) {
     this.roomId = roomId;
@@ -232,8 +240,57 @@ export class InteractiveTable {
     this.pendingKick.add(userId);
   }
 
-  setOnPlayerRemoved(handler: (userId: string) => void): void {
+  setOnPlayerRemoved(handler: (userId: string, chips: number) => void): void {
     this.onPlayerRemoved = handler;
+  }
+
+  hasSpectator(userId: string): boolean {
+    return this.spectators.has(userId);
+  }
+
+  isPresent(userId: string): boolean {
+    return this.hasPlayer(userId) || this.hasSpectator(userId);
+  }
+
+  addSpectator(userId: string, nickname: string, avatarUrl?: string | null): void {
+    if (this.hasPlayer(userId)) return;
+    this.spectators.set(userId, {
+      userId,
+      nickname,
+      avatarUrl: avatarUrl ?? null,
+    });
+  }
+
+  removeSpectator(userId: string): void {
+    this.spectators.delete(userId);
+  }
+
+  ensureOfficialGameRunning(): void {
+    if (this.config.roomType !== 'OFFICIAL') return;
+    this.fillOfficialBots();
+    this.tryStartHand();
+  }
+
+  private isHandLive(): boolean {
+    return (
+      this.phase === 'PRE_FLOP' ||
+      this.phase === 'FLOP' ||
+      this.phase === 'TURN' ||
+      this.phase === 'RIVER'
+    );
+  }
+
+  private usedSeats(): Set<number> {
+    return new Set(this.players.map((p) => p.seatIndex));
+  }
+
+  emptySeatIndexes(): number[] {
+    const used = this.usedSeats();
+    const empty: number[] = [];
+    for (let i = 0; i < this.config.maxSeats; i += 1) {
+      if (!used.has(i)) empty.push(i);
+    }
+    return empty;
   }
 
   addChipsToPlayer(userId: string, amount: number): void {
@@ -265,14 +322,24 @@ export class InteractiveTable {
     if (idx < 0) throw new Error('NOT_SEATED');
     const p = this.players[idx];
     const chips = p.chips;
+    const avatar = this.avatarByUserId.get(userId) ?? null;
+    const standing = this.pendingStandUp.has(userId);
+    this.pendingStandUp.delete(userId);
+    this.pendingKick.delete(userId);
+    this.pendingSitIn.delete(userId);
     if (!p.isBot) {
       this.realPlayerCount = Math.max(0, this.realPlayerCount - 1);
-      this.onPlayerRemoved?.(userId);
     }
     this.avatarByUserId.delete(userId);
     this.players.splice(idx, 1);
-    if (!p.isBot && this.realPlayerCount === 0) {
+    if (standing && !p.isBot) {
+      this.addSpectator(userId, p.nickname, avatar);
+    }
+    if (!p.isBot && this.realPlayerCount === 0 && this.spectators.size === 0) {
       this.players = this.players.filter((pl) => !pl.isBot);
+    }
+    if (!p.isBot) {
+      this.onPlayerRemoved?.(userId, chips);
     }
     return chips;
   }
@@ -355,11 +422,18 @@ export class InteractiveTable {
     chips: number,
     isBot = false,
     avatarUrl?: string | null,
+    seatIndex?: number,
   ): number {
-    const used = new Set(this.players.map((p) => p.seatIndex));
-    let seat = 0;
-    while (used.has(seat) && seat < this.config.maxSeats) seat += 1;
-    if (seat >= this.config.maxSeats) throw new Error('ROOM_FULL');
+    const used = this.usedSeats();
+    let seat = seatIndex ?? 0;
+    if (seatIndex !== undefined) {
+      if (seatIndex < 0 || seatIndex >= this.config.maxSeats || used.has(seatIndex)) {
+        throw new Error('SEAT_TAKEN');
+      }
+    } else {
+      while (used.has(seat) && seat < this.config.maxSeats) seat += 1;
+      if (seat >= this.config.maxSeats) throw new Error('ROOM_FULL');
+    }
 
     const buyIn = Math.min(this.config.buyInCap, chips);
     this.players.push({
@@ -377,25 +451,117 @@ export class InteractiveTable {
     if (!isBot) {
       this.realPlayerCount += 1;
       this.avatarByUserId.set(userId, avatarUrl ?? null);
+      this.spectators.delete(userId);
       this.fillOfficialBots();
     }
     this.tryStartHand();
     return seat;
   }
 
-  /** Official test tables: 1 human + 5 bots (6-max full). Never seat bots mid-hand. */
+  sitDown(
+    userId: string,
+    nickname: string,
+    chips: number,
+    avatarUrl?: string | null,
+    seatIndex?: number,
+  ): { seat: number; nextHand: boolean } {
+    if (this.hasPlayer(userId)) throw new Error('ALREADY_SEATED');
+    const empty = this.emptySeatIndexes();
+    if (empty.length === 0) throw new Error('ROOM_FULL');
+    if (seatIndex !== undefined && !empty.includes(seatIndex)) throw new Error('SEAT_TAKEN');
+    this.spectators.delete(userId);
+    const waitForNext =
+      this.isHandLive() ||
+      this.phase === 'SHOWDOWN' ||
+      this.phase === 'END_HAND' ||
+      this.finishingHand;
+    const seat = this.addPlayer(userId, nickname, chips, false, avatarUrl, seatIndex);
+    if (waitForNext) {
+      const p = this.players.find((pl) => pl.userId === userId);
+      if (p) p.status = 'SIT_OUT';
+      this.pendingSitIn.add(userId);
+    }
+    return { seat, nextHand: waitForNext };
+  }
+
+  standUp(userId: string): { ok: boolean; chips?: number; deferred?: boolean } {
+    return this.vacateSeat(userId, 'stand');
+  }
+
+  leaveSeat(userId: string): { ok: boolean; chips?: number; deferred?: boolean } {
+    return this.vacateSeat(userId, 'leave');
+  }
+
+  private vacateSeat(
+    userId: string,
+    mode: 'stand' | 'leave',
+  ): { ok: boolean; chips?: number; deferred?: boolean } {
+    if (!this.hasPlayer(userId)) {
+      if (mode === 'leave') this.removeSpectator(userId);
+      return { ok: true, chips: 0 };
+    }
+    const p = this.players.find((pl) => pl.userId === userId)!;
+    const inPot =
+      (this.isHandLive() || this.phase === 'SHOWDOWN') &&
+      (p.status === 'ACTIVE' || p.status === 'ALL_IN' || p.totalBetInHand > 0);
+    if (inPot) {
+      if (p.status === 'ACTIVE') this.forceFoldSeat(p.seatIndex);
+      this.pendingKick.add(userId);
+      if (mode === 'stand') this.pendingStandUp.add(userId);
+      else this.pendingStandUp.delete(userId);
+      return { ok: true, deferred: true };
+    }
+    const nickname = p.nickname;
+    const avatar = this.avatarByUserId.get(userId) ?? null;
+    if (mode === 'stand') this.pendingStandUp.add(userId);
+    const chips = this.removePlayer(userId);
+    if (mode === 'stand' && !this.hasSpectator(userId)) {
+      this.addSpectator(userId, nickname, avatar);
+    }
+    return { ok: true, chips };
+  }
+
+  forceFoldSeat(seatIndex: number): void {
+    const p = this.players.find((pl) => pl.seatIndex === seatIndex);
+    if (!p || p.status !== 'ACTIVE') return;
+    p.status = 'FOLDED';
+    recordPlayerAction(this.bettingRound, seatIndex, 'no_raise');
+    if (this.handId) {
+      this.pushEvent({
+        type: 'action_result',
+        handId: this.handId,
+        seatIndex,
+        userId: p.userId,
+        actionType: 'fold',
+        chipsRemaining: p.chips,
+        potTotal: this.getPotTotal(),
+        autoAction: true,
+      });
+    }
+    if (this.currentSeat === seatIndex || countActivePlayers(this.players) <= 1) {
+      this.advanceAfterAction();
+    }
+  }
+
+  /** Official: 5 bots + empty seats for humans. Spectators can watch a live bot game. */
   private fillOfficialBots(): void {
     if (this.config.roomType === 'PRIVATE') return;
-    if (this.realPlayerCount < 1) return;
+    const seatedHumans = this.players.filter((p) => !p.isBot).length;
+    if (seatedHumans === 0 && this.spectators.size === 0) {
+      this.players = this.players.filter((pl) => !pl.isBot);
+      return;
+    }
     if (this.phase !== 'WAITING' && this.phase !== 'END_HAND') return;
     if (this.botFillTimer) {
       clearTimeout(this.botFillTimer);
       this.botFillTimer = null;
     }
-    while (this.players.length < this.config.maxSeats) {
+    const botTarget = Math.min(5, this.config.maxSeats - seatedHumans);
+    let botCount = this.players.filter((p) => p.isBot).length;
+    while (botCount < botTarget) {
       const n = this.players.length;
       const botId = `bot_${Date.now()}_${n}`;
-      const used = new Set(this.players.map((p) => p.seatIndex));
+      const used = this.usedSeats();
       let seat = 0;
       while (used.has(seat) && seat < this.config.maxSeats) seat += 1;
       if (seat >= this.config.maxSeats) break;
@@ -411,12 +577,29 @@ export class InteractiveTable {
         isBot: true,
         timeBankMs: 0,
       });
+      botCount += 1;
+    }
+  }
+
+  private promotePendingSitIns(): void {
+    for (const uid of [...this.pendingSitIn]) {
+      const p = this.players.find((pl) => pl.userId === uid);
+      if (p && p.chips > 0) p.status = 'ACTIVE';
+      this.pendingSitIn.delete(uid);
     }
   }
 
   private tryStartHand(): void {
+    this.promotePendingSitIns();
     this.fillOfficialBots();
-    if (this.paused) return;
+    if (this.paused || this.finishingHand) return;
+    if (
+      this.config.roomType === 'OFFICIAL' &&
+      this.realPlayerCount < 1 &&
+      this.spectators.size === 0
+    ) {
+      return;
+    }
     const active = this.players.filter((p) => p.status !== 'SIT_OUT' && p.chips > 0);
     if (active.length < 2 || this.phase !== 'WAITING' && this.phase !== 'END_HAND') return;
     if (this.phase === 'END_HAND') {
@@ -701,8 +884,6 @@ export class InteractiveTable {
     });
   }
 
-  private finishingHand = false;
-
   private finishHand(): void {
     if (this.finishingHand) return;
     this.finishingHand = true;
@@ -896,6 +1077,13 @@ export class InteractiveTable {
     const eligibleSeats = this.players
       .filter((p) => p.status !== 'FOLDED' && p.status !== 'SIT_OUT')
       .map((p) => p.seatIndex);
+    const role = !forUserId
+      ? null
+      : this.hasPlayer(forUserId)
+        ? 'player'
+        : this.hasSpectator(forUserId)
+          ? 'spectator'
+          : null;
 
     return {
       roomId: this.roomId,
@@ -916,6 +1104,10 @@ export class InteractiveTable {
       currentTurnSeat: this.phase !== 'WAITING' && this.phase !== 'END_HAND' ? this.currentSeat : null,
       actionDeadline: this.actionDeadline,
       mySeatIndex: mySeat,
+      role,
+      pendingSitIn: forUserId ? this.pendingSitIn.has(forUserId) : false,
+      emptySeats: this.emptySeatIndexes(),
+      spectators: [...this.spectators.values()],
       seats: this.players.map((p) => ({
         seatIndex: p.seatIndex,
         userId: p.userId,

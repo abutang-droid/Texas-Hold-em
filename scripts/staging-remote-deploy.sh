@@ -14,7 +14,7 @@ STAGING_IP="${STAGING_IP:-192.168.31.53}"
 STAGING_USER="${STAGING_USER:-uoto}"
 STAGING_REPO="${STAGING_REPO:-~/Texas-Hold-em}"
 BRANCH="${1:-main}"
-EXPECTED_ROOM_VERSION="${EXPECTED_ROOM_VERSION:-0.4.9}"
+EXPECTED_ROOM_VERSION="${EXPECTED_ROOM_VERSION:-0.5.0}"
 
 SSH_OPTS=(-o ConnectTimeout=10 -o StrictHostKeyChecking=accept-new)
 if [ -n "${SSH_KEY:-}" ] && [ -f "${SSH_KEY}" ]; then

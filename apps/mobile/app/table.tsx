@@ -3,7 +3,7 @@ import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { io, Socket } from 'socket.io-client';
-import { getToken, submitReport } from '../src/api/client';
+import { getToken, restoreSession, submitReport } from '../src/api/client';
 import { Table9Max, type SeatView } from '../src/components/Table9Max';
 import { ActionPanel } from '../src/components/ActionPanel';
 import { HandStatusBar } from '../src/components/HandStatusBar';
@@ -34,6 +34,11 @@ interface TableState {
   handId: string | null;
   blinds: { sb: number; bb: number };
   actionDeadline: number | null;
+  maxSeats: number;
+  role: 'spectator' | 'player' | null;
+  pendingSitIn: boolean;
+  emptySeats: number[];
+  mySeatIndex: number | null;
 }
 
 type SnapshotPayload = TableState & { seats: SeatView[] };
@@ -92,6 +97,11 @@ function mapSnapshot(payload: SnapshotPayload, currentTurnSeat: number | null): 
     handId: payload.handId ?? null,
     blinds: payload.blinds ?? { sb: 1, bb: 2 },
     actionDeadline: payload.actionDeadline ?? null,
+    maxSeats: payload.maxSeats ?? 6,
+    role: payload.role ?? null,
+    pendingSitIn: payload.pendingSitIn ?? false,
+    emptySeats: payload.emptySeats ?? [],
+    mySeatIndex: payload.mySeatIndex ?? null,
   };
 }
 
@@ -119,6 +129,11 @@ export default function TableScreen() {
     handId: null,
     blinds: { sb: 1, bb: 2 },
     actionDeadline: null,
+    maxSeats: 6,
+    role: null,
+    pendingSitIn: false,
+    emptySeats: [],
+    mySeatIndex: null,
   });
   const [socket, setSocket] = useState<Socket | null>(null);
   const [myUserId, setMyUserId] = useState<string | null>(null);
@@ -185,8 +200,13 @@ export default function TableScreen() {
       );
       return mapped;
     });
-    const me = payload.seats?.find((x) => x.holeCards && x.holeCards[0] !== '**');
-    if (me?.userId) setMyUserId(me.userId);
+    if (payload.mySeatIndex != null) {
+      const seated = payload.seats?.find((s) => s.seatIndex === payload.mySeatIndex);
+      if (seated?.userId) setMyUserId(seated.userId);
+    } else {
+      const me = payload.seats?.find((x) => x.holeCards && x.holeCards[0] !== '**');
+      if (me?.userId) setMyUserId(me.userId);
+    }
     const turnSeat = payload.currentTurnSeat;
     if (turnSeat === null || turnSeat === undefined) {
       setTurnContext(null);
@@ -198,8 +218,13 @@ export default function TableScreen() {
 
   const isPrivate = state.roomType === 'PRIVATE';
   const isHost = myUserId !== null && state.hostUserId === myUserId;
-  const mySeat = state.seats.find((s) => s.userId === myUserId);
+  const mySeat =
+    state.mySeatIndex != null
+      ? state.seats.find((s) => s.seatIndex === state.mySeatIndex)
+      : state.seats.find((s) => s.userId === myUserId);
   const myChips = mySeat?.chips ?? 0;
+  const isSeated = !!mySeat;
+  const isOfficialSpectator = !isPrivate && !isSeated;
 
   const isMyTurn =
     turnContext !== null &&
@@ -231,6 +256,11 @@ export default function TableScreen() {
     setSocket(s);
 
     const buyIn = buyInCapParam ? Number(buyInCapParam) : 100;
+    const officialTable = !roomId?.startsWith('P');
+
+    void restoreSession().then((session) => {
+      if (session?.user?.id != null) setMyUserId(String(session.user.id));
+    });
 
     const showNotice = (text: string, autoDismissMs = 2500) => {
       setHandNotice(text);
@@ -244,7 +274,9 @@ export default function TableScreen() {
       const event = reconnect ? 'reconnect_room' : 'join_room';
       const payload = reconnect
         ? { roomId, requestId: `reconnect-${Date.now()}` }
-        : { roomId, buyInAmount: buyIn, requestId: `join-${Date.now()}` };
+        : officialTable
+          ? { roomId, requestId: `join-${Date.now()}` }
+          : { roomId, buyInAmount: buyIn, requestId: `join-${Date.now()}` };
       s.emit(event, payload, (ack: { ok: boolean; error?: string }) => {
         if (ack?.ok) {
           setConnectionStatus('connected');
@@ -725,6 +757,58 @@ export default function TableScreen() {
     if (!approved) setDissolveVote(null);
   };
 
+  const leaveTable = () => {
+    socket?.emit('leave_room', { requestId: `leave-${Date.now()}` });
+    router.back();
+  };
+
+  const standUp = () => {
+    socket?.emit(
+      'stand_up',
+      { requestId: `stand-${Date.now()}` },
+      (ack: { ok?: boolean; deferred?: boolean }) => {
+        if (!ack?.ok) {
+          Alert.alert(t('common.error'));
+          return;
+        }
+        if (ack.deferred) setHandNotice(t('table.standing_after_hand'));
+      },
+    );
+  };
+
+  const sitDown = (seatIndex: number) => {
+    const amount = Math.min(state.buyInCap, buyInCapParam ? Number(buyInCapParam) : state.buyInCap);
+    Alert.alert(t('table.sit_confirm_title'), t('table.sit_confirm_body', { amount }), [
+      { text: t('table.cancel_sit'), style: 'cancel' },
+      {
+        text: t('table.sit_down'),
+        onPress: () => {
+          socket?.emit(
+            'sit_down',
+            { seatIndex, buyInAmount: amount, requestId: `sit-${Date.now()}` },
+            (ack: { ok: boolean; error?: string; nextHand?: boolean }) => {
+              if (!ack?.ok) {
+                const errKey =
+                  ack?.error === 'IP_CONFLICT'
+                    ? 'errors.ip_conflict'
+                    : ack?.error === 'INSUFFICIENT_CHIPS'
+                      ? 'errors.insufficient_chips'
+                      : ack?.error === 'ROOM_FULL'
+                        ? 'errors.room_full'
+                        : ack?.error === 'SEAT_TAKEN'
+                          ? 'errors.seat_taken'
+                          : null;
+                Alert.alert(t('common.error'), errKey ? t(errKey) : ack?.error ?? t('common.error'));
+                return;
+              }
+              if (ack.nextHand) setHandNotice(t('table.sitting_next_hand'));
+            },
+          );
+        },
+      },
+    ]);
+  };
+
   const reportPlayer = async (userId: string) => {
     try {
       await submitReport({
@@ -755,10 +839,25 @@ export default function TableScreen() {
         chipFlyEvents={chipFlyEvents}
         animateHoleDeal={animateHoleDeal}
         seatEmojis={seatEmojis}
+        emptySeatLabel={t('table.seat_empty')}
+        onSeatPress={isOfficialSpectator ? sitDown : undefined}
         onChipFlyDone={(id) =>
           setChipFlyEvents((prev) => prev.filter((e) => e.id !== id))
         }
       />
+
+      {isOfficialSpectator && (
+        <View style={styles.watchBanner}>
+          <Text style={styles.watchText}>
+            {state.emptySeats.length > 0 ? t('table.watching') : t('table.table_full_watching')}
+          </Text>
+        </View>
+      )}
+      {isSeated && state.pendingSitIn && (
+        <View style={styles.watchBanner}>
+          <Text style={styles.watchText}>{t('table.sitting_next_hand')}</Text>
+        </View>
+      )}
 
       <HandStatusBar
         phase={state.phase}
@@ -798,13 +897,13 @@ export default function TableScreen() {
         onReport={reportPlayer}
       />
 
-      {isMyTurn && turnContext && (
+      {isSeated && isMyTurn && turnContext && (
         <View style={styles.actionWrap}>
           <ActionPanel turn={turnContext} onAction={sendAction} />
         </View>
       )}
 
-      {!isPrivate && (
+      {!isPrivate && isSeated && (
         <View style={[styles.emojiWrap, isMyTurn && turnContext && styles.emojiWrapAboveActions]}>
           <EmojiBar onSend={sendEmoji} />
         </View>
@@ -819,15 +918,16 @@ export default function TableScreen() {
         nextHandIn={showdown?.nextHandIn ?? 3000}
       />
 
-      <Pressable
-        style={styles.back}
-        onPress={() => {
-          socket?.emit('leave_room', { requestId: `leave-${Date.now()}` });
-          router.back();
-        }}
-      >
-        <Text style={styles.backText}>← {t('table.back_lobby')}</Text>
-      </Pressable>
+      <View style={styles.topActions}>
+        {isSeated && !isPrivate && (
+          <Pressable style={styles.topBtn} onPress={standUp}>
+            <Text style={styles.backText}>{t('table.stand_up')}</Text>
+          </Pressable>
+        )}
+        <Pressable style={styles.topBtn} onPress={leaveTable}>
+          <Text style={styles.backText}>← {t('table.leave_table')}</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -874,15 +974,33 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   retryText: { color: '#8B1A1A', fontWeight: '700', fontSize: 13 },
-  back: {
+  topActions: {
     position: 'absolute',
     top: 16,
     left: 16,
     zIndex: 11,
+    flexDirection: 'row',
+    gap: 8,
+  },
+  topBtn: {
     backgroundColor: 'rgba(0,0,0,0.5)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
   },
   backText: { color: '#C9A227', fontWeight: '600' },
+  watchBanner: {
+    position: 'absolute',
+    top: 56,
+    left: 16,
+    right: 16,
+    zIndex: 12,
+    backgroundColor: 'rgba(0,0,0,0.62)',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(201,162,39,0.35)',
+  },
+  watchText: { color: '#F3E6B8', fontWeight: '600', textAlign: 'center', fontSize: 13 },
 });
