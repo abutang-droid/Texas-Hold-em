@@ -13,12 +13,32 @@ import {
 } from '../src/api/client';
 import { colors } from '../src/theme';
 
-export default function RootLayout() {
-  const [bootReady, setBootReady] = useState(false);
-  const [authTick, setAuthTick] = useState(0);
+function NavigationGuards({ bootReady }: { bootReady: boolean }) {
   const segments = useSegments();
   const rootNavigationState = useRootNavigationState();
   const navReady = !!rootNavigationState?.key;
+
+  if (!bootReady || !navReady) return null;
+
+  const top = segments[0];
+  const inAuth = top === 'auth';
+  const inOnboarding = top === 'onboarding';
+  const hasToken = !!getToken();
+
+  if (!hasToken && !inAuth) {
+    return <Redirect href="/auth/login" />;
+  }
+
+  if (hasToken && !isOnboardingComplete() && !inOnboarding) {
+    return <Redirect href="/onboarding" />;
+  }
+
+  return null;
+}
+
+export default function RootLayout() {
+  const [bootReady, setBootReady] = useState(false);
+  const [authTick, setAuthTick] = useState(0);
 
   useEffect(() => {
     const bump = () => setAuthTick((n) => n + 1);
@@ -35,43 +55,26 @@ export default function RootLayout() {
 
   void authTick;
 
-  if (!bootReady) {
-    return (
-      <View style={styles.boot}>
-        <StatusBar style="light" />
-        <ActivityIndicator size="large" color={colors.brand.secondary} />
-      </View>
-    );
-  }
-
-  const top = segments[0];
-  const inAuth = top === 'auth';
-  const inOnboarding = top === 'onboarding';
-  const hasToken = !!getToken();
-
-  // 1) Login / guest first — API calls require a token
-  if (navReady && !hasToken && !inAuth) {
-    return <Redirect href="/auth/login" />;
-  }
-
-  // 2) Optional onboarding after auth
-  if (navReady && hasToken && !isOnboardingComplete() && !inOnboarding) {
-    return <Redirect href="/onboarding" />;
-  }
-
   return (
     <>
       <StatusBar style="light" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#121418' } }} />
+      <NavigationGuards bootReady={bootReady} />
+      {!bootReady ? (
+        <View style={styles.bootOverlay} pointerEvents="auto">
+          <ActivityIndicator size="large" color={colors.brand.secondary} />
+        </View>
+      ) : null}
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  boot: {
-    flex: 1,
+  bootOverlay: {
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: colors.bg.lobby,
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 999,
   },
 });
