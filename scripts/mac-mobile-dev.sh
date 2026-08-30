@@ -46,6 +46,7 @@ cd "${ROOT}"
 ensure_mobile_env "${ROOT}"
 ensure_workspace_deps "${ROOT}"
 build_shared_package
+ensure_table_snapshot_fix "${ROOT}"
 clear_expo_cache "${ROOT}"
 
 echo "==> Root: ${ROOT}"

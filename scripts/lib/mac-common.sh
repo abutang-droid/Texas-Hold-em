@@ -127,6 +127,38 @@ free_expo_port() {
   fi
 }
 
+# Crash: "me is not defined" in applySnapshot. Pin the known-good file.
+ensure_table_snapshot_fix() {
+  local root="$1"
+  local dest="${root}/apps/mobile/app/table.tsx"
+  if grep -q 'applySnapshotMeFix' "${dest}" 2>/dev/null; then
+    echo "OK table.tsx has applySnapshotMeFix"
+    return 0
+  fi
+  echo "==> table.tsx is stale (me is not defined) — replacing from 451d308"
+  local slug="abutang-droid/Texas-Hold-em"
+  local ref="451d308"
+  local stamp
+  stamp="$(date +%s)"
+  local url
+  for url in \
+    "https://raw.githubusercontent.com/${slug}/${ref}/apps/mobile/app/table.tsx?t=${stamp}" \
+    "https://ghfast.top/https://raw.githubusercontent.com/${slug}/${ref}/apps/mobile/app/table.tsx" \
+    "https://raw.gitmirror.com/${slug}/${ref}/apps/mobile/app/table.tsx"
+  do
+    if curl -fsSL --globoff --retry 2 --connect-timeout 20 -o "${dest}.tmp" "$url"; then
+      mv "${dest}.tmp" "${dest}"
+      break
+    fi
+    rm -f "${dest}.tmp"
+  done
+  if ! grep -q 'applySnapshotMeFix' "${dest}" 2>/dev/null; then
+    echo "ERROR: could not install fixed table.tsx — Expo would still crash" >&2
+    return 1
+  fi
+  echo "OK replaced table.tsx"
+}
+
 start_expo_dev_server() {
   local root="$1"
   local port="${EXPO_PORT:-8081}"
