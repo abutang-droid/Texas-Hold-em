@@ -152,7 +152,7 @@ https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em
 - `apps/mobile/app/auth/login.tsx` — 登录页
 - `apps/mobile/src/api/client.ts` — `bootstrapSession()`、401 清 session、`setUnauthorizedHandler`
 
-Layout 版本标记：`LAYOUT_REV = '2026-08-30-nav2'`（console 可确认是否加载新 bundle）
+Layout 版本标记：`LAYOUT_REV = '2026-08-30-nav3'`（console 可确认是否加载新 bundle）
 
 牌局规则见 `docs/game-rules.md`：6-max、HU 时 Button=SB、短 All-in 不重开 Raise、烧牌、20s+60s Time Bank。
 
