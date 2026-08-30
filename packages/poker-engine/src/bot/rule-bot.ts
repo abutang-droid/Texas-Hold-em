@@ -12,6 +12,7 @@ export interface BotDecisionInput {
   bigBlind: number;
   seatIndex: number;
   buttonSeat: number;
+  maxSeats?: number;
   valid: ValidActions;
 }
 
@@ -45,7 +46,7 @@ function handStrengthPostflop(hole: Card[], board: Card[]): number {
   return score;
 }
 
-function positionFactor(seatIndex: number, buttonSeat: number, maxSeats = 9): number {
+function positionFactor(seatIndex: number, buttonSeat: number, maxSeats = 6): number {
   const dist = (seatIndex - buttonSeat + maxSeats) % maxSeats;
   if (dist <= 2) return 1.2;
   if (dist <= 5) return 1.0;
@@ -67,7 +68,7 @@ export function decideBotAction(input: BotDecisionInput): BotDecision {
     }
   }
 
-  const pos = positionFactor(input.seatIndex, input.buttonSeat);
+  const pos = positionFactor(input.seatIndex, input.buttonSeat, input.maxSeats ?? 6);
   const strength = communityCards.length === 0
     ? handStrengthPreflop(holeCards) * pos
     : handStrengthPostflop(holeCards, communityCards) * pos;

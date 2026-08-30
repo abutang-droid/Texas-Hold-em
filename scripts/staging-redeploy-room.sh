@@ -8,7 +8,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-EXPECTED_ROOM_VERSION="${EXPECTED_ROOM_VERSION:-0.4.4}"
+  EXPECTED_ROOM_VERSION="${EXPECTED_ROOM_VERSION:-0.4.5}"
 ROOM_P="${ROOM_PORT:-3001}"
 
 echo "==> Texas Hold'em — Room redeploy"

@@ -58,7 +58,7 @@
   },
   "onboarding": {
     "title": "Welcome to Texas Hold'em",
-    "step1": "Quick Start matches you to a 9-max official table. Bots fill empty seats.",
+    "step1": "Quick Start matches you to a 6-max official table. Bots fill empty seats.",
     "step2": "New players receive 100 chips on signup. Buy in at the table.",
     "step3": "Fold, check, call, and raise — standard poker actions. Good luck!",
     "next": "Next",
@@ -82,7 +82,8 @@
     "migration_required": "Please acknowledge the beta migration notice",
     "network_timeout": "Request timed out — check your network connection",
     "network_unreachable": "Cannot reach server — check API URL and WiFi",
-    "request_failed": "Request failed"
+    "request_failed": "Request failed",
+    "table_six_only": "Tables are 6-max only"
   },
   "auth": {
     "login_title": "Sign In",
@@ -116,7 +117,7 @@
     "grant_permission": "Agree & Unlock",
     "create": "Create Room",
     "create_btn": "Create",
-    "max_seats": "Max seats (2-9)",
+    "max_seats": "6 players (fixed)",
     "buy_in_cap": "Buy-in cap",
     "room_created": "Room Created",
     "share": "Share Invite",

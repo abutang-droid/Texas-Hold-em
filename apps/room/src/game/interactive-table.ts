@@ -23,6 +23,7 @@ import {
   type PlayerState,
   type ActionType,
 } from '@texas-holdem/poker-engine';
+import { MAX_TABLE_SEATS } from '@texas-holdem/shared';
 
 export type HandPhase = 'WAITING' | 'PRE_FLOP' | 'FLOP' | 'TURN' | 'RIVER' | 'SHOWDOWN' | 'END_HAND';
 
@@ -152,7 +153,7 @@ export interface TableConfig {
 
 const OFFICIAL_DEFAULT: TableConfig = {
   roomType: 'OFFICIAL',
-  maxSeats: 9,
+  maxSeats: MAX_TABLE_SEATS,
   smallBlind: 1,
   bigBlind: 2,
   buyInCap: 100,
@@ -762,6 +763,7 @@ export class InteractiveTable {
         bigBlind: this.config.bigBlind,
         seatIndex: p.seatIndex,
         buttonSeat: this.buttonSeat,
+        maxSeats: this.config.maxSeats,
         valid,
       });
       action = d.action;

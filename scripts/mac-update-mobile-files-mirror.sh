@@ -46,7 +46,8 @@ FILES=(
   apps/mobile/src/auth/routes.ts
   apps/mobile/src/components/ui/GameModal.tsx
   apps/mobile/src/locales/en-US.json
-  apps/mobile/src/locales/zh-CN.json
+  packages/shared/src/table-config.ts
+  apps/mobile/app/private.tsx
 )
 
 echo "==> Mobile file sync via mirror (no zip)"

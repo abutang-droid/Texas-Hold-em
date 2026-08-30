@@ -67,7 +67,7 @@ import {
   type OAuthProvider,
 } from '@texas-holdem/db';
 import type { SupportedLocale } from '@texas-holdem/shared';
-import { AVATAR_PRESETS, DEFAULT_LOCALE, isValidPresetAvatarUrl, SUPPORTED_LOCALES } from '@texas-holdem/shared';
+import { AVATAR_PRESETS, DEFAULT_LOCALE, isValidPresetAvatarUrl, MAX_TABLE_SEATS, SUPPORTED_LOCALES } from '@texas-holdem/shared';
 
 function parseLocale(header?: string): SupportedLocale {
   if (!header) return DEFAULT_LOCALE;
@@ -548,12 +548,9 @@ class PrivateController {
     if (!user?.private_room_permission) {
       throw new ForbiddenException({ code: 'FORBIDDEN', messageKey: 'errors.private_permission_required' });
     }
-    const maxSeats = Math.min(9, Math.max(2, Math.floor(body.maxSeats ?? 6)));
-    if (maxSeats === 2) {
-      const hands = await countOfficialHandsForUser(userId);
-      if (hands < 10) {
-        throw new ForbiddenException({ code: 'FORBIDDEN', messageKey: 'errors.two_player_requires_official' });
-      }
+    const maxSeats = MAX_TABLE_SEATS;
+    if (body.maxSeats != null && Math.floor(body.maxSeats) !== MAX_TABLE_SEATS) {
+      throw new BadRequestException({ code: 'INVALID_SEATS', messageKey: 'errors.table_six_only' });
     }
     const sb = Math.floor(body.smallBlind ?? 1);
     const bb = Math.floor(body.bigBlind ?? 2);

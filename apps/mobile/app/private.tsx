@@ -50,7 +50,6 @@ export default function PrivateRoomScreen() {
     fee: number;
   } | null>(null);
   const [roomCode, setRoomCode] = useState('');
-  const [maxSeats, setMaxSeats] = useState('6');
   const [buyInCap, setBuyInCap] = useState('500');
   const [creating, setCreating] = useState(false);
   const [joining, setJoining] = useState(false);
@@ -84,16 +83,11 @@ export default function PrivateRoomScreen() {
   };
 
   const onCreate = async () => {
-    const seats = Number(maxSeats);
     const cap = Number(buyInCap);
-    if (seats === 2 && !permission?.canCreateTwoPlayer) {
-      Alert.alert(t('private.two_player_blocked'));
-      return;
-    }
     setCreating(true);
     try {
       const room = await createPrivateRoom({
-        maxSeats: seats,
+        maxSeats: 6,
         smallBlind: 5,
         bigBlind: 10,
         buyInCap: cap,
@@ -165,12 +159,7 @@ export default function PrivateRoomScreen() {
       ) : (
         <Card style={styles.section}>
           <Text style={styles.sectionTitle}>{t('private.create')}</Text>
-          <LabeledInput
-            label={t('private.max_seats')}
-            value={maxSeats}
-            onChangeText={setMaxSeats}
-            keyboardType="number-pad"
-          />
+          <Text style={styles.seatsHint}>{t('private.max_seats')}</Text>
           <LabeledInput
             label={t('private.buy_in_cap')}
             value={buyInCap}
@@ -238,6 +227,7 @@ const styles = StyleSheet.create({
   body: { ...typography.body, color: colors.text.secondary, textAlign: 'center', marginBottom: spacing.lg, lineHeight: 24 },
   section: { marginBottom: spacing.lg },
   sectionTitle: { ...typography.h2, color: colors.brand.secondary, marginBottom: spacing.md },
+  seatsHint: { ...typography.caption, color: colors.text.secondary, marginBottom: spacing.md },
   field: { marginBottom: spacing.md },
   label: { ...typography.micro, color: colors.text.secondary, marginBottom: spacing.xs },
   input: {
