@@ -173,18 +173,18 @@ function HoleCardsRow({
   return (
     <Animated.View
       style={[
-        styles.holeCards,
-        compact && styles.holeCardsCompact,
+        compact ? styles.holeCardsEmbedded : styles.holeCards,
         { opacity, transform: [{ translateY: slide }] },
       ]}
     >
       {cards.map((c, i) => (
-        <PlayingCard
-          key={i}
-          code={compact ? '**' : c}
-          size={compact ? 'xs' : 'sm'}
-          faceDown={compact || faceDown || c === '**'}
-        />
+        <View key={i} style={compact && i > 0 ? styles.rivalCardOverlap : undefined}>
+          <PlayingCard
+            code={compact ? '**' : c}
+            size={compact ? 'xs' : 'sm'}
+            faceDown={compact || faceDown || c === '**'}
+          />
+        </View>
       ))}
     </Animated.View>
   );
@@ -320,21 +320,27 @@ export function Table9Max({
                       <Text style={styles.blindBadgeText}>BB</Text>
                     </View>
                   ) : null}
-                  {holeCards && (
+                  {!holeCompact && holeCards ? (
                     <HoleCardsRow
                       cards={holeCards}
                       animate={animateHoleDeal}
                       dealDelayMs={idx * 70}
-                      faceDown={!heroOrRevealed}
-                      compact={holeCompact}
+                      faceDown={false}
+                      compact={false}
                     />
-                  )}
+                  ) : null}
                   {seatEmojis[idx] ? (
                     <View style={styles.emojiBubble}>
                       <Text style={styles.emojiBubbleText}>{seatEmojis[idx]}</Text>
                     </View>
                   ) : null}
-                  <View style={[styles.seatBadge, seat?.isActive && styles.seatBadgeActive, isHero && styles.seatHeroBadge, isWinner && styles.seatWinnerBadge, canSit && styles.seatEmptyTappable]}>
+                  <View
+                    style={[
+                      styles.seatBadge,
+                      !seat && styles.seatBadgeEmpty,
+                      canSit && styles.seatEmptyTappable,
+                    ]}
+                  >
                     {showProfile && seat ? (
                       <SeatProfileCard
                         nickname={seat.nickname}
@@ -344,7 +350,14 @@ export function Table9Max({
                       />
                     ) : null}
                     {seat ? (
-                      <View style={styles.avatarWrap}>
+                      <View
+                        style={[
+                          styles.avatarWrap,
+                          seat.isActive && styles.avatarWrapActive,
+                          isHero && styles.avatarWrapHero,
+                          isWinner && styles.avatarWrapWinner,
+                        ]}
+                      >
                         <Avatar
                           nickname={seat.nickname}
                           avatarUrl={seat.avatarUrl}
@@ -356,6 +369,17 @@ export function Table9Max({
                         <View style={styles.chipBadge}>
                           <Text style={styles.chipBadgeText}>{formatStack(seat.chips)}</Text>
                         </View>
+                        {holeCompact && holeCards ? (
+                          <View style={styles.rivalHoles}>
+                            <HoleCardsRow
+                              cards={holeCards}
+                              animate={animateHoleDeal}
+                              dealDelayMs={idx * 70}
+                              faceDown
+                              compact
+                            />
+                          </View>
+                        ) : null}
                       </View>
                     ) : (
                       <Text style={styles.seatName} numberOfLines={1}>
@@ -448,6 +472,7 @@ const styles = StyleSheet.create({
     marginLeft: -44,
     marginTop: -20,
     alignItems: 'center',
+    overflow: 'visible',
   },
   dealerBtn: {
     position: 'absolute',
@@ -474,7 +499,28 @@ const styles = StyleSheet.create({
   sbBadge: { backgroundColor: '#4A90D9' },
   bbBadge: { backgroundColor: '#C94A4A' },
   blindBadgeText: { fontSize: 8, fontWeight: '800', color: '#fff' },
-  avatarWrap: { marginBottom: 2, position: 'relative' },
+  avatarWrap: {
+    marginBottom: 2,
+    position: 'relative',
+    overflow: 'visible',
+  },
+  avatarWrapActive: {
+    shadowColor: '#50c878',
+    shadowOpacity: 0.9,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  avatarWrapHero: {
+    shadowColor: '#d4af37',
+    shadowOpacity: 0.55,
+    shadowRadius: 8,
+  },
+  avatarWrapWinner: {
+    shadowColor: '#d4af37',
+    shadowOpacity: 0.95,
+    shadowRadius: 12,
+    elevation: 8,
+  },
   chipBadge: {
     position: 'absolute',
     right: -8,
@@ -548,43 +594,38 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: 4,
   },
-  holeCardsCompact: {
-    marginBottom: 2,
-    gap: 1,
+  holeCardsEmbedded: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rivalHoles: {
+    position: 'absolute',
+    left: 42,
+    top: 10,
+    zIndex: 4,
+  },
+  rivalCardOverlap: {
+    marginLeft: -5,
   },
   seatBadge: {
     position: 'relative',
     alignItems: 'center',
+    overflow: 'visible',
+  },
+  seatBadgeEmpty: {
+    minWidth: 52,
     paddingHorizontal: 8,
-    paddingVertical: 6,
+    paddingVertical: 10,
     borderRadius: radius.md,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    backgroundColor: 'rgba(8,16,28,0.35)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    minWidth: 72,
-  },
-  seatBadgeActive: {
-    borderColor: colors.brand.secondary,
-    borderWidth: 2,
-    backgroundColor: 'rgba(201,162,39,0.15)',
-  },
-  seatHeroBadge: {
-    borderColor: colors.semantic.info,
+    borderStyle: 'dashed',
+    borderColor: 'rgba(212,175,55,0.28)',
   },
   seatEmptyTappable: {
     borderColor: 'rgba(201,162,39,0.65)',
     borderStyle: 'dashed',
     backgroundColor: 'rgba(201,162,39,0.12)',
-  },
-  seatWinnerBadge: {
-    borderColor: colors.brand.secondary,
-    borderWidth: 2,
-    backgroundColor: 'rgba(201,162,39,0.35)',
-    shadowColor: colors.brand.secondary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 8,
-    elevation: 8,
   },
   seatName: { ...typography.micro, color: colors.text.primary, maxWidth: 80 },
   seatChips: { ...typography.micro, color: colors.brand.secondary, fontWeight: '700', marginTop: 2 },

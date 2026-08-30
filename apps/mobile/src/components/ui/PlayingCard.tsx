@@ -17,7 +17,7 @@ const RANK_LABEL: Record<string, string> = {
 };
 
 const SIZE = {
-  xs: { w: 16, h: 22, rank: 8, suit: 6, pip: 8, pad: 1 },
+  xs: { w: 11, h: 15, rank: 6, suit: 5, pip: 6, pad: 1 },
   sm: { w: 34, h: 50, rank: 17, suit: 12, pip: 18, pad: 3 },
   md: { w: 48, h: 68, rank: 24, suit: 15, pip: 26, pad: 4 },
   lg: { w: 58, h: 82, rank: 28, suit: 18, pip: 32, pad: 5 },
@@ -39,6 +39,10 @@ interface Props {
 }
 
 function CardBack({ w, h }: { w: number; h: number }) {
+  const tight = w < 16;
+  if (tight) {
+    return <View style={[styles.card, styles.back, styles.backTiny, { width: w, height: h }]} />;
+  }
   const inset = Math.max(3, Math.round(w * 0.1));
   const diamond = Math.max(8, Math.round(w * 0.28));
   const inner = Math.max(4, Math.round(diamond * 0.42));
@@ -114,6 +118,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm + 1,
     overflow: 'hidden',
     marginHorizontal: 2,
+  },
+  backTiny: {
+    marginHorizontal: 0,
+    borderRadius: 2,
+    borderWidth: 1,
   },
   face: {
     backgroundColor: '#F7F4EE',
