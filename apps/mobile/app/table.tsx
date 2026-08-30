@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
+import { showAlert, showConfirm } from '../src/utils/alert';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { io, Socket } from 'socket.io-client';
@@ -767,7 +768,7 @@ export default function TableScreen() {
       { requestId: `stand-${Date.now()}` },
       (ack: { ok?: boolean; deferred?: boolean }) => {
         if (!ack?.ok) {
-          Alert.alert(t('common.error'));
+          showAlert(t('common.error'));
           return;
         }
         if (ack.deferred) setHandNotice(t('table.standing_after_hand'));
@@ -775,37 +776,42 @@ export default function TableScreen() {
     );
   };
 
+  // sitDownWebConfirm: 2026-08-30 — Expo web cannot use Alert.alert buttons
   const sitDown = (seatIndex: number) => {
+    if (!socket) {
+      showAlert(t('common.error'), t('table.connection_lost'));
+      return;
+    }
     const amount = Math.min(state.buyInCap, buyInCapParam ? Number(buyInCapParam) : state.buyInCap);
-    Alert.alert(t('table.sit_confirm_title'), t('table.sit_confirm_body', { amount }), [
-      { text: t('table.cancel_sit'), style: 'cancel' },
-      {
-        text: t('table.sit_down'),
-        onPress: () => {
-          socket?.emit(
-            'sit_down',
-            { seatIndex, buyInAmount: amount, requestId: `sit-${Date.now()}` },
-            (ack: { ok: boolean; error?: string; nextHand?: boolean }) => {
-              if (!ack?.ok) {
-                const errKey =
-                  ack?.error === 'IP_CONFLICT'
-                    ? 'errors.ip_conflict'
-                    : ack?.error === 'INSUFFICIENT_CHIPS'
-                      ? 'errors.insufficient_chips'
-                      : ack?.error === 'ROOM_FULL'
-                        ? 'errors.room_full'
-                        : ack?.error === 'SEAT_TAKEN'
-                          ? 'errors.seat_taken'
-                          : null;
-                Alert.alert(t('common.error'), errKey ? t(errKey) : ack?.error ?? t('common.error'));
-                return;
-              }
-              if (ack.nextHand) setHandNotice(t('table.sitting_next_hand'));
-            },
-          );
+    const emitSit = () => {
+      socket.emit(
+        'sit_down',
+        { seatIndex, buyInAmount: amount, requestId: `sit-${Date.now()}` },
+        (ack: { ok: boolean; error?: string; nextHand?: boolean }) => {
+          if (!ack?.ok) {
+            const errKey =
+              ack?.error === 'IP_CONFLICT'
+                ? 'errors.ip_conflict'
+                : ack?.error === 'INSUFFICIENT_CHIPS'
+                  ? 'errors.insufficient_chips'
+                  : ack?.error === 'ROOM_FULL'
+                    ? 'errors.room_full'
+                    : ack?.error === 'SEAT_TAKEN'
+                      ? 'errors.seat_taken'
+                      : null;
+            showAlert(t('common.error'), errKey ? t(errKey) : ack?.error ?? t('common.error'));
+            return;
+          }
+          if (ack.nextHand) setHandNotice(t('table.sitting_next_hand'));
         },
-      },
-    ]);
+      );
+    };
+    showConfirm(
+      t('table.sit_confirm_title'),
+      t('table.sit_confirm_body', { amount }),
+      emitSit,
+      { confirm: t('table.sit_down'), cancel: t('table.cancel_sit') },
+    );
   };
 
   const reportPlayer = async (userId: string) => {
@@ -850,6 +856,11 @@ export default function TableScreen() {
           <Text style={styles.watchText}>
             {state.emptySeats.length > 0 ? t('table.watching') : t('table.table_full_watching')}
           </Text>
+          {state.emptySeats[0] != null && (
+            <Pressable style={styles.sitCta} onPress={() => sitDown(state.emptySeats[0])}>
+              <Text style={styles.sitCtaText}>{t('table.sit_down')}</Text>
+            </Pressable>
+          )}
         </View>
       )}
       {isSeated && state.pendingSitIn && (
@@ -1002,4 +1013,13 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(201,162,39,0.35)',
   },
   watchText: { color: '#F3E6B8', fontWeight: '600', textAlign: 'center', fontSize: 13 },
+  sitCta: {
+    marginTop: 8,
+    alignSelf: 'center',
+    backgroundColor: '#C9A227',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  sitCtaText: { color: '#1A1A1A', fontWeight: '800', fontSize: 14 },
 });

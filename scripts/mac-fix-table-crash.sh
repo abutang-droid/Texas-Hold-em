@@ -41,10 +41,23 @@ if [ "$ok" -ne 1 ]; then
   exit 1
 fi
 
-if ! grep -q 'applySnapshotMeFix' "$DEST"; then
-  echo "ERROR: downloaded table.tsx is stale (no applySnapshotMeFix)" >&2
+if ! grep -q 'applySnapshotMeFix' "$DEST" || ! grep -q 'sitDownWebConfirm' "$DEST"; then
+  echo "ERROR: downloaded table.tsx is stale (need applySnapshotMeFix + sitDownWebConfirm)" >&2
   exit 1
 fi
+
+ALERT_DEST="${REPO}/apps/mobile/src/utils/alert.ts"
+mkdir -p "$(dirname "$ALERT_DEST")"
+for url in \
+  "https://raw.githubusercontent.com/${SLUG}/${REF}/apps/mobile/src/utils/alert.ts?t=${STAMP}" \
+  "https://ghfast.top/https://raw.githubusercontent.com/${SLUG}/${REF}/apps/mobile/src/utils/alert.ts"
+do
+  if curl -fsSL --globoff --retry 2 --connect-timeout 20 -o "${ALERT_DEST}.tmp" "$url"; then
+    mv "${ALERT_DEST}.tmp" "$ALERT_DEST"
+    break
+  fi
+  rm -f "${ALERT_DEST}.tmp"
+done
 
 echo "OK ${DEST}"
 echo "请在浏览器对 Expo 页面强制刷新（Cmd+Shift+R），或停掉 Expo 再开。"

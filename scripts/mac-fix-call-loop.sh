@@ -39,7 +39,7 @@ download() {
 
 table_has_snapshot_fix() {
   local f="${REPO}/apps/mobile/app/table.tsx"
-  grep -q 'applySnapshotMeFix' "$f" && grep -q 'const viewer' "$f"
+  grep -q 'applySnapshotMeFix' "$f" && grep -q 'sitDownWebConfirm' "$f"
 }
 
 if [ ! -d "${REPO}/apps/mobile" ]; then
@@ -67,6 +67,7 @@ download "apps/mobile/src/components/TurnTimer.tsx"
 download "apps/mobile/src/components/ui/PlayingCard.tsx"
 download "apps/mobile/src/locales/zh-CN.json"
 download "apps/mobile/src/locales/en-US.json"
+download "apps/mobile/src/utils/alert.ts"
 
 echo ""
 echo "Mac mini 客户端已更新。服务端请在家庭服务器 uoto@192.168.31.53 上单独部署，不要在这台 Mac 上跑 staging-update。"
