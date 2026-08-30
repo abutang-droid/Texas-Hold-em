@@ -210,7 +210,7 @@ ZIP_URL="https://ghfast.top/https://github.com/abutang-droid/Texas-Hold-em/archi
 curl -s http://127.0.0.1:3001/health
 ```
 
-成功应看到 `"version":"0.5.0"`。
+成功应看到 `"version":"0.5.1"`。
 
 **B. Mac mini 上（只更新客户端并开 Expo）：**
 
