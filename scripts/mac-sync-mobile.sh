@@ -28,7 +28,7 @@ _load_mac_common() {
     fi
   fi
 
-  echo "==> Loading latest mac-common from mirror"
+  echo "==> Loading latest mac-common from mirror" >&2
   for ref in "${MAC_GIT_REF}" main cursor/mac-expo-start-harden-9b0a; do
     for url in \
       "https://ghfast.top/https://raw.githubusercontent.com/${MAC_REPO}/${ref}/scripts/lib/mac-common.sh" \
@@ -36,7 +36,7 @@ _load_mac_common() {
       "https://cdn.jsdelivr.net/gh/${MAC_REPO}@${ref}/scripts/lib/mac-common.sh" \
       "https://raw.gitmirror.com/${MAC_REPO}/${ref}/scripts/lib/mac-common.sh"
     do
-      echo "    try ${url}"
+      echo "    try ${url}" >&2
       if curl -fsSL --connect-timeout 8 --max-time 30 --retry 2 --retry-delay 2 "${url}" -o "${dest}"; then
         if grep -q 'start_expo_dev_server' "${dest}" 2>/dev/null; then
           if grep -q "MAC_COMMON_REV='2026-08-30-r3'" "${dest}" 2>/dev/null; then
@@ -52,12 +52,12 @@ _load_mac_common() {
   done
 
   if [ -n "${fallback}" ]; then
-    echo "==> 未拉到 r3 mac-common，使用较旧可用版本"
+    echo "==> 未拉到 r3 mac-common，使用较旧可用版本" >&2
     printf '%s\n' "${fallback}"
     return 0
   fi
   if [ -f "${PWD}/scripts/lib/mac-common.sh" ]; then
-    echo "==> 镜像下载失败，改用本地 scripts/lib/mac-common.sh"
+    echo "==> 镜像下载失败，改用本地 scripts/lib/mac-common.sh" >&2
     printf '%s\n' "${PWD}/scripts/lib/mac-common.sh"
     return 0
   fi
