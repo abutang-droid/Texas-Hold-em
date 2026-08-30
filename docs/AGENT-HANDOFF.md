@@ -1,7 +1,7 @@
 # Agent 交接文档（Texas Hold'em）
 
 > **用途**：开新 Cursor 对话时，把本文档路径或全文贴给 Agent，可快速恢复上下文。  
-> **最后更新**：2026-08-30  
+> **最后更新**：2026-08-30（r3：多镜像 + 完整同步清单 + Expo --web 等待端口）  
 > **仓库**：`https://github.com/abutang-droid/Texas-Hold-em`  
 > **主分支**：`main`（开发以 `main` 为准，不再要求 checkout 旧 feature 分支）
 
@@ -22,7 +22,7 @@
 **硬约束**：
 - Phase 1 轻量 App，**不要**推进生产 OAuth/IAP（B1 决策未做）
 - Mac 端更新代码靠 **mirror curl**，不靠 `git pull`
-- 所有 Cloud Agent 新建分支名：`cursor/<描述>-2fc9`
+- 所有 Cloud Agent 新建分支名：遵循**当前 run 的后缀**（本机说明里的 `-2fc9` 是旧 run；不要混用）
 
 ---
 
@@ -44,46 +44,46 @@ Monorepo（pnpm workspace）：
 
 ## 3. 用户当前卡点（优先处理）
 
-**现象**：用户在 Mac 执行 curl 脚本后 **Expo 没有启动**。
+**现象**：Mac 上 curl 脚本后 **Expo 没有启动**。上一轮最后一次失败是：
 
-**时间线**：
-1. 给了 `mac-start-mobile.sh` 的 main 镜像 URL → **404**（当时 PR #30 未合并）
-2. 已 fast-forward 合并到 `main`（commit `cec89b0`），镜像约 30s 后可用
-3. 用户尚未确认重试是否成功
+```text
+curl: (56) The requested URL returned error: 404
+bash: /tmp/mac-start.sh: No such file or directory
+```
 
-**请让用户执行（首选）**：
+（当时 `mac-start-mobile.sh` 刚合入 `main`，ghfast 缓存 404。）用户尚未确认 Expo 已起来。
+
+**请让用户执行（多镜像，避免单点 404）**：
 
 ```bash
 cd ~/Texas-Hold-em
 
-curl -fsSL "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main/scripts/mac-start-mobile.sh" -o /tmp/mac-start.sh
+ok=0
+for u in \
+  "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main/scripts/mac-start-mobile.sh" \
+  "https://gh-proxy.com/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main/scripts/mac-start-mobile.sh" \
+  "https://cdn.jsdelivr.net/gh/abutang-droid/Texas-Hold-em@main/scripts/mac-start-mobile.sh"
+do
+  echo "下载: $u"
+  if curl -fsSL --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 "$u" -o /tmp/mac-start.sh; then
+    ok=1
+    break
+  fi
+done
 
-bash /tmp/mac-start.sh
+if [ "$ok" = 1 ]; then bash /tmp/mac-start.sh; else bash scripts/mac-mobile-dev.sh; fi
 ```
 
-**若 main 镜像仍 404**（缓存）：
+**若 PR 尚未合入 main**，把 URL 里的 `main` 换成当前修复分支名。
 
-```bash
-curl -fsSL "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/cursor/mac-expo-start-fix-2fc9/scripts/mac-start-mobile.sh" -o /tmp/mac-start.sh
-bash /tmp/mac-start.sh
-```
+**成功标志**：终端出现 `Expo 已启动` 或 `Starting Expo (Metro)`；浏览器打开 `http://localhost:8081/auth/login`。
 
-**成功标志**：终端出现 `Starting Expo (Metro)`、`Waiting on http://localhost:8081`；浏览器打开 `http://localhost:8081/auth/login`。
-
-**分步备选**（sync **不会**启动 Expo）：
-
-```bash
-curl -fsSL ".../main/scripts/mac-sync-mobile.sh" -o /tmp/mac-sync.sh && bash /tmp/mac-sync.sh
-curl -fsSL ".../main/scripts/mac-mobile-dev.sh" -o /tmp/mac-dev.sh && bash /tmp/mac-dev.sh
-```
-
-**排障命令**（让用户贴完整输出）：
+**排障**（让用户贴完整输出）：
 
 ```bash
 cd ~/Texas-Hold-em
-node -v && pnpm -v
+bash scripts/mac-diagnose.sh
 lsof -i :8081
-bash /tmp/mac-start.sh
 ```
 
 ---
@@ -97,18 +97,21 @@ bash /tmp/mac-start.sh
 | `mac-mobile-dev.sh` | 仅启动 Expo（假设代码已同步） |
 | `mac-staging-mobile.sh` | 含 staging 健康检查 + 全量 `pnpm build` + 启动 |
 | `mac-staging-check.sh` | Ping + API/Room health |
-| `mac-dev-check.sh` | 检查 node/pnpm/git |
+| `mac-diagnose.sh` | 打印 node/pnpm/8081/.env/关键文件，方便把输出贴给 Agent |
 
-**关键实现（PR #30，`main` 已有）**：
-- `/tmp` 下 curl 的脚本 → **始终从 mirror 拉最新** `mac-common.sh`（避免本地旧版）
-- `ensure_workspace_deps` — 缺 `node_modules` 时自动 `pnpm install`
-- `free_expo_port` — 8081 被占时杀掉旧 Metro（避免 Expo 非交互模式静默跳过）
-- `start_expo_dev_server` — 打印 Web / login URL
+**关键实现**：
+- `/tmp` 下 curl 的脚本 → 多镜像拉取最新 `mac-common.sh`（ghfast → gh-proxy → jsDelivr → gitmirror）；失败则用本地副本
+- `ensure_workspace_deps` — 每次 `pnpm install`（已装则很快）；失败则 npmmirror
+- `free_expo_port` — 8081 被占时杀掉旧 Metro
+- `start_expo_dev_server` — 使用仓库内 expo 二进制 + `--web`；等待端口就绪后打开登录页
+- `mac_mobile_sync_files` — 含牌桌/登录全部依赖（漏文件会导致 Metro 500）
 
-**Mirror 基址**：
+**Mirror 基址（自动回退）**：
 
 ```text
 https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main/
+https://gh-proxy.com/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main/
+https://cdn.jsdelivr.net/gh/abutang-droid/Texas-Hold-em@main/
 ```
 
 **常见用户错误**：
@@ -176,10 +179,9 @@ Layout 版本标记：`LAYOUT_REV = '2026-08-30-nav2'`（console 可确认是否
 ## 8. 已知问题 / 技术债
 
 1. **CI 失败**（与脚本改动无关）：`pnpm/action-setup@v4` 与 `package.json` 的 `packageManager: pnpm@10.9.0` 冲突 → workflow 需去重 version 配置
-2. **ghfast 镜像延迟**：新文件 push 到 main 后可能 404 数秒～数分钟；可用分支 URL 或等缓存
-3. **`docs/MAC-MINI-操作指南.md`** 仍写 checkout `cursor/phase4-open-beta-2fc9` — **过时**，应改为 `main` + mirror 流程
-4. **async-storage 版本警告**：Expo 52 期望 `1.23.1`，当前 `3.1.1` — 仅 warning，暂未阻塞
-5. **用户 Node 24** vs 文档 Node 20 — 目前能跑，出问题再 pin
+2. **ghfast 镜像延迟**：新文件 push 到 main 后可能 404 数秒～数分钟；脚本会换 gh-proxy / jsDelivr；仍失败则用本地 `mac-mobile-dev.sh`
+3. **async-storage 版本警告**：Expo 52 期望 `1.23.1`，当前 `3.1.1` — 仅 warning，暂未阻塞
+4. **用户 Node 24** vs 文档 Node 20 — 目前能跑，出问题再 pin
 
 ---
 
@@ -189,7 +191,7 @@ Layout 版本标记：`LAYOUT_REV = '2026-08-30-nav2'`（console 可确认是否
 2. Mac 用户：**优先 mirror curl**，不要假设能 `git pull`
 3. 改 mobile 后：manifest 在 `mac_mobile_sync_files()` 里补路径
 4. 测试 mobile：根目录 `pnpm --filter @texas-holdem/shared build`；`apps/mobile` 下 `npx expo start`
-5. 分支：`cursor/<name>-2fc9`；PR base `main`；push `git push -u origin <branch>`
+5. 分支：`cursor/<name>-<当前run后缀>`；PR base `main`；push `git push -u origin <branch>`
 6. **不要**擅自推进 OAuth/IAP/生产支付
 
 ---
@@ -200,8 +202,19 @@ Layout 版本标记：`LAYOUT_REV = '2026-08-30-nav2'`（console 可确认是否
 
 ```bash
 cd ~/Texas-Hold-em
-curl -fsSL "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main/scripts/mac-start-mobile.sh" -o /tmp/mac-start.sh
-bash /tmp/mac-start.sh
+ok=0
+for u in \
+  "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main/scripts/mac-start-mobile.sh" \
+  "https://gh-proxy.com/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main/scripts/mac-start-mobile.sh" \
+  "https://cdn.jsdelivr.net/gh/abutang-droid/Texas-Hold-em@main/scripts/mac-start-mobile.sh"
+do
+  echo "下载: $u"
+  if curl -fsSL --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 "$u" -o /tmp/mac-start.sh; then
+    ok=1
+    break
+  fi
+done
+if [ "$ok" = 1 ]; then bash /tmp/mac-start.sh; else bash scripts/mac-mobile-dev.sh; fi
 ```
 
 ### Mac 检查 Staging
@@ -238,11 +251,10 @@ cd /workspace && pnpm --filter @texas-holdem/shared build
 
 ## 12. 下一步建议（按优先级）
 
-1. **确认用户 Mac 上 `bash /tmp/mac-start.sh` 是否成功启动 Expo** — 未成功则根据终端日志排障
+1. **确认用户 Mac 上多镜像 `mac-start-mobile.sh` 是否成功启动 Expo** — 未成功则根据 `mac-diagnose.sh` + 终端日志排障
 2. **确认 Staging Room health = 0.4.5** 且 6-max 已生效
-3. 更新 `MAC-MINI-操作指南.md` 的分支说明 → `main` + `mac-start-mobile.sh`
-4. 修复 CI pnpm version 冲突（可选，不阻塞用户玩）
-5. 继续 Phase 1 游戏流程 / UI polish（见各 `cursor/*` 分支）
+3. 修复 CI pnpm version 冲突（可选，不阻塞用户玩）
+4. 继续 Phase 1 游戏流程 / UI polish（见各 `cursor/*` 分支）
 
 ---
 

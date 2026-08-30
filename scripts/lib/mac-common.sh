@@ -6,6 +6,8 @@
 #   # shellcheck source=lib/mac-common.sh
 #   source "$(mac_find_lib "$MAC_SCRIPT_SELF")"
 
+MAC_COMMON_REV='2026-08-30-r3'
+GITHUB_REPO='abutang-droid/Texas-Hold-em'
 MIRROR_BASE_DEFAULT='https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main'
 
 # --- repo root (never resolves to / when script lives in /tmp) ---
@@ -34,9 +36,9 @@ resolve_repo_root() {
     return 0
   fi
 
-  echo "ERROR: cannot find Texas-Hold-em repo (need apps/mobile/app/index.tsx)." >&2
-  echo "  cd ~/Texas-Hold-em" >&2
-  echo "  bash ${script_path}" >&2
+  echo "ERROR: 找不到 Texas-Hold-em 仓库（需要 apps/mobile/app/index.tsx）。" >&2
+  echo "  请先: cd ~/Texas-Hold-em" >&2
+  echo "  再运行: bash ${script_path}" >&2
   return 1
 }
 
@@ -44,10 +46,20 @@ require_repo_root() {
   local root
   root="$(resolve_repo_root "$1")" || exit 1
   if [ "${root}" = "/" ]; then
-    echo "ERROR: repo root must not be / — cd ~/Texas-Hold-em first." >&2
+    echo "ERROR: repo root 不能是 / — 请先 cd ~/Texas-Hold-em" >&2
     exit 1
   fi
   printf '%s\n' "${root}"
+}
+
+warn_if_not_mac() {
+  local os
+  os="$(uname -s 2>/dev/null || echo unknown)"
+  if [ "${os}" != "Darwin" ]; then
+    echo "WARNING: 当前系统是 ${os}，不是 macOS。" >&2
+    echo "  游戏客户端必须在 Mac mini 终端运行，不要在服务器 uoto@tex 上跑本脚本。" >&2
+    echo "  若你在 SSH 里，先输入 exit 回到 Mac。" >&2
+  fi
 }
 
 # --- .env (never fails if example file missing) ---
@@ -79,14 +91,14 @@ EOF
 # --- dependencies ---
 require_node() {
   if ! command -v node >/dev/null 2>&1; then
-    echo "ERROR: node not found. Install: brew install node@20" >&2
+    echo "ERROR: 未找到 node。请在 Mac 执行: brew install node@20" >&2
     exit 1
   fi
 }
 
 require_pnpm() {
   if ! command -v pnpm >/dev/null 2>&1; then
-    echo "ERROR: pnpm not found. Install: npm install -g pnpm@10" >&2
+    echo "ERROR: 未找到 pnpm。请在 Mac 执行: npm install -g pnpm@10" >&2
     exit 1
   fi
 }
@@ -97,15 +109,17 @@ ensure_workspace_deps() {
   require_pnpm
   cd "${root}"
 
-  if [ ! -d node_modules ]; then
-    echo "==> Installing dependencies (node_modules missing — first run?)"
-    pnpm install
-    return 0
+  echo "==> pnpm install（已安装时很快）"
+  if ! pnpm install; then
+    echo "==> npm 源失败，改用 npmmirror 重试"
+    pnpm install --registry https://registry.npmmirror.com
   fi
 
-  if [ ! -x node_modules/.bin/expo ] && [ ! -f apps/mobile/node_modules/.bin/expo ] 2>/dev/null; then
-    echo "==> Installing dependencies (expo CLI missing)"
-    pnpm install
+  if [ ! -x "${root}/node_modules/.bin/expo" ] && [ ! -x "${root}/apps/mobile/node_modules/.bin/expo" ]; then
+    echo "ERROR: pnpm install 之后仍找不到 expo CLI" >&2
+    echo "  node=$(command -v node) $(node -v 2>/dev/null || true)" >&2
+    echo "  pnpm=$(command -v pnpm) $(pnpm -v 2>/dev/null || true)" >&2
+    exit 1
   fi
 }
 
@@ -115,45 +129,121 @@ build_shared_package() {
   pnpm --filter @texas-holdem/shared build
 }
 
+resolve_expo_bin() {
+  local root="$1"
+  if [ -x "${root}/apps/mobile/node_modules/.bin/expo" ]; then
+    printf '%s\n' "${root}/apps/mobile/node_modules/.bin/expo"
+    return 0
+  fi
+  if [ -x "${root}/node_modules/.bin/expo" ]; then
+    printf '%s\n' "${root}/node_modules/.bin/expo"
+    return 0
+  fi
+  echo "ERROR: expo 可执行文件不存在，请先 pnpm install" >&2
+  return 1
+}
+
 free_expo_port() {
   local port="${1:-8081}"
   if ! command -v lsof >/dev/null 2>&1; then
     return 0
   fi
   if lsof -nP -iTCP:"${port}" -sTCP:LISTEN >/dev/null 2>&1; then
-    echo "==> Port ${port} is in use — stopping old Metro/Expo"
+    echo "==> 端口 ${port} 已被占用 — 结束旧的 Metro/Expo"
     lsof -tiTCP:"${port}" -sTCP:LISTEN | xargs kill -9 2>/dev/null || true
     sleep 1
   fi
 }
 
+open_expo_login() {
+  local url="$1"
+  if command -v open >/dev/null 2>&1; then
+    open "${url}" >/dev/null 2>&1 || true
+  fi
+}
+
+wait_for_metro() {
+  local port="$1"
+  local pid="$2"
+  local max_s="${3:-180}"
+  local i http_code
+
+  echo "==> 等待 Metro 就绪 http://localhost:${port} （最多 ${max_s}s）"
+  for i in $(seq 1 "${max_s}"); do
+    if ! kill -0 "${pid}" 2>/dev/null; then
+      echo "ERROR: Expo 进程在 Metro 就绪前退出了。请把上面的完整终端输出发回来。" >&2
+      return 1
+    fi
+    http_code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 2 "http://127.0.0.1:${port}/" 2>/dev/null || true)"
+    case "${http_code}" in
+      2*|3*|404)
+        return 0
+        ;;
+    esac
+    sleep 1
+  done
+  echo "ERROR: ${max_s}s 内 Metro 没有在 :${port} 监听。请把上面的完整终端输出发回来。" >&2
+  return 1
+}
+
 start_expo_dev_server() {
   local root="$1"
   local port="${EXPO_PORT:-8081}"
+  local expo_bin pid login_url rc
 
   if [ ! -d "${root}/apps/mobile" ]; then
-    echo "ERROR: apps/mobile not found under ${root}" >&2
+    echo "ERROR: ${root} 下没有 apps/mobile" >&2
     return 1
   fi
 
+  warn_if_not_mac
   free_expo_port "${port}"
+  expo_bin="$(resolve_expo_bin "${root}")" || return 1
+  login_url="http://localhost:${port}/auth/login"
 
   echo ""
   echo "============================================"
-  echo " Starting Expo (Metro)"
+  echo " Starting Expo (Metro)  [${MAC_COMMON_REV}]"
   echo "============================================"
   echo "  Root: ${root}"
+  echo "  Expo: ${expo_bin}"
   echo "  Web:  http://localhost:${port}"
-  echo "  Login path: http://localhost:${port}/auth/login"
+  echo "  Login: ${login_url}"
   echo ""
-  echo "  In this terminal: press w to open web browser"
-  echo "  Stop server: Ctrl+C"
+  echo "  就绪后会尝试自动打开浏览器。"
+  echo "  停止服务: Ctrl+C"
   echo "============================================"
   echo ""
 
   cd "${root}/apps/mobile"
-  # --port avoids interactive prompt when 8081 was taken; free_expo_port handles stale Metro.
-  exec npx expo start --clear --port "${port}"
+  unset CI
+  export EXPO_NO_TELEMETRY=1
+  export BROWSER="${BROWSER:-none}"
+
+  # Foreground logs, but keep a PID so we can detect crash-before-ready.
+  "${expo_bin}" start --web --clear --port "${port}" &
+  pid=$!
+  trap 'kill '"${pid}"' 2>/dev/null || true; wait '"${pid}"' 2>/dev/null || true; exit 130' INT TERM
+
+  if ! wait_for_metro "${port}" "${pid}" 180; then
+    trap - INT TERM
+    kill "${pid}" 2>/dev/null || true
+    wait "${pid}" 2>/dev/null || true
+    return 1
+  fi
+
+  echo ""
+  echo "============================================"
+  echo " Expo 已启动"
+  echo " 请打开: ${login_url}"
+  echo "============================================"
+  echo ""
+  open_expo_login "${login_url}"
+
+  wait "${pid}"
+  rc=$?
+  trap - INT TERM
+  return "${rc}"
 }
 
 clear_expo_cache() {
@@ -163,39 +253,96 @@ clear_expo_cache() {
 }
 
 # --- mirror sync ---
+mac_git_ref() {
+  printf '%s\n' "${MAC_GIT_REF:-main}"
+}
+
 mac_mirror_base() {
   printf '%s\n' "${MIRROR_BASE:-${MIRROR_BASE_DEFAULT}}"
+}
+
+# Candidate raw-file URLs for a repo-relative path. ghfast first (CN), then other CDNs.
+mac_raw_urls() {
+  local rel="$1"
+  local ref
+  ref="$(mac_git_ref)"
+  printf '%s\n' \
+    "https://ghfast.top/https://raw.githubusercontent.com/${GITHUB_REPO}/${ref}/${rel}" \
+    "https://gh-proxy.com/https://raw.githubusercontent.com/${GITHUB_REPO}/${ref}/${rel}" \
+    "https://cdn.jsdelivr.net/gh/${GITHUB_REPO}@${ref}/${rel}" \
+    "https://raw.gitmirror.com/${GITHUB_REPO}/${ref}/${rel}" \
+    "https://raw.githubusercontent.com/${GITHUB_REPO}/${ref}/${rel}"
+}
+
+# Return 0 if dest looks like a real source file, not an HTML/404 body.
+mac_file_looks_ok() {
+  local dest="$1"
+  local first
+  if [ ! -s "${dest}" ]; then
+    return 1
+  fi
+  first="$(head -c 80 "${dest}" 2>/dev/null || true)"
+  case "${first}" in
+    *'<html'*|*'<HTML'*|*'404: Not Found'*|*'404 Not Found'*)
+      return 1
+      ;;
+  esac
+  return 0
+}
+
+download_url_list_to() {
+  local dest="$1"
+  local url tmp
+  tmp="${dest}.tmp.$$"
+  mkdir -p "$(dirname "${dest}")"
+  while IFS= read -r url; do
+    [ -z "${url}" ] && continue
+    if curl -fsSL --connect-timeout 8 --max-time 30 --retry 2 --retry-delay 2 "${url}" -o "${tmp}"; then
+      if mac_file_looks_ok "${tmp}"; then
+        mv "${tmp}" "${dest}"
+        return 0
+      fi
+    fi
+    rm -f "${tmp}"
+  done
+  rm -f "${tmp}"
+  return 1
 }
 
 download_repo_file() {
   local root="$1"
   local rel="$2"
-  local base
-  base="$(mac_mirror_base)"
   local dest="${root}/${rel}"
-  mkdir -p "$(dirname "${dest}")"
-  if ! curl -fsSL --retry 2 "${base}/${rel}" -o "${dest}.tmp"; then
-    echo "ERROR: download failed: ${rel}" >&2
-    rm -f "${dest}.tmp"
-    return 1
+  if download_url_list_to "${dest}" < <(mac_raw_urls "${rel}"); then
+    echo "  -> ${rel}"
+    return 0
   fi
-  mv "${dest}.tmp" "${dest}"
-  echo "  -> ${rel}"
+  echo "  !! download failed: ${rel}" >&2
+  return 1
 }
 
 # Files required for mobile dev after a partial git pull / mirror sync.
+# Keep this list complete: missing imports cause Metro 500.
 mac_mobile_sync_files() {
   cat <<'EOF'
+package.json
+pnpm-workspace.yaml
 apps/mobile/metro.config.js
 apps/mobile/package.json
 apps/mobile/app.json
 apps/mobile/babel.config.js
+apps/mobile/tsconfig.json
 apps/mobile/.env.staging.example
 apps/mobile/app/_layout.tsx
 apps/mobile/app/index.tsx
 apps/mobile/app/onboarding.tsx
 apps/mobile/app/private.tsx
 apps/mobile/app/table.tsx
+apps/mobile/app/settings.tsx
+apps/mobile/app/profile.tsx
+apps/mobile/app/leaderboard.tsx
+apps/mobile/app/shop.tsx
+apps/mobile/app/room/[code].tsx
 apps/mobile/app/auth/_layout.tsx
 apps/mobile/app/auth/login.tsx
 apps/mobile/app/auth/register.tsx
@@ -206,13 +353,24 @@ apps/mobile/src/auth/routes.ts
 apps/mobile/src/i18n/index.ts
 apps/mobile/src/theme/index.ts
 apps/mobile/src/utils/alert.ts
+apps/mobile/src/types/table.ts
 apps/mobile/src/components/Table9Max.tsx
 apps/mobile/src/components/ChipFlyLayer.tsx
+apps/mobile/src/components/PrivateTablePanels.tsx
+apps/mobile/src/components/ShowdownOverlay.tsx
+apps/mobile/src/components/PotDisplay.tsx
+apps/mobile/src/components/ActionPanel.tsx
+apps/mobile/src/components/HandStatusBar.tsx
+apps/mobile/src/components/CommunityCardsRow.tsx
+apps/mobile/src/components/TurnTimer.tsx
+apps/mobile/src/components/Avatar.tsx
+apps/mobile/src/components/EmojiBar.tsx
 apps/mobile/src/components/ui/GameModal.tsx
 apps/mobile/src/components/ui/Button.tsx
 apps/mobile/src/components/ui/Screen.tsx
-apps/mobile/src/components/Avatar.tsx
-apps/mobile/src/components/EmojiBar.tsx
+apps/mobile/src/components/ui/PlayingCard.tsx
+apps/mobile/src/components/ui/Card.tsx
+apps/mobile/src/components/auth/AuthField.tsx
 apps/mobile/src/locales/en-US.json
 apps/mobile/src/locales/zh-CN.json
 packages/shared/package.json
@@ -223,38 +381,75 @@ packages/shared/src/avatars.ts
 packages/shared/src/table-emojis.ts
 packages/shared/src/design-tokens/colors.json
 scripts/lib/mac-common.sh
+scripts/mac-start-mobile.sh
+scripts/mac-mobile-dev.sh
+scripts/mac-sync-mobile.sh
+scripts/mac-diagnose.sh
 EOF
 }
 
 sync_mobile_from_mirror() {
   local root="$1"
-  local rel
-  echo "==> Sync mobile + shared from mirror"
+  local rel failed=0
+  echo "==> Sync mobile + shared from mirror  [${MAC_COMMON_REV}]"
   echo "    Root: ${root}"
-  echo "    Base: $(mac_mirror_base)"
+  echo "    Ref:  $(mac_git_ref)"
   while IFS= read -r rel; do
     [ -z "${rel}" ] && continue
-    download_repo_file "${root}" "${rel}" || return 1
+    if ! download_repo_file "${root}" "${rel}"; then
+      case "${rel}" in
+        scripts/*)
+          echo "    skip optional ${rel} (not on this ref yet)"
+          ;;
+        *)
+          failed=1
+          ;;
+      esac
+    fi
   done < <(mac_mobile_sync_files)
+  if [ "${failed}" -ne 0 ]; then
+    echo "ERROR: 部分客户端文件同步失败。可稍后重试；镜像对新文件可能有几十秒缓存延迟。" >&2
+    return 1
+  fi
 }
 
 verify_mobile_index() {
   local root="$1"
   if grep -q "router.replace('/auth/login')" "${root}/apps/mobile/app/index.tsx" 2>/dev/null; then
-    echo "ERROR: apps/mobile/app/index.tsx is still an old version." >&2
+    echo "ERROR: apps/mobile/app/index.tsx 仍是旧版本（大厅里直接 replace 登录）。" >&2
     return 1
   fi
   if [ ! -f "${root}/packages/shared/dist/index.js" ]; then
-    echo "ERROR: packages/shared/dist missing — build failed?" >&2
+    echo "ERROR: packages/shared/dist 不存在 — shared 没有 build 成功？" >&2
+    return 1
+  fi
+  local missing=0 rel
+  for rel in \
+    apps/mobile/src/components/ActionPanel.tsx \
+    apps/mobile/src/components/auth/AuthField.tsx \
+    apps/mobile/src/components/ui/Card.tsx \
+    apps/mobile/src/components/ui/PlayingCard.tsx
+  do
+    if [ ! -f "${root}/${rel}" ]; then
+      echo "ERROR: 缺少 ${rel}（旧同步清单漏文件会导致 Metro 500）" >&2
+      missing=1
+    fi
+  done
+  if [ "${missing}" -ne 0 ]; then
     return 1
   fi
   echo "==> Mobile sources OK"
 }
 
+print_mac_start_banner() {
+  echo "==> mac-common ${MAC_COMMON_REV}"
+  echo "==> node $(node -v 2>/dev/null || echo missing)  pnpm $(pnpm -v 2>/dev/null || echo missing)"
+}
+
 # Locate this library when the entry script may live in /tmp or scripts/.
 mac_find_lib() {
   local script_path="${1:-$0}"
-  local script_dir root base tmp
+  local script_dir root tmp
 
   script_dir="$(cd "$(dirname "$script_path")" && pwd)"
   if [ -f "${script_dir}/lib/mac-common.sh" ]; then
@@ -273,9 +468,8 @@ mac_find_lib() {
     return 0
   fi
 
-  base="$(mac_mirror_base)"
   tmp="/tmp/mac-common-$$.sh"
-  if curl -fsSL --retry 2 "${base}/scripts/lib/mac-common.sh" -o "${tmp}"; then
+  if download_url_list_to "${tmp}" < <(mac_raw_urls "scripts/lib/mac-common.sh"); then
     printf '%s\n' "${tmp}"
     return 0
   fi
