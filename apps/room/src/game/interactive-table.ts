@@ -12,18 +12,31 @@ import {
   markBlindPosted,
   recordPlayerAction,
   resetBettingRound,
-  actionWasRaise,
-  type BettingRoundState,
   createDeck,
   dealCards,
+  burnAndDeal,
   shuffleDeck,
   calculateSidePots,
   calculateRake,
   distributePotToWinners,
+  assignBlindSeats,
+  firstToActSeat,
+  dealOrderFromButton,
+  seatsClockwiseFromLeftOfButton,
+  shouldRunoutBoard,
   type PlayerState,
   type ActionType,
+  type BettingRoundState,
 } from '@texas-holdem/poker-engine';
-import { MAX_TABLE_SEATS } from '@texas-holdem/shared';
+import {
+  ACTION_TIME_MS,
+  HAND_PAUSE_MS,
+  MAX_TABLE_SEATS,
+  OFFICIAL_BIG_BLIND,
+  OFFICIAL_MAX_BUY_IN,
+  OFFICIAL_SMALL_BLIND,
+  TIME_BANK_MS,
+} from '@texas-holdem/shared';
 
 export type HandPhase = 'WAITING' | 'PRE_FLOP' | 'FLOP' | 'TURN' | 'RIVER' | 'SHOWDOWN' | 'END_HAND';
 
@@ -48,6 +61,8 @@ export interface PublicTableState {
   hostUserId?: string;
   paused?: boolean;
   buttonSeat: number;
+  smallBlindSeat: number;
+  bigBlindSeat: number;
   communityCards: string[];
   potTotal: number;
   pots: Array<{ amount: number; eligibleSeats: number[] }>;
@@ -154,9 +169,9 @@ export interface TableConfig {
 const OFFICIAL_DEFAULT: TableConfig = {
   roomType: 'OFFICIAL',
   maxSeats: MAX_TABLE_SEATS,
-  smallBlind: 1,
-  bigBlind: 2,
-  buyInCap: 100,
+  smallBlind: OFFICIAL_SMALL_BLIND,
+  bigBlind: OFFICIAL_BIG_BLIND,
+  buyInCap: OFFICIAL_MAX_BUY_IN,
   rakeRate: 0.05,
 };
 
@@ -169,9 +184,12 @@ export class InteractiveTable {
   private phase: HandPhase = 'WAITING';
   private handId: string | null = null;
   private buttonSeat = 0;
+  private sbSeat = 0;
+  private bbSeat = 0;
   private currentSeat = 0;
   private currentBet = 0;
   private minRaise = 2;
+  private turnStartedAt = 0;
   private reachedFlop = false;
   private actionDeadline: number | null = null;
   private botFillTimer: ReturnType<typeof setTimeout> | null = null;
@@ -280,6 +298,7 @@ export class InteractiveTable {
       bigBlind: this.config.bigBlind,
       currentBet: this.currentBet,
       minRaise: this.minRaise,
+      raiseClosed: this.bettingRound.raiseClosedSeats.has(this.currentSeat),
     });
   }
 
@@ -338,6 +357,7 @@ export class InteractiveTable {
       status: 'ACTIVE',
       holeCards: [],
       isBot,
+      timeBankMs: isBot ? 0 : TIME_BANK_MS,
     });
     if (!isBot) {
       this.realPlayerCount += 1;
@@ -417,23 +437,37 @@ export class InteractiveTable {
     for (const p of this.players) {
       this.chipsAtHandStart.set(p.userId, p.chips);
     }
-    for (const p of active) {
-      const { dealt, remaining } = dealCards(this.deck, 2);
-      p.holeCards = dealt;
-      this.deck = remaining;
+    const dealOrder = dealOrderFromButton(
+      this.buttonSeat,
+      active.map((p) => p.seatIndex),
+    );
+    for (let round = 0; round < 2; round += 1) {
+      for (const seat of dealOrder) {
+        const p = this.players.find((pl) => pl.seatIndex === seat);
+        if (!p) continue;
+        const { dealt, remaining } = dealCards(this.deck, 1);
+        p.holeCards.push(...dealt);
+        this.deck = remaining;
+      }
     }
 
-    const seats = active.map((p) => p.seatIndex).sort((a, b) => a - b);
-    const btnIdx = seats.indexOf(this.buttonSeat) >= 0 ? seats.indexOf(this.buttonSeat) : 0;
-    const sbSeat = seats[(btnIdx + 1) % seats.length];
-    const bbSeat = seats[(btnIdx + 2) % seats.length];
-    this.bettingRound = createBettingRoundState({ bbSeat });
+    const { sbSeat, bbSeat } = assignBlindSeats(
+      this.buttonSeat,
+      active.map((p) => p.seatIndex),
+    );
+    this.sbSeat = sbSeat;
+    this.bbSeat = bbSeat;
+    this.bettingRound = createBettingRoundState({
+      bbSeat,
+      minRaise: this.config.bigBlind,
+    });
     this.actionLog = [];
     this.postBlind(sbSeat, this.config.smallBlind);
     this.postBlind(bbSeat, this.config.bigBlind);
     this.currentBet = this.config.bigBlind;
     this.minRaise = this.config.bigBlind;
-    this.currentSeat = nextActiveSeat(this.players, bbSeat) ?? bbSeat;
+    this.currentSeat =
+      firstToActSeat('PRE_FLOP', this.buttonSeat, bbSeat, this.players) ?? bbSeat;
     this.setDeadline();
 
     const holeDeals = active.map((p) => ({
@@ -446,8 +480,8 @@ export class InteractiveTable {
       type: 'game_started',
       handId: this.handId!,
       buttonSeat: this.buttonSeat,
-      sbSeat,
-      bbSeat,
+      sbSeat: this.sbSeat,
+      bbSeat: this.bbSeat,
       blinds: { sb: this.config.smallBlind, bb: this.config.bigBlind },
     });
     this.pushEvent({
@@ -460,8 +494,8 @@ export class InteractiveTable {
     this.onGameStarted?.({
       handId: this.handId!,
       buttonSeat: this.buttonSeat,
-      sbSeat,
-      bbSeat,
+      sbSeat: this.sbSeat,
+      bbSeat: this.bbSeat,
     });
   }
 
@@ -477,7 +511,18 @@ export class InteractiveTable {
   }
 
   private setDeadline(): void {
-    this.actionDeadline = Date.now() + 15000;
+    this.turnStartedAt = Date.now();
+    const actor = this.players.find((pl) => pl.seatIndex === this.currentSeat);
+    const bank = actor && !actor.isBot ? (actor.timeBankMs ?? TIME_BANK_MS) : 0;
+    this.actionDeadline = this.turnStartedAt + ACTION_TIME_MS + bank;
+  }
+
+  private consumeTimeBank(player: PlayerState): void {
+    if (player.isBot || !this.turnStartedAt) return;
+    const overtime = Date.now() - this.turnStartedAt - ACTION_TIME_MS;
+    if (overtime > 0) {
+      player.timeBankMs = Math.max(0, (player.timeBankMs ?? 0) - overtime);
+    }
   }
 
   getPotTotal(): number {
@@ -489,6 +534,7 @@ export class InteractiveTable {
     if (!p || p.status !== 'ACTIVE' || seatIndex !== this.currentSeat) {
       throw new Error('INVALID_ACTION');
     }
+    this.consumeTimeBank(p);
     const betBefore = p.betThisRound;
     const result = applyAction({
       player: p,
@@ -496,15 +542,19 @@ export class InteractiveTable {
       amount,
       currentBet: this.currentBet,
       minRaise: this.minRaise,
+      raiseClosed: this.bettingRound.raiseClosedSeats.has(seatIndex),
     });
     Object.assign(p, result.player);
-    if (result.raiseSize > 0) this.minRaise = Math.max(this.minRaise, result.raiseSize);
+    if (result.raiseClass === 'full_raise' && result.raiseSize > 0) {
+      this.minRaise = result.raiseSize;
+      this.bettingRound.lastFullRaise = result.raiseSize;
+    }
     this.currentBet = result.newCurrentBet;
 
     const effectiveAmount = p.betThisRound - betBefore;
     const amountOut = effectiveAmount > 0 ? effectiveAmount : undefined;
 
-    recordPlayerAction(this.bettingRound, seatIndex, actionWasRaise(action, result.raiseSize));
+    recordPlayerAction(this.bettingRound, seatIndex, result.raiseClass);
 
     this.actionLog.push({
       seatIndex,
@@ -544,7 +594,10 @@ export class InteractiveTable {
   }
 
   private advanceAfterAction(): void {
-    if (countActivePlayers(this.players) <= 1) {
+    if (countActivePlayers(this.players) <= 1 || shouldRunoutBoard(this.players)) {
+      if (shouldRunoutBoard(this.players)) {
+        this.runoutBoard();
+      }
       this.finishHand();
       return;
     }
@@ -568,28 +621,37 @@ export class InteractiveTable {
     for (const p of this.players) p.betThisRound = 0;
     this.currentBet = 0;
     this.minRaise = this.config.bigBlind;
-    resetBettingRound(this.bettingRound);
-    this.currentSeat = nextActiveSeat(this.players, this.buttonSeat) ?? this.buttonSeat;
+    resetBettingRound(this.bettingRound, this.config.bigBlind);
+    this.currentSeat =
+      firstToActSeat(this.phase as 'FLOP' | 'TURN' | 'RIVER', this.buttonSeat, this.bbSeat, this.players)
+      ?? this.buttonSeat;
     this.setDeadline();
+  }
+
+  private runoutBoard(): void {
+    while (this.phase !== 'RIVER' && this.phase !== 'SHOWDOWN' && this.communityCards.length < 5) {
+      this.advancePhase();
+    }
+    this.phase = 'SHOWDOWN';
   }
 
   private advancePhase(): void {
     const prevLen = this.communityCards.length;
     if (this.phase === 'PRE_FLOP') {
-      const { dealt, remaining } = dealCards(this.deck, 3);
+      const { dealt, remaining } = burnAndDeal(this.deck, 3);
       this.communityCards.push(...dealt);
       this.deck = remaining;
       this.reachedFlop = true;
       this.phase = 'FLOP';
       this.emitCommunityDealt('FLOP');
     } else if (this.phase === 'FLOP') {
-      const { dealt, remaining } = dealCards(this.deck, 1);
+      const { dealt, remaining } = burnAndDeal(this.deck, 1);
       this.communityCards.push(...dealt);
       this.deck = remaining;
       this.phase = 'TURN';
       this.emitCommunityDealt('TURN');
     } else if (this.phase === 'TURN') {
-      const { dealt, remaining } = dealCards(this.deck, 1);
+      const { dealt, remaining } = burnAndDeal(this.deck, 1);
       this.communityCards.push(...dealt);
       this.deck = remaining;
       this.phase = 'RIVER';
@@ -653,7 +715,10 @@ export class InteractiveTable {
         evaluateBestHand,
         this.reachedFlop,
         this.config.rakeRate,
-        active.map((p) => p.seatIndex),
+        seatsClockwiseFromLeftOfButton(
+          this.buttonSeat,
+          active.map((p) => p.seatIndex),
+        ),
       );
       rakeAmount = settlement.totalRake;
       for (const w of settlement.winners) {
@@ -721,7 +786,7 @@ export class InteractiveTable {
       }
       this.phase = 'WAITING';
       this.tryStartHand();
-    }, 3000);
+    }, HAND_PAUSE_MS);
   }
 
   private advanceButtonSeat(): void {
@@ -749,6 +814,7 @@ export class InteractiveTable {
       bigBlind: this.config.bigBlind,
       currentBet: this.currentBet,
       minRaise: this.minRaise,
+      raiseClosed: this.bettingRound.raiseClosedSeats.has(this.currentSeat),
     });
 
     let action: ActionType;
@@ -804,6 +870,8 @@ export class InteractiveTable {
       hostUserId: this.config.hostUserId,
       paused: this.paused,
       buttonSeat: this.buttonSeat,
+      smallBlindSeat: this.sbSeat,
+      bigBlindSeat: this.bbSeat,
       communityCards: this.communityCards.map((c) => c.rank + c.suit),
       potTotal,
       pots: [{ amount: potTotal, eligibleSeats }],

@@ -1,5 +1,5 @@
 import type { Card } from '../cards/card.js';
-import { createDeck, dealCards, shuffleDeck } from '../cards/deck.js';
+import { burnAndDeal, createDeck, dealCards, shuffleDeck } from '../cards/deck.js';
 import { evaluateBestHand } from '../eval/hand-evaluator.js';
 import { decideBotAction } from '../bot/rule-bot.js';
 import {
@@ -8,11 +8,18 @@ import {
   getValidActions,
   isBettingRoundComplete,
   nextActiveSeat,
+  shouldRunoutBoard,
 } from './actions.js';
 import { calculateSidePots } from '../pot/side-pot.js';
 import { calculateRake } from '../pot/rake.js';
 import type { PlayerState, SettlementResult, TableConfig } from './settlement.js';
 import { distributePotToWinners } from './settlement.js';
+import {
+  assignBlindSeats,
+  dealOrderFromButton,
+  firstToActSeat,
+  seatsClockwiseFromLeftOfButton,
+} from './blinds.js';
 
 export type HandPhase = 'PRE_FLOP' | 'FLOP' | 'TURN' | 'RIVER' | 'SHOWDOWN' | 'END_HAND';
 
@@ -35,21 +42,13 @@ export interface HandResult {
   reachedFlop: boolean;
 }
 
-function seatOrderFromButton(buttonSeat: number, seats: number[]): number[] {
-  const sorted = [...seats].sort((a, b) => a - b);
-  const start = sorted.findIndex((s) => s === buttonSeat);
-  const order: number[] = [];
-  for (let i = 0; i < sorted.length; i += 1) {
-    order.push(sorted[(start + i) % sorted.length]);
-  }
-  return order;
-}
 
 export class HandRunner {
   private deck: Card[] = [];
   private communityCards: Card[] = [];
   private players: PlayerState[] = [];
   private buttonSeat = 0;
+  private bbSeat = 0;
   private currentSeat = 0;
   private currentBet = 0;
   private minRaise = 0;
@@ -102,26 +101,36 @@ export class HandRunner {
     }
 
     const active = this.players.filter((p) => p.status === 'ACTIVE');
-    for (const p of active) {
-      const { dealt, remaining } = dealCards(this.deck, 2);
-      p.holeCards = dealt;
-      this.deck = remaining;
+    const order = dealOrderFromButton(
+      this.buttonSeat,
+      active.map((p) => p.seatIndex),
+    );
+    for (let round = 0; round < 2; round += 1) {
+      for (const seat of order) {
+        const p = this.players.find((pl) => pl.seatIndex === seat);
+        if (!p) continue;
+        const { dealt, remaining } = dealCards(this.deck, 1);
+        p.holeCards.push(...dealt);
+        this.deck = remaining;
+      }
     }
 
     this.postBlinds(active);
   }
 
   private postBlinds(active: PlayerState[]): void {
-    const seats = active.map((p) => p.seatIndex).sort((a, b) => a - b);
-    const btnIdx = seats.indexOf(this.buttonSeat);
-    const sbSeat = seats[(btnIdx + 1) % seats.length];
-    const bbSeat = seats[(btnIdx + 2) % seats.length];
+    const { sbSeat, bbSeat } = assignBlindSeats(
+      this.buttonSeat,
+      active.map((p) => p.seatIndex),
+    );
 
+    this.bbSeat = bbSeat;
     this.postBlind(sbSeat, this.config.smallBlind);
     this.postBlind(bbSeat, this.config.bigBlind);
     this.currentBet = this.config.bigBlind;
     this.minRaise = this.config.bigBlind;
-    this.currentSeat = nextActiveSeat(this.players, bbSeat) ?? bbSeat;
+    this.currentSeat =
+      firstToActSeat('PRE_FLOP', this.buttonSeat, this.bbSeat, this.players) ?? bbSeat;
   }
 
   private postBlind(seatIndex: number, amount: number): void {
@@ -144,7 +153,7 @@ export class HandRunner {
   }
 
   private dealCommunity(count: number): void {
-    const { dealt, remaining } = dealCards(this.deck, count);
+    const { dealt, remaining } = burnAndDeal(this.deck, count);
     this.communityCards.push(...dealt);
     this.deck = remaining;
     if (this.communityCards.length >= 3) this.reachedFlop = true;
@@ -172,8 +181,8 @@ export class HandRunner {
     });
     const idx = this.players.findIndex((p) => p.seatIndex === seatIndex);
     this.players[idx] = result.player;
-    if (result.raiseSize > 0) {
-      this.minRaise = Math.max(this.minRaise, result.raiseSize);
+    if (result.raiseClass === 'full_raise' && result.raiseSize > 0) {
+      this.minRaise = result.raiseSize;
     }
     this.currentBet = result.newCurrentBet;
     this.log.push({ type: 'ACTION', seatIndex, action, amount });
@@ -205,6 +214,13 @@ export class HandRunner {
     this.act(player.seatIndex, decision.action, decision.amount);
   }
 
+  private runoutBoard(): void {
+    while (this.phase !== 'RIVER' && this.phase !== 'SHOWDOWN' && this.communityCards.length < 5) {
+      this.advancePhase();
+    }
+    this.phase = 'SHOWDOWN';
+  }
+
   private advancePhase(): void {
     if (this.phase === 'PRE_FLOP') {
       this.dealCommunity(3);
@@ -227,7 +243,10 @@ export class HandRunner {
     while (steps < maxSteps) {
       steps += 1;
 
-      if (countActivePlayers(this.players) <= 1) {
+      if (countActivePlayers(this.players) <= 1 || shouldRunoutBoard(this.players)) {
+        if (shouldRunoutBoard(this.players)) {
+          this.runoutBoard();
+        }
         return this.finishHand(handId);
       }
 
@@ -238,7 +257,9 @@ export class HandRunner {
         }
         this.advancePhase();
         this.resetBetsForNewRound();
-        this.currentSeat = nextActiveSeat(this.players, this.buttonSeat) ?? this.buttonSeat;
+        this.currentSeat =
+          firstToActSeat(this.phase as 'FLOP' | 'TURN' | 'RIVER', this.buttonSeat, this.bbSeat, this.players)
+          ?? this.buttonSeat;
         continue;
       }
 
@@ -285,11 +306,18 @@ export class HandRunner {
         rakeRate: this.config.rakeRate,
       });
       winner.chips += distributablePot;
+      const showCards = [...winner.holeCards, ...this.communityCards];
       settlement = {
         winners: [{
           seatIndex: winner.seatIndex,
           winAmount: distributablePot,
-          hand: evaluateBestHand([...winner.holeCards, ...this.communityCards]),
+          hand: showCards.length >= 5
+            ? evaluateBestHand(showCards)
+            : {
+              score: { category: 0, kickers: [] },
+              bestFive: winner.holeCards,
+              categoryName: 'UNCONTESTED',
+            },
         }],
         potBreakdown: [{
           potIndex: 0,
@@ -308,7 +336,7 @@ export class HandRunner {
           isAllIn: p.status === 'ALL_IN',
         })),
       );
-      const seatOrder = seatOrderFromButton(
+      const seatOrder = seatsClockwiseFromLeftOfButton(
         this.buttonSeat,
         active.map((p) => p.seatIndex),
       );

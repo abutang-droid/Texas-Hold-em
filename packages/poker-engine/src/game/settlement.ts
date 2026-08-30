@@ -4,7 +4,7 @@ import { compareScores } from '../eval/hand-evaluator.js';
 import type { PotSlice } from '../pot/side-pot.js';
 import { calculateRake } from '../pot/rake.js';
 
-export type ActionType = 'fold' | 'check' | 'call' | 'raise' | 'all_in';
+export type ActionType = 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'all_in';
 
 export type SeatStatus = 'ACTIVE' | 'FOLDED' | 'ALL_IN' | 'SIT_OUT';
 
@@ -27,6 +27,7 @@ export interface PlayerState {
   status: SeatStatus;
   holeCards: Card[];
   isBot: boolean;
+  timeBankMs?: number;
 }
 
 export interface TableConfig {

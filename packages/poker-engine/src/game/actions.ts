@@ -1,5 +1,5 @@
 import type { PlayerState } from './settlement.js';
-export type { BettingRoundState } from './betting-round.js';
+export type { BettingRoundState, RaiseClass } from './betting-round.js';
 export {
   createBettingRoundState,
   markBlindPosted,
@@ -7,9 +7,13 @@ export {
   resetBettingRound,
   actionWasRaise,
   isBettingRoundComplete,
+  classifyRaise,
+  countActionablePlayers,
+  countPlayersInHand,
+  shouldRunoutBoard,
 } from './betting-round.js';
 
-export type ActionType = 'fold' | 'check' | 'call' | 'raise' | 'all_in';
+export type ActionType = 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'all_in';
 
 export interface ActionContext {
   players: PlayerState[];
@@ -17,6 +21,7 @@ export interface ActionContext {
   bigBlind: number;
   currentBet: number;
   minRaise: number;
+  raiseClosed?: boolean;
 }
 
 export interface ValidActions {
@@ -36,23 +41,32 @@ export function getValidActions(ctx: ActionContext): ValidActions {
   const actions: ActionType[] = [];
   const canCheck = toCall <= 0;
   const remaining = player.chips;
+  const noBetYet = ctx.currentBet <= 0;
+  const canOpen = !ctx.raiseClosed && remaining > toCall;
 
   if (!canCheck) actions.push('fold');
   if (canCheck) actions.push('check');
   if (toCall > 0 && remaining >= toCall) actions.push('call');
-  if (remaining > toCall) {
-    actions.push('raise');
+  if (canOpen) {
+    if (noBetYet) {
+      actions.push('bet');
+      actions.push('raise');
+    } else {
+      actions.push('raise');
+    }
     actions.push('all_in');
   } else if (remaining > 0 && toCall > 0) {
     actions.push('all_in');
   }
 
-  const minRaiseTotal = ctx.currentBet + ctx.minRaise;
+  const minRaiseTotal = noBetYet
+    ? player.betThisRound + Math.max(ctx.bigBlind, ctx.minRaise)
+    : ctx.currentBet + ctx.minRaise;
   const maxRaiseTotal = player.betThisRound + remaining;
 
   return {
     actions,
-    callAmount: Math.min(toCall, remaining),
+    callAmount: Math.min(Math.max(toCall, 0), remaining),
     minRaiseTotal: Math.min(minRaiseTotal, maxRaiseTotal),
     maxRaiseTotal,
   };
@@ -64,12 +78,14 @@ export interface ApplyActionInput {
   amount?: number;
   currentBet: number;
   minRaise: number;
+  raiseClosed?: boolean;
 }
 
 export interface ApplyActionResult {
   player: PlayerState;
   newCurrentBet: number;
   raiseSize: number;
+  raiseClass: import('./betting-round.js').RaiseClass;
 }
 
 export function applyAction(input: ApplyActionInput): ApplyActionResult {
@@ -94,17 +110,31 @@ export function applyAction(input: ApplyActionInput): ApplyActionResult {
       if (updated.chips === 0) updated.status = 'ALL_IN';
       break;
     }
+    case 'bet':
     case 'raise':
     case 'all_in': {
+      if (input.raiseClosed && (action === 'bet' || action === 'raise')) {
+        throw new Error('Raise not reopened after a short all-in');
+      }
       const targetTotal = action === 'all_in'
         ? updated.betThisRound + updated.chips
-        : (input.amount ?? currentBet);
+        : (input.amount ?? (currentBet > 0 ? currentBet + minRaise : updated.betThisRound + minRaise));
       if (targetTotal < updated.betThisRound) {
         throw new Error('Invalid raise amount');
       }
       const add = Math.min(targetTotal - updated.betThisRound, updated.chips);
-      if (action === 'raise' && targetTotal < currentBet + minRaise && add < updated.chips) {
+      const projected = updated.betThisRound + add;
+      const opening = currentBet <= 0;
+      if (
+        (action === 'raise' || action === 'bet') &&
+        !opening &&
+        projected < currentBet + minRaise &&
+        add < updated.chips
+      ) {
         throw new Error(`Raise must be at least ${currentBet + minRaise}`);
+      }
+      if ((action === 'raise' || action === 'bet') && opening && projected < minRaise && add < updated.chips) {
+        throw new Error(`Bet must be at least ${minRaise}`);
       }
       updated.chips -= add;
       updated.betThisRound += add;
@@ -118,7 +148,13 @@ export function applyAction(input: ApplyActionInput): ApplyActionResult {
       throw new Error(`Unknown action: ${action}`);
   }
 
-  return { player: updated, newCurrentBet, raiseSize };
+  let raiseClass: import('./betting-round.js').RaiseClass = 'no_raise';
+  if (raiseSize > 0) {
+    if (raiseSize >= minRaise) raiseClass = 'full_raise';
+    else if (updated.status === 'ALL_IN') raiseClass = 'short_all_in';
+  }
+
+  return { player: updated, newCurrentBet, raiseSize, raiseClass };
 }
 
 export function countActivePlayers(players: PlayerState[]): number {

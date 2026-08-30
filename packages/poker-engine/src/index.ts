@@ -1,7 +1,7 @@
 // Cards
 export { RANKS, SUITS, cardToString, parseCard, rankValue } from './cards/card.js';
 export type { Card, Rank, Suit } from './cards/card.js';
-export { createDeck, shuffleDeck, dealCards } from './cards/deck.js';
+export { createDeck, shuffleDeck, dealCards, burnAndDeal } from './cards/deck.js';
 
 // Evaluation
 export {
@@ -31,8 +31,19 @@ export {
   recordPlayerAction,
   resetBettingRound,
   actionWasRaise,
+  classifyRaise,
+  countActionablePlayers,
+  countPlayersInHand,
+  shouldRunoutBoard,
 } from './game/actions.js';
-export type { ActionType, ValidActions, BettingRoundState } from './game/actions.js';
+export type { ActionType, ValidActions, BettingRoundState, RaiseClass } from './game/actions.js';
+export {
+  assignBlindSeats,
+  firstToActSeat,
+  seatsClockwiseFromLeftOfButton,
+  dealOrderFromButton,
+} from './game/blinds.js';
+export type { BlindSeats, BettingStreet } from './game/blinds.js';
 export { distributePotToWinners } from './game/settlement.js';
 export type { PlayerState, TableConfig, SettlementResult, GamePhase } from './game/settlement.js';
 export { phaseMachine, getNextPhase } from './game/state-machine.js';

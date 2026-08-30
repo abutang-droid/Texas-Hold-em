@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { ACTION_TIME_SEC, TIME_BANK_SEC } from '@texas-holdem/shared';
 import { colors, spacing, typography } from '../theme';
 
 interface Props {
@@ -27,7 +28,7 @@ export function TurnTimer({ deadline, active = true, compact }: Props) {
 
   if (!deadline || !active) return null;
 
-  const total = 15;
+  const total = ACTION_TIME_SEC + TIME_BANK_SEC;
   const ratio = Math.min(1, secondsLeft / total);
   const urgent = secondsLeft <= 5;
 

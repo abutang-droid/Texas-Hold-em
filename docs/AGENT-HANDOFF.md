@@ -154,6 +154,8 @@ https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em
 
 Layout 版本标记：`LAYOUT_REV = '2026-08-30-nav2'`（console 可确认是否加载新 bundle）
 
+牌局规则见 `docs/game-rules.md`：6-max、HU 时 Button=SB、短 All-in 不重开 Raise、烧牌、20s+60s Time Bank。
+
 ---
 
 ## 7. 已合并 PR 摘要（#16–#30）
@@ -233,6 +235,7 @@ cd /workspace && pnpm --filter @texas-holdem/shared build
 | `docs/LOCAL_DEV.md` | Mac 本地全栈 |
 | `docs/PROXMOX-STAGING.md` | Staging 服务器安装 |
 | `docs/PRD-完整版-v2.1.md` | 产品需求 |
+| `docs/game-rules.md` | **6-max 现金桌现行规则**（对照规格 V1.0 校正） |
 
 ---
 
