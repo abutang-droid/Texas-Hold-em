@@ -17,6 +17,8 @@ let refreshToken: string | null = null;
 let unauthorizedHandler: (() => void) | null = null;
 let authChangeHandler: (() => void) | null = null;
 
+let suppressUnauthorized = false;
+
 export function setUnauthorizedHandler(handler: (() => void) | null) {
   unauthorizedHandler = handler;
 }
@@ -73,12 +75,17 @@ export async function restoreSession(): Promise<StoredSession | null> {
 export async function bootstrapSession(): Promise<boolean> {
   const session = await restoreSession();
   if (!session?.token) return false;
+  suppressUnauthorized = true;
   try {
     await getProfile();
     return true;
   } catch {
-    await logout();
+    token = null;
+    refreshToken = null;
+    await clearSession();
     return false;
+  } finally {
+    suppressUnauthorized = false;
   }
 }
 
@@ -127,8 +134,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   }
   if (!res.ok) {
     if (res.status === 401 && !isAuthPath(path)) {
-      await logout();
-      unauthorizedHandler?.();
+      if (!suppressUnauthorized) {
+        await logout();
+        unauthorizedHandler?.();
+      }
     }
     const payload = json.message;
     const payloadObj =
