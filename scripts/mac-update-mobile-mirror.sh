@@ -1,78 +1,74 @@
 #!/usr/bin/env bash
-# Update mobile app on Mac when git pull to github.com fails (China network).
-# Preserves apps/mobile/.env
+# Update mobile via zip (apps/mobile + packages/shared only — skips docs/).
+# Prefer: bash scripts/mac-sync-mobile.sh (file-by-file, more reliable).
 #
 #   cd ~/Texas-Hold-em && bash scripts/mac-update-mobile-mirror.sh
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-# shellcheck source=lib/resolve-repo-root.sh
-source "${SCRIPT_DIR}/lib/resolve-repo-root.sh"
-ROOT="$(resolve_repo_root "$0")"
-cd "$ROOT"
+MAC_SCRIPT_SELF="${BASH_SOURCE[0]:-$0}"
+MIRROR_BASE="${MIRROR_BASE:-https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main}"
+
+_load_mac_common() {
+  local script_dir tmp
+  script_dir="$(cd "$(dirname "${MAC_SCRIPT_SELF}")" && pwd)"
+  if [ -f "${script_dir}/lib/mac-common.sh" ]; then
+    printf '%s\n' "${script_dir}/lib/mac-common.sh"
+    return 0
+  fi
+  if [ -f "${PWD}/scripts/lib/mac-common.sh" ]; then
+    printf '%s\n' "${PWD}/scripts/lib/mac-common.sh"
+    return 0
+  fi
+  tmp="/tmp/mac-common-$$.sh"
+  curl -fsSL --retry 2 "${MIRROR_BASE}/scripts/lib/mac-common.sh" -o "${tmp}"
+  printf '%s\n' "${tmp}"
+}
+
+# shellcheck source=lib/mac-common.sh
+source "$(_load_mac_common)"
+
+ROOT="$(require_repo_root "${MAC_SCRIPT_SELF}")"
+cd "${ROOT}"
 
 REPO="abutang-droid/Texas-Hold-em"
 BRANCH="${1:-main}"
 ZIP_URL="${ZIP_URL:-https://ghfast.top/https://github.com/${REPO}/archive/refs/heads/${BRANCH}.zip}"
-
 TMP="/tmp/th-mac-mobile-$$"
 ZIP="${TMP}.zip"
 ENV_BACKUP=""
 
-echo "==> Mobile update via mirror (no git)"
+echo "==> Mobile zip update (mobile + shared only)"
 echo "    Root: ${ROOT}"
-echo "    Branch: ${BRANCH}"
 
 if [ -f apps/mobile/.env ]; then
   ENV_BACKUP="$(mktemp)"
-  cp apps/mobile/.env "$ENV_BACKUP"
-  echo "==> Backed up apps/mobile/.env"
+  cp apps/mobile/.env "${ENV_BACKUP}"
 fi
 
-mkdir -p "$TMP"
-echo "==> Downloading ${ZIP_URL}"
-if ! curl -fsSL --retry 3 --retry-delay 2 -o "$ZIP" "$ZIP_URL"; then
-  echo "Download failed. Try:" >&2
-  echo "  ZIP_URL=https://mirror.ghproxy.com/https://github.com/${REPO}/archive/refs/heads/${BRANCH}.zip bash $0" >&2
-  exit 1
+mkdir -p "${TMP}"
+echo "==> Downloading zip"
+curl -fsSL --retry 3 -o "${ZIP}" "${ZIP_URL}"
+
+FOLDER="$(unzip -Z1 "${ZIP}" | head -1 | cut -d/ -f1)"
+echo "==> Extracting ${FOLDER}/apps/mobile and packages/shared only"
+while IFS= read -r path; do
+  [ -z "${path}" ] && continue
+  unzip -q -o "${ZIP}" "${path}" -d "${TMP}"
+done < <(unzip -Z1 "${ZIP}" | grep -E "^${FOLDER}/(apps/mobile|packages/shared)/")
+
+echo "==> Rsync (keeping .env)"
+rsync -a --delete --exclude node_modules --exclude .env "${TMP}/${FOLDER}/apps/mobile/" "${ROOT}/apps/mobile/"
+rsync -a --delete "${TMP}/${FOLDER}/packages/shared/" "${ROOT}/packages/shared/"
+
+if [ -n "${ENV_BACKUP}" ]; then
+  cp "${ENV_BACKUP}" apps/mobile/.env
+  rm -f "${ENV_BACKUP}"
 fi
+rm -rf "${TMP}" "${ZIP}"
 
-echo "==> Extracting"
-unzip -q -o "$ZIP" -d "$TMP"
-SRC="$(find "$TMP" -maxdepth 1 -type d ! -path "$TMP" | head -1)"
-if [ ! -f "$SRC/apps/mobile/app/_layout.tsx" ]; then
-  echo "ERROR: invalid zip — missing apps/mobile" >&2
-  exit 1
-fi
-
-echo "==> Syncing apps/mobile (keeping .env, node_modules)"
-rsync -a --delete \
-  --exclude node_modules \
-  --exclude .env \
-  "$SRC/apps/mobile/" "$ROOT/apps/mobile/"
-
-if [ -n "$ENV_BACKUP" ]; then
-  cp "$ENV_BACKUP" apps/mobile/.env
-  rm -f "$ENV_BACKUP"
-  echo "==> Restored apps/mobile/.env"
-fi
-
-rm -rf "$TMP" "$ZIP"
-
-if grep -q "router.replace('/auth/login')" apps/mobile/app/index.tsx 2>/dev/null; then
-  echo "ERROR: index.tsx still has old auth redirect — zip may be stale" >&2
-  exit 1
-fi
-
-if ! grep -q "LAYOUT_REV = '2026-08-30-nav2'" apps/mobile/app/_layout.tsx 2>/dev/null; then
-  echo "WARN: _layout.tsx may be older than expected — check console for [mobile] layout rev" >&2
-fi
+ensure_mobile_env "${ROOT}"
+build_shared_package
+verify_mobile_index "${ROOT}"
 
 echo ""
-echo "==> OK. Next:"
-echo "    cd apps/mobile"
-echo "    rm -rf .expo node_modules/.cache"
-echo "    npx expo start --clear"
-echo ""
-echo "    Browser console should show: [mobile] layout 2026-08-30-nav2"
-echo "    Open: http://localhost:8081/auth/login"
+echo "==> OK. Run: bash scripts/mac-mobile-dev.sh"

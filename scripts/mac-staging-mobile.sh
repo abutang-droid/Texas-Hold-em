@@ -2,27 +2,22 @@
 # Mac mini：启动 Expo 客户端，连接局域网 Staging（192.168.31.53）
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-cd "$ROOT"
+MAC_SCRIPT_SELF="${BASH_SOURCE[0]:-$0}"
+SCRIPT_DIR="$(cd "$(dirname "${MAC_SCRIPT_SELF}")" && pwd)"
+# shellcheck source=lib/mac-common.sh
+source "${SCRIPT_DIR}/lib/mac-common.sh"
+
+ROOT="$(require_repo_root "${MAC_SCRIPT_SELF}")"
+cd "${ROOT}"
 
 if ! command -v node >/dev/null; then
   echo "请先安装 Node 20: brew install node@20" >&2
   exit 1
 fi
+require_pnpm
 
-if ! command -v pnpm >/dev/null; then
-  echo "请先安装 pnpm: npm install -g pnpm@10" >&2
-  exit 1
-fi
-
-# 连通性
 bash scripts/mac-staging-check.sh
-
-# 移动端环境变量
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-# shellcheck source=lib/ensure-mobile-env.sh
-source "${SCRIPT_DIR}/lib/ensure-mobile-env.sh"
-ensure_mobile_env "$ROOT"
+ensure_mobile_env "${ROOT}"
 
 echo ">>> pnpm install & build"
 pnpm install
@@ -33,9 +28,9 @@ echo ">>> 启动 Expo（连接 Staging）"
 echo "    API:  $(grep EXPO_PUBLIC_API_URL apps/mobile/.env)"
 echo "    Room: $(grep EXPO_PUBLIC_ROOM_URL apps/mobile/.env)"
 echo ""
-echo "  Web:    按 w 或打开 http://localhost:8081"
-echo "  真机:   同一 WiFi 下用 Expo Go 扫码"
+echo "  Web:    http://localhost:8081/auth/login"
 echo ""
 
+clear_expo_cache "${ROOT}"
 cd apps/mobile
 exec npx expo start --clear
