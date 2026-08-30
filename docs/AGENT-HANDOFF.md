@@ -241,11 +241,10 @@ cd /workspace && pnpm --filter @texas-holdem/shared build
 
 ## 12. 下一步建议（按优先级）
 
-1. **在 Mac 或 `uoto@tex` 部署规则分支**（Cloud Agent 连不上 `192.168.31.53`）
-   - Mac：`bash scripts/staging-remote-deploy.sh cursor/poker-rules-6max-9b0a`
-   - 服务器：`curl -fsSL "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/cursor/poker-rules-6max-9b0a/scripts/staging-server-deploy.sh" | bash -s cursor/poker-rules-6max-9b0a`
-   - 成功：`curl http://192.168.31.53:3001/health` → `"version":"0.4.9"`
-2. **Mac 启动 Expo 做桌测**：`bash scripts/mac-mobile-dev.sh` → 登录 → 大厅 → Quick Start（HU Button=SB、20s 计时）
+1. **家庭服务器 `uoto@192.168.31.53` 部署 Room 0.4.9**（不要在 Mac mini 上跑）
+   - `ZIP_URL="https://ghfast.top/https://github.com/abutang-droid/Texas-Hold-em/archive/refs/heads/cursor/poker-rules-6max-9b0a.zip" bash scripts/staging-update-no-git.sh cursor/poker-rules-6max-9b0a`
+   - 成功：服务器上 `curl http://127.0.0.1:3001/health` → `"version":"0.4.9"`
+2. **Mac mini 只跑客户端**：`bash /tmp/mac-fix-call.sh` 或 `bash scripts/mac-mobile-dev.sh` → 登录 → 大厅 → Quick Start
 3. 更新 `MAC-MINI-操作指南.md` 的分支说明 → `main` + `mac-start-mobile.sh`
 4. 修复 CI pnpm version 冲突（可选，不阻塞用户玩）
 5. 继续 Phase 1 游戏流程 / UI polish（见各 `cursor/*` 分支）

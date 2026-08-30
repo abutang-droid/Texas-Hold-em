@@ -46,12 +46,8 @@ download "apps/mobile/src/components/TurnTimer.tsx"
 download "apps/mobile/src/components/ui/PlayingCard.tsx"
 
 echo ""
-echo "Client files updated."
-echo "Staging Room must be 0.4.9 (5 bots + deal animation). On this Mac (same WiFi):"
-echo "  bash ${REPO}/scripts/staging-remote-deploy.sh ${BRANCH}"
-echo "Or on uoto@tex:"
-echo "  ZIP_URL=https://ghfast.top/https://github.com/${SLUG}/archive/refs/heads/${BRANCH}.zip \\"
-echo "    bash ${REPO}/scripts/staging-update-no-git.sh ${BRANCH}"
+echo "Mac mini 客户端已更新。服务端请在家庭服务器 uoto@192.168.31.53 上单独部署，不要在这台 Mac 上跑 staging-update。"
+echo "服务器成功标志: curl -s http://127.0.0.1:3001/health  → version 0.4.9"
 echo ""
 
 if [ -f "${REPO}/scripts/mac-mobile-dev.sh" ]; then
