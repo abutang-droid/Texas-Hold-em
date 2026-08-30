@@ -84,12 +84,16 @@ function ensureRoomTick(io: Server, roomId: string): void {
       return;
     }
     let safety = 0;
+    let acted = false;
     while (safety < 20) {
       safety += 1;
-      const acted = table.tick();
-      if (acted === null) break;
+      const result = table.tick();
+      if (result === null) break;
+      acted = true;
     }
-    broadcastState(io, roomId, table);
+    if (acted || table.hasPendingEvents()) {
+      broadcastState(io, roomId, table);
+    }
   }, 500);
   roomTicks.set(roomId, interval);
 }
@@ -173,7 +177,7 @@ export function startRoomServer(port: number): void {
   const httpServer = createServer((req, res) => {
     if (req.url === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.4.6' }));
+      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.4.7' }));
       return;
     }
     res.writeHead(404);

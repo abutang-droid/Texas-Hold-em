@@ -23,6 +23,8 @@ export {
   getValidActions,
   applyAction,
   isBettingRoundComplete,
+  playerNeedsAction,
+  nextSeatNeedingAction,
   countActivePlayers,
   nextActiveSeat,
   nextSeatWithChips,

@@ -70,6 +70,18 @@ export function resetBettingRound(state: BettingRoundState, minRaise = 0): void 
   state.lastFullRaise = minRaise;
 }
 
+/** True if this active player still owes an action this street. */
+export function playerNeedsAction(
+  player: PlayerState,
+  currentBet: number,
+  roundState?: BettingRoundState,
+): boolean {
+  if (player.status !== 'ACTIVE') return false;
+  if (player.betThisRound !== currentBet) return true;
+  if (roundState && !roundState.actedSeats.has(player.seatIndex)) return true;
+  return false;
+}
+
 export function isBettingRoundComplete(
   players: PlayerState[],
   currentBet: number,
@@ -77,12 +89,29 @@ export function isBettingRoundComplete(
 ): boolean {
   const canAct = players.filter((p) => p.status === 'ACTIVE');
   if (canAct.length <= 1) return true;
+  return !canAct.some((p) => playerNeedsAction(p, currentBet, roundState));
+}
 
-  for (const p of canAct) {
-    if (p.betThisRound !== currentBet) return false;
-    if (roundState && !roundState.actedSeats.has(p.seatIndex)) return false;
+/**
+ * Next clockwise seat that still needs to act.
+ * Unlike nextActiveSeat, skips players who already matched and acted
+ * so a call cannot hand the turn back to the caller.
+ */
+export function nextSeatNeedingAction(
+  players: PlayerState[],
+  fromSeat: number,
+  currentBet: number,
+  roundState?: BettingRoundState,
+): number | null {
+  const sorted = [...players].sort((a, b) => a.seatIndex - b.seatIndex);
+  if (sorted.length === 0) return null;
+  const start = sorted.findIndex((p) => p.seatIndex === fromSeat);
+  const startIdx = start >= 0 ? start : 0;
+  for (let i = 1; i <= sorted.length; i += 1) {
+    const p = sorted[(startIdx + i) % sorted.length];
+    if (playerNeedsAction(p, currentBet, roundState)) return p.seatIndex;
   }
-  return true;
+  return null;
 }
 
 /** Remaining players who can still put chips in. */

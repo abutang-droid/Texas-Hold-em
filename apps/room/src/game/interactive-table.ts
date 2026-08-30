@@ -6,7 +6,7 @@ import {
   evaluateBestHand,
   getValidActions,
   isBettingRoundComplete,
-  nextActiveSeat,
+  nextSeatNeedingAction,
   nextSeatWithChips,
   createBettingRoundState,
   markBlindPosted,
@@ -317,6 +317,10 @@ export class InteractiveTable {
     return events;
   }
 
+  hasPendingEvents(): boolean {
+    return this.eventQueue.length > 0;
+  }
+
   private pushEvent(event: TableEvent): void {
     this.eventQueue.push(event);
   }
@@ -534,6 +538,9 @@ export class InteractiveTable {
     if (!p || p.status !== 'ACTIVE' || seatIndex !== this.currentSeat) {
       throw new Error('INVALID_ACTION');
     }
+    if (action === 'call' && this.currentBet <= p.betThisRound) {
+      action = 'check';
+    }
     this.consumeTimeBank(p);
     const betBefore = p.betThisRound;
     const result = applyAction({
@@ -603,12 +610,23 @@ export class InteractiveTable {
     }
 
     if (!isBettingRoundComplete(this.players, this.currentBet, this.bettingRound)) {
-      const next = nextActiveSeat(this.players, this.currentSeat);
-      if (next !== null) {
+      const next = nextSeatNeedingAction(
+        this.players,
+        this.currentSeat,
+        this.currentBet,
+        this.bettingRound,
+      );
+      if (next !== null && next !== this.currentSeat) {
         this.currentSeat = next;
         this.setDeadline();
+        return;
       }
-      return;
+      if (next === null) {
+        // Nobody left to act — treat the street as complete.
+      } else {
+        this.setDeadline();
+        return;
+      }
     }
 
     if (this.phase === 'RIVER') {
@@ -803,7 +821,19 @@ export class InteractiveTable {
   tick(): ActResult | null {
     if (this.phase === 'WAITING' || this.phase === 'END_HAND' || this.actionDeadline === null) return null;
     const p = this.players.find((pl) => pl.seatIndex === this.currentSeat);
-    if (!p || p.status !== 'ACTIVE') return null;
+    if (!p || p.status !== 'ACTIVE') {
+      const next = nextSeatNeedingAction(
+        this.players,
+        this.currentSeat,
+        this.currentBet,
+        this.bettingRound,
+      );
+      if (next !== null && next !== this.currentSeat) {
+        this.currentSeat = next;
+        this.setDeadline();
+      }
+      return null;
+    }
 
     const timedOut = Date.now() > this.actionDeadline;
     if (!p.isBot && !timedOut) return null;

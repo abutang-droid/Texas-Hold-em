@@ -7,6 +7,8 @@ export {
   resetBettingRound,
   actionWasRaise,
   isBettingRoundComplete,
+  playerNeedsAction,
+  nextSeatNeedingAction,
   classifyRaise,
   countActionablePlayers,
   countPlayersInHand,
@@ -103,7 +105,9 @@ export function applyAction(input: ApplyActionInput): ApplyActionResult {
       if (toCall > 0) throw new Error('Cannot check when facing a bet');
       break;
     case 'call': {
+      if (toCall <= 0) break;
       const pay = Math.min(toCall, updated.chips);
+      if (pay <= 0) break;
       updated.chips -= pay;
       updated.betThisRound += pay;
       updated.totalBetInHand += pay;

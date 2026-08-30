@@ -109,6 +109,16 @@ export default function TableScreen() {
   const handNoticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const emojiTimers = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
   const shownHandsRef = useRef(new Set<string>());
+  const actionInFlightRef = useRef(false);
+  const actionLockTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearActionLock = useCallback(() => {
+    actionInFlightRef.current = false;
+    if (actionLockTimer.current) {
+      clearTimeout(actionLockTimer.current);
+      actionLockTimer.current = null;
+    }
+  }, []);
 
   const dismissShowdown = useCallback(() => {
     setShowdown(null);
@@ -252,6 +262,7 @@ export default function TableScreen() {
         maxRaise: number;
       };
     }) => {
+      if (actionInFlightRef.current) return;
       const p = msg.payload;
       setTurnContext({
         seatIndex: p.seatIndex,
@@ -303,6 +314,7 @@ export default function TableScreen() {
         ]);
       }
       if (msg.payload.userId === myUserIdRef.current) {
+        clearActionLock();
         setTurnContext(null);
       }
     };
@@ -452,6 +464,7 @@ export default function TableScreen() {
     };
 
     const onError = (msg: { payload?: { code?: string; messageKey?: string } }) => {
+      clearActionLock();
       const key = msg.payload?.messageKey;
       Alert.alert(t('common.error'), key?.startsWith('errors.') ? t(key) : key ?? t('common.error'));
     };
@@ -546,8 +559,9 @@ export default function TableScreen() {
       s.off('room_dissolved', onRoomDissolved);
       s.emit('leave_room', { requestId: `leave-${Date.now()}` });
       s.disconnect();
+      clearActionLock();
     };
-  }, [roomId, buyInCapParam, router, applySnapshot, t]);
+  }, [roomId, buyInCapParam, router, applySnapshot, t, clearActionLock]);
 
   const emitAdmin = (action: string, targetUserId?: string) => {
     socket?.emit('room_admin_action', {
@@ -558,6 +572,12 @@ export default function TableScreen() {
   };
 
   const sendAction = (actionType: PokerAction, amount?: number) => {
+    if (actionInFlightRef.current) return;
+    actionInFlightRef.current = true;
+    if (actionLockTimer.current) clearTimeout(actionLockTimer.current);
+    actionLockTimer.current = setTimeout(() => {
+      actionInFlightRef.current = false;
+    }, 4000);
     setTurnContext(null);
     socket?.emit('player_action', { actionType, amount, requestId: `a-${Date.now()}` });
   };

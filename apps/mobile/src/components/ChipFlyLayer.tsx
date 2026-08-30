@@ -28,17 +28,23 @@ interface Props {
 function FlyingChip({ event, onDone }: { event: ChipFlyEvent; onDone: () => void }) {
   const progress = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(1)).current;
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
   const from = SEAT_POSITIONS[event.seatIndex] ?? POT;
 
   useEffect(() => {
+    progress.setValue(0);
+    opacity.setValue(1);
     Animated.parallel([
       Animated.timing(progress, { toValue: 1, duration: 420, useNativeDriver: false }),
       Animated.sequence([
         Animated.delay(320),
         Animated.timing(opacity, { toValue: 0, duration: 120, useNativeDriver: false }),
       ]),
-    ]).start(() => onDone());
-  }, [progress, opacity, onDone]);
+    ]).start(({ finished }) => {
+      if (finished) onDoneRef.current();
+    });
+  }, [progress, opacity, event.id]);
 
   const top = progress.interpolate({
     inputRange: [0, 1],
