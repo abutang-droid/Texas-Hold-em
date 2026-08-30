@@ -39,7 +39,7 @@ check_http "Admin" "${ADMIN_PORT}" "/"
 
 echo ""
 if [ "$fail" -eq 0 ]; then
-  echo "全部通过。可启动客户端: bash scripts/mac-staging-mobile.sh"
+  echo "全部通过。可启动客户端: bash scripts/mac-start-mobile.sh"
 else
   echo "请先在本机 Staging 服务器执行: sudo bash scripts/staging-install-all.sh"
   exit 1

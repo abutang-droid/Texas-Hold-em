@@ -67,10 +67,9 @@ node -v && pnpm -v
 cd ~
 git clone https://github.com/abutang-droid/Texas-Hold-em.git
 cd Texas-Hold-em
-git fetch origin
-git checkout cursor/phase4-open-beta-2fc9
-git pull origin cursor/phase4-open-beta-2fc9
 ```
+
+日常开发以 **`main`** 为准。若 `git clone` / `git pull` 连 GitHub 超时，先保留这个目录，每天用下面的镜像启动命令更新客户端即可。
 
 ### 4. 配置连服务器
 
@@ -92,21 +91,43 @@ bash scripts/mac-staging-check.sh
 
 ### 第 1 步 · 打开终端，启动游戏
 
+**推荐（国内网络，一条命令同步并启动 Expo）：**
+
 ```bash
 cd ~/Texas-Hold-em
-bash scripts/mac-staging-mobile.sh
+
+ok=0
+for u in \
+  "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main/scripts/mac-start-mobile.sh" \
+  "https://gh-proxy.com/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main/scripts/mac-start-mobile.sh" \
+  "https://cdn.jsdelivr.net/gh/abutang-droid/Texas-Hold-em@main/scripts/mac-start-mobile.sh"
+do
+  echo "下载: $u"
+  if curl -fsSL --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 "$u" -o /tmp/mac-start.sh; then
+    ok=1
+    break
+  fi
+done
+
+if [ "$ok" != 1 ]; then
+  echo "镜像下载失败，改用本地脚本"
+  bash scripts/mac-mobile-dev.sh
+else
+  bash /tmp/mac-start.sh
+fi
 ```
 
 - 首次约 2–5 分钟（下载依赖）
-- 之后约 30 秒
-- 看到菜单和二维码 = 成功
+- 之后约 30–90 秒
+- **成功标志**：终端出现 `Expo 已启动` 或 `Starting Expo (Metro)`，并出现 `http://localhost:8081`
+- 若只跑了 `mac-sync-mobile.sh`，**不会**启动 Expo，还要再跑启动命令
 
 ### 第 2 步 · 打开网页
 
-**任选一种：**
+脚本就绪后会尝试自动打开浏览器。若没有：
 
-- 终端里按键盘 **`w`**
-- 或浏览器打开 **http://localhost:8081**
+- 打开 **http://localhost:8081/auth/login**
+- 或 **http://localhost:8081**
 
 建议 Chrome / Safari 全屏，窗口拉宽（游戏横屏）。
 
@@ -137,7 +158,7 @@ bash scripts/mac-staging-mobile.sh
 在 Mac 终端执行一次，以后输入 `thgame` 就能启动：
 
 ```bash
-echo 'alias thgame="cd ~/Texas-Hold-em && bash scripts/mac-staging-mobile.sh"' >> ~/.zshrc
+echo 'alias thgame="cd ~/Texas-Hold-em && bash scripts/mac-start-mobile.sh"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
@@ -158,7 +179,10 @@ thgame
 | `brew: command not found` | 在 Mac 上没装 Homebrew，或 PATH 没配 | 重做「一次性准备」第 2 步 |
 | 在 `uoto@tex` 里跑 brew 报错 | 你在**服务器**上，不是 Mac | 输入 `exit` 回到 Mac |
 | check 脚本 3 个 ✗ | 服务器服务没起来 | 见下方「服务器装一次」 |
-| 网页白屏 | Expo 没跑好 | `Ctrl+C` 停掉，再跑 `bash scripts/mac-staging-mobile.sh` |
+| 网页白屏 | Expo 没跑好 | `Ctrl+C` 停掉，再跑第 1 步启动命令 |
+| `curl: (56) ... 404` | 镜像缓存还没有新文件 | 等 30 秒再跑；脚本会自动换 gh-proxy / jsDelivr |
+| 执行完没有启动 | 跑的是 sync，不是 start | 用 `mac-start-mobile.sh`，不要只用 sync |
+| `bash: /tmp/mac-start.sh: No such file` | 上一步 curl 失败了 | 先看 curl 是否 404；或直接 `bash scripts/mac-mobile-dev.sh` |
 | 能开网页但登录失败 | API 挂了 | 服务器需 `pm2 status` 确认 th-api 在跑 |
 | 换 WiFi 后连不上 | 不在同一局域网 | Mac 和 192.168.31.53 必须同一 WiFi |
 
@@ -166,11 +190,15 @@ thgame
 
 ## 更新代码（偶尔）
 
+不要依赖 `git pull`（GitHub 443 经常超时）。每天第 1 步的镜像启动命令会同步 mobile / shared。
+
+若 `git pull` 能通：
+
 ```bash
 cd ~/Texas-Hold-em
-git pull origin cursor/phase4-open-beta-2fc9
-pnpm install && pnpm build
-bash scripts/mac-staging-mobile.sh
+git pull origin main
+pnpm install
+bash scripts/mac-start-mobile.sh
 ```
 
 ---
@@ -257,4 +285,4 @@ bash scripts/mac-staging-check.sh
 
 ---
 
-*v1.1 · Mac 网页版 · Staging 192.168.31.53*
+*v1.2 · Mac 网页版 · main + 镜像启动 · Staging 192.168.31.53*
