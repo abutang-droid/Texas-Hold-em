@@ -8,7 +8,11 @@ import { PotDisplay } from './PotDisplay';
 import { ChipFlyLayer, type ChipFlyEvent } from './ChipFlyLayer';
 import { Avatar } from './Avatar';
 import type { SeatAction } from '../types/table';
-import { abbrevNickname } from '../utils/nickname';
+function formatStack(chips: number): string {
+  if (chips >= 10_000) return `${Math.round(chips / 1000)}k`;
+  if (chips >= 1000) return `${(chips / 1000).toFixed(1).replace(/\.0$/, '')}k`;
+  return String(chips);
+}
 
 function SeatCountdown({ deadline }: { deadline: number }) {
   const [sec, setSec] = useState(0);
@@ -69,6 +73,7 @@ interface Props {
   onSeatPress?: (seatIndex: number) => void;
   emptySeatLabel?: string;
   seatActions?: Record<number, SeatAction>;
+  isSpectator?: boolean;
 }
 
 const ACTION_I18N: Record<string, string> = {
@@ -137,11 +142,13 @@ function HoleCardsRow({
   animate,
   dealDelayMs = 0,
   faceDown,
+  compact,
 }: {
   cards: string[];
   animate?: boolean;
   dealDelayMs?: number;
   faceDown?: boolean;
+  compact?: boolean;
 }) {
   const slide = useRef(new Animated.Value(animate ? -14 : 0)).current;
   const opacity = useRef(new Animated.Value(animate ? 0.25 : 1)).current;
@@ -164,9 +171,20 @@ function HoleCardsRow({
   }, [animate, dealDelayMs, opacity, slide]);
 
   return (
-    <Animated.View style={[styles.holeCards, { opacity, transform: [{ translateY: slide }] }]}>
+    <Animated.View
+      style={[
+        styles.holeCards,
+        compact && styles.holeCardsCompact,
+        { opacity, transform: [{ translateY: slide }] },
+      ]}
+    >
       {cards.map((c, i) => (
-        <PlayingCard key={i} code={c} size="sm" faceDown={faceDown || c === '**'} />
+        <PlayingCard
+          key={i}
+          code={compact ? '**' : c}
+          size={compact ? 'xs' : 'sm'}
+          faceDown={compact || faceDown || c === '**'}
+        />
       ))}
     </Animated.View>
   );
@@ -219,6 +237,7 @@ export function Table9Max({
   onSeatPress,
   emptySeatLabel,
   seatActions = {},
+  isSpectator = false,
 }: Props) {
   const [profileSeat, setProfileSeat] = useState<number | null>(null);
 
@@ -243,14 +262,16 @@ export function Table9Max({
                 seat.status !== 'SIT_OUT' &&
                 seat.status !== 'FOLDED';
               const heroOrRevealed =
-                seat?.holeCards &&
-                seat.holeCards[0] !== '**' &&
-                (isHero || seat.revealed);
+                !isSpectator &&
+                !!isHero &&
+                !!seat?.holeCards &&
+                seat.holeCards[0] !== '**';
               const holeCards = heroOrRevealed
                 ? seat!.holeCards!
                 : inHand
                   ? ['**', '**']
                   : null;
+              const holeCompact = !heroOrRevealed;
               const isWinner = winnerSeats.includes(idx);
               const isDealer = buttonSeat === idx;
               const isSb = sbSeat === idx;
@@ -305,6 +326,7 @@ export function Table9Max({
                       animate={animateHoleDeal}
                       dealDelayMs={idx * 70}
                       faceDown={!heroOrRevealed}
+                      compact={holeCompact}
                     />
                   )}
                   {seatEmojis[idx] ? (
@@ -331,18 +353,15 @@ export function Table9Max({
                             setProfileSeat((cur) => (cur === idx ? null : idx))
                           }
                         />
+                        <View style={styles.chipBadge}>
+                          <Text style={styles.chipBadgeText}>{formatStack(seat.chips)}</Text>
+                        </View>
                       </View>
-                    ) : null}
-                    <Text style={styles.seatName} numberOfLines={1}>
-                      {seat
-                        ? abbrevNickname(seat.nickname)
-                        : canSit
-                          ? emptySeatLabel ?? '坐下'
-                          : '—'}
-                    </Text>
-                    {seat ? (
-                      <Text style={styles.seatChips}>{seat.chips.toLocaleString()}</Text>
-                    ) : null}
+                    ) : (
+                      <Text style={styles.seatName} numberOfLines={1}>
+                        {canSit ? emptySeatLabel ?? '坐下' : '—'}
+                      </Text>
+                    )}
                     {seat && badgeAction ? <SeatActionBadge action={badgeAction} /> : null}
                     {seat && (seat.betThisRound ?? 0) > 0 && (!streetAction || seat.isActive) ? (
                       <View style={styles.betChip}>
@@ -455,7 +474,26 @@ const styles = StyleSheet.create({
   sbBadge: { backgroundColor: '#4A90D9' },
   bbBadge: { backgroundColor: '#C94A4A' },
   blindBadgeText: { fontSize: 8, fontWeight: '800', color: '#fff' },
-  avatarWrap: { marginBottom: 4 },
+  avatarWrap: { marginBottom: 2, position: 'relative' },
+  chipBadge: {
+    position: 'absolute',
+    right: -8,
+    bottom: -3,
+    minWidth: 22,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 8,
+    backgroundColor: '#C9A227',
+    borderWidth: 1,
+    borderColor: '#1A1A1A',
+    alignItems: 'center',
+  },
+  chipBadgeText: {
+    color: '#1A1A1A',
+    fontSize: 9,
+    fontWeight: '800',
+    lineHeight: 11,
+  },
   emojiBubble: {
     position: 'absolute',
     top: -36,
@@ -509,6 +547,10 @@ const styles = StyleSheet.create({
   holeCards: {
     flexDirection: 'row',
     marginBottom: 4,
+  },
+  holeCardsCompact: {
+    marginBottom: 2,
+    gap: 1,
   },
   seatBadge: {
     position: 'relative',

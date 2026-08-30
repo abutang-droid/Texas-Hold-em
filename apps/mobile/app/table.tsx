@@ -866,6 +866,7 @@ export default function TableScreen() {
         seatEmojis={seatEmojis}
         emptySeatLabel={t('table.seat_empty')}
         seatActions={seatActions}
+        isSpectator={isOfficialSpectator}
         onSeatPress={isOfficialSpectator ? sitDown : undefined}
         onChipFlyDone={(id) =>
           setChipFlyEvents((prev) => prev.filter((e) => e.id !== id))

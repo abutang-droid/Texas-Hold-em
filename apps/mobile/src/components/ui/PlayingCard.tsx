@@ -17,6 +17,7 @@ const RANK_LABEL: Record<string, string> = {
 };
 
 const SIZE = {
+  xs: { w: 16, h: 22, rank: 8, suit: 6, pip: 8, pad: 1 },
   sm: { w: 34, h: 50, rank: 17, suit: 12, pip: 18, pad: 3 },
   md: { w: 48, h: 68, rank: 24, suit: 15, pip: 26, pad: 4 },
   lg: { w: 58, h: 82, rank: 28, suit: 18, pip: 32, pad: 5 },
@@ -33,7 +34,7 @@ function parseCard(code: string): { rank: string; suit: string; red: boolean } |
 
 interface Props {
   code: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   faceDown?: boolean;
 }
 
