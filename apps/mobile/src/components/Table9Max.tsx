@@ -8,6 +8,7 @@ import { PotDisplay } from './PotDisplay';
 import { ChipFlyLayer, type ChipFlyEvent } from './ChipFlyLayer';
 import { Avatar } from './Avatar';
 import type { SeatAction } from '../types/table';
+import { abbrevNickname } from '../utils/nickname';
 
 function SeatCountdown({ deadline }: { deadline: number }) {
   const [sec, setSec] = useState(0);
@@ -171,6 +172,34 @@ function HoleCardsRow({
   );
 }
 
+function SeatProfileCard({
+  nickname,
+  chips,
+  isBot,
+  avatarUrl,
+}: {
+  nickname: string;
+  chips: number;
+  isBot?: boolean;
+  avatarUrl?: string | null;
+}) {
+  const { t } = useTranslation();
+  return (
+    <View style={styles.profileCard}>
+      <Avatar nickname={nickname} avatarUrl={avatarUrl} size="md" />
+      <Text style={styles.profileName} numberOfLines={2}>
+        {nickname}
+      </Text>
+      <Text style={styles.profileMeta}>
+        {isBot ? t('table.profile_bot') : t('table.profile_human')}
+      </Text>
+      <Text style={styles.profileChips}>
+        {t('table.profile_chips', { amount: chips.toLocaleString() })}
+      </Text>
+    </View>
+  );
+}
+
 export function Table9Max({
   seats,
   potTotal,
@@ -191,13 +220,15 @@ export function Table9Max({
   emptySeatLabel,
   seatActions = {},
 }: Props) {
+  const [profileSeat, setProfileSeat] = useState<number | null>(null);
+
   return (
     <View style={styles.container}>
       <ChipFlyLayer events={chipFlyEvents} onDone={(id) => onChipFlyDone?.(id)} />
       <View style={styles.railOuter}>
         <View style={styles.railHighlight} />
         <View style={styles.rail}>
-          <View style={styles.felt}>
+          <Pressable style={styles.felt} onPress={() => setProfileSeat(null)}>
             <View style={styles.feltPattern} />
             <View style={styles.center}>
               <CommunityCardsRow cards={communityCards} />
@@ -235,17 +266,22 @@ export function Table9Max({
               const badgeAction = seat?.isActive
                 ? { type: 'thinking' }
                 : streetAction;
+              const showProfile = profileSeat === idx && !!seat;
               return (
                 <Pressable
                   key={idx}
-                  disabled={!canSit}
-                  onPress={() => onSeatPress?.(idx)}
+                  disabled={!canSit && !seat}
+                  onPress={() => {
+                    if (canSit) onSeatPress?.(idx);
+                    else if (!seat) setProfileSeat(null);
+                  }}
                   style={[
                     styles.seat,
                     { top: pos.top as `${number}%`, left: pos.left as `${number}%` },
                     seat?.isActive && styles.seatActive,
                     isHero && styles.seatHero,
                     isWinner && styles.seatWinner,
+                    showProfile && styles.seatProfileOpen,
                   ]}
                 >
                   {isDealer && seat ? (
@@ -277,14 +313,32 @@ export function Table9Max({
                     </View>
                   ) : null}
                   <View style={[styles.seatBadge, seat?.isActive && styles.seatBadgeActive, isHero && styles.seatHeroBadge, isWinner && styles.seatWinnerBadge, canSit && styles.seatEmptyTappable]}>
+                    {showProfile && seat ? (
+                      <SeatProfileCard
+                        nickname={seat.nickname}
+                        chips={seat.chips}
+                        isBot={seat.isBot}
+                        avatarUrl={seat.avatarUrl}
+                      />
+                    ) : null}
                     {seat ? (
                       <View style={styles.avatarWrap}>
-                        <Avatar nickname={seat.nickname} avatarUrl={seat.avatarUrl} size="sm" />
+                        <Avatar
+                          nickname={seat.nickname}
+                          avatarUrl={seat.avatarUrl}
+                          size="sm"
+                          onPress={() =>
+                            setProfileSeat((cur) => (cur === idx ? null : idx))
+                          }
+                        />
                       </View>
                     ) : null}
                     <Text style={styles.seatName} numberOfLines={1}>
-                      {seat?.nickname ?? (canSit ? emptySeatLabel ?? '坐下' : '—')}
-                      {seat?.isBot ? ' 🤖' : ''}
+                      {seat
+                        ? abbrevNickname(seat.nickname)
+                        : canSit
+                          ? emptySeatLabel ?? '坐下'
+                          : '—'}
                     </Text>
                     {seat ? (
                       <Text style={styles.seatChips}>{seat.chips.toLocaleString()}</Text>
@@ -302,7 +356,7 @@ export function Table9Max({
                 </Pressable>
               );
             })}
-          </View>
+          </Pressable>
         </View>
       </View>
     </View>
@@ -417,6 +471,41 @@ const styles = StyleSheet.create({
   seatActive: {},
   seatHero: { zIndex: 2 },
   seatWinner: { zIndex: 3 },
+  seatProfileOpen: { zIndex: 24 },
+  profileCard: {
+    position: 'absolute',
+    bottom: '100%',
+    left: '50%',
+    marginLeft: -70,
+    width: 140,
+    marginBottom: 8,
+    backgroundColor: 'rgba(18,20,24,0.96)',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: 'rgba(201,162,39,0.55)',
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    alignItems: 'center',
+    zIndex: 30,
+  },
+  profileName: {
+    ...typography.caption,
+    color: colors.text.primary,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginTop: 6,
+  },
+  profileMeta: {
+    ...typography.micro,
+    color: colors.text.secondary,
+    marginTop: 2,
+  },
+  profileChips: {
+    ...typography.micro,
+    color: colors.brand.secondary,
+    fontWeight: '700',
+    marginTop: 4,
+  },
   holeCards: {
     flexDirection: 'row',
     marginBottom: 4,

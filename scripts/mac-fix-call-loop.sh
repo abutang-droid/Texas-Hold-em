@@ -71,6 +71,7 @@ download "apps/mobile/src/locales/zh-CN.json"
 download "apps/mobile/src/locales/en-US.json"
 download "apps/mobile/src/utils/alert.ts"
 download "apps/mobile/src/types/table.ts"
+download "apps/mobile/src/utils/nickname.ts"
 
 echo ""
 echo "Mac mini 客户端已更新。服务端请在家庭服务器 uoto@192.168.31.53 上单独部署，不要在这台 Mac 上跑 staging-update。"
