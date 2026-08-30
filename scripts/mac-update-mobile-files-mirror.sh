@@ -51,6 +51,7 @@ FILES=(
   apps/mobile/src/components/ui/GameModal.tsx
   apps/mobile/src/locales/en-US.json
   apps/mobile/src/locales/zh-CN.json
+  apps/mobile/.env.staging.example
   packages/shared/src/index.ts
   packages/shared/src/table-config.ts
 )
