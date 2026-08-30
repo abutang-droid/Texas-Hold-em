@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { Stack, useRootNavigationState, useSegments, Redirect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { isOnboardingComplete } from '../src/storage/onboarding';
+import { hydrateOnboarding, isOnboardingComplete } from '../src/storage/onboarding';
 import {
   bootstrapSession,
   getToken,
@@ -14,7 +14,7 @@ import {
 import { colors } from '../src/theme';
 
 export default function RootLayout() {
-  const [sessionReady, setSessionReady] = useState(false);
+  const [bootReady, setBootReady] = useState(false);
   const [authTick, setAuthTick] = useState(0);
   const segments = useSegments();
   const rootNavigationState = useRootNavigationState();
@@ -26,7 +26,7 @@ export default function RootLayout() {
       void logout().then(bump);
     });
     setAuthChangeHandler(bump);
-    bootstrapSession().finally(() => setSessionReady(true));
+    Promise.all([bootstrapSession(), hydrateOnboarding()]).finally(() => setBootReady(true));
     return () => {
       setUnauthorizedHandler(null);
       setAuthChangeHandler(null);
@@ -35,7 +35,7 @@ export default function RootLayout() {
 
   void authTick;
 
-  if (!sessionReady) {
+  if (!bootReady) {
     return (
       <View style={styles.boot}>
         <StatusBar style="light" />
@@ -49,12 +49,14 @@ export default function RootLayout() {
   const inOnboarding = top === 'onboarding';
   const hasToken = !!getToken();
 
-  if (navReady && !isOnboardingComplete() && !inOnboarding) {
-    return <Redirect href="/onboarding" />;
+  // 1) Login / guest first — API calls require a token
+  if (navReady && !hasToken && !inAuth) {
+    return <Redirect href="/auth/login" />;
   }
 
-  if (navReady && !hasToken && !inAuth && !inOnboarding) {
-    return <Redirect href="/auth/login" />;
+  // 2) Optional onboarding after auth
+  if (navReady && hasToken && !isOnboardingComplete() && !inOnboarding) {
+    return <Redirect href="/onboarding" />;
   }
 
   return (

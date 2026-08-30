@@ -3,7 +3,6 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { completeOnboarding } from '../src/storage/onboarding';
-import { declareAge } from '../src/api/client';
 import { Screen } from '../src/components/ui/Screen';
 import { Button } from '../src/components/ui/Button';
 import { colors, spacing, typography } from '../src/theme';
@@ -15,19 +14,21 @@ export default function OnboardingScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const [step, setStep] = useState(0);
+  const [finishing, setFinishing] = useState(false);
 
   const finish = async () => {
-    completeOnboarding();
+    if (finishing) return;
+    setFinishing(true);
     try {
-      await declareAge();
-    } catch {
-      /* guest may not be logged in yet; lobby will prompt */
+      await completeOnboarding();
+      router.replace('/');
+    } finally {
+      setFinishing(false);
     }
-    router.replace('/');
   };
 
   const onNext = () => {
-    if (step >= STEPS.length - 1) finish();
+    if (step >= STEPS.length - 1) void finish();
     else setStep((s) => s + 1);
   };
 
@@ -54,10 +55,18 @@ export default function OnboardingScreen() {
       <Button
         label={step >= STEPS.length - 1 ? t('onboarding.start') : t('onboarding.next')}
         onPress={onNext}
+        loading={finishing}
+        disabled={finishing}
         fullWidth
         style={styles.cta}
       />
-      <Button label={t('onboarding.skip')} onPress={finish} variant="ghost" fullWidth />
+      <Button
+        label={t('onboarding.skip')}
+        onPress={() => void finish()}
+        variant="ghost"
+        disabled={finishing}
+        fullWidth
+      />
     </Screen>
   );
 }

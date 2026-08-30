@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { loginWithEmail, guestLogin } from '../../src/api/client';
+import { postAuthRoute } from '../../src/auth/routes';
 import { AuthField } from '../../src/components/auth/AuthField';
 import { Screen } from '../../src/components/ui/Screen';
 import { Card } from '../../src/components/ui/Card';
@@ -35,7 +36,7 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await loginWithEmail(email.trim(), password);
-      router.replace('/');
+      router.replace(postAuthRoute());
     } catch (e) {
       const msg = authErrorMessage(t, e as Error & { code?: string });
       setFormError(msg);
@@ -50,7 +51,7 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await guestLogin();
-      router.replace('/');
+      router.replace(postAuthRoute());
     } catch (e) {
       const msg = (e as Error).message;
       setFormError(msg);
