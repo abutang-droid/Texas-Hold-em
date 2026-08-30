@@ -8,19 +8,25 @@ REPO="${TH_REPO_ROOT:-$HOME/Texas-Hold-em}"
 BRANCH="${MAC_GIT_REF:-cursor/poker-rules-6max-9b0a}"
 SLUG="abutang-droid/Texas-Hold-em"
 
+# Pin table.tsx to a commit so ghfast/jsdelivr cannot serve the crashing snapshot.
+TABLE_FIX_REF="${TABLE_FIX_REF:-cursor/poker-rules-6max-9b0a}"
+
 download() {
   local rel="$1"
   local dest="${REPO}/${rel}"
+  local ref="${2:-$BRANCH}"
   mkdir -p "$(dirname "$dest")"
+  local stamp
+  stamp="$(date +%s)"
   local urls=(
-    "https://ghfast.top/https://raw.githubusercontent.com/${SLUG}/${BRANCH}/${rel}"
-    "https://cdn.jsdelivr.net/gh/${SLUG}@${BRANCH}/${rel}"
-    "https://raw.gitmirror.com/${SLUG}/${BRANCH}/${rel}"
-    "https://raw.githubusercontent.com/${SLUG}/${BRANCH}/${rel}"
+    "https://raw.githubusercontent.com/${SLUG}/${ref}/${rel}?t=${stamp}"
+    "https://ghfast.top/https://raw.githubusercontent.com/${SLUG}/${ref}/${rel}"
+    "https://cdn.jsdelivr.net/gh/${SLUG}@${ref}/${rel}"
+    "https://raw.gitmirror.com/${SLUG}/${ref}/${rel}"
   )
   local url
   for url in "${urls[@]}"; do
-    echo "==> ${rel}"
+    echo "==> ${rel}  (${ref})"
     if curl -fsSL --globoff --retry 2 --connect-timeout 20 -o "${dest}.tmp" "$url"; then
       mv "${dest}.tmp" "$dest"
       return 0
@@ -31,13 +37,28 @@ download() {
   return 1
 }
 
+table_has_snapshot_fix() {
+  local f="${REPO}/apps/mobile/app/table.tsx"
+  grep -q 'applySnapshotMeFix' "$f" && grep -q 'const viewer' "$f"
+}
+
 if [ ! -d "${REPO}/apps/mobile" ]; then
   echo "ERROR: ${REPO} is not the Texas-Hold-em project" >&2
   exit 1
 fi
 
 echo "==> Syncing table client files from ${BRANCH}"
-download "apps/mobile/app/table.tsx"
+download "apps/mobile/app/table.tsx" "${TABLE_FIX_REF}"
+if ! table_has_snapshot_fix; then
+  echo "WARN: table.tsx missing applySnapshotMeFix — retrying GitHub raw" >&2
+  download "apps/mobile/app/table.tsx" "${TABLE_FIX_REF}"
+fi
+if ! table_has_snapshot_fix; then
+  echo "ERROR: apps/mobile/app/table.tsx is still the crashing build. Do not start Expo." >&2
+  echo "       Check: grep applySnapshotMeFix ${REPO}/apps/mobile/app/table.tsx" >&2
+  exit 1
+fi
+echo "OK table.tsx has applySnapshotMeFix"
 download "apps/mobile/src/components/ActionPanel.tsx"
 download "apps/mobile/src/components/ChipFlyLayer.tsx"
 download "apps/mobile/src/components/CommunityCardsRow.tsx"

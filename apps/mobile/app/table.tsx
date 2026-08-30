@@ -200,17 +200,18 @@ export default function TableScreen() {
       );
       return mapped;
     });
-    const me =
+    // applySnapshotMeFix: 2026-08-30 — `me` must be declared before any turn check
+    const viewer =
       payload.mySeatIndex != null
         ? payload.seats?.find((s) => s.seatIndex === payload.mySeatIndex)
         : payload.seats?.find((x) => x.holeCards && x.holeCards[0] !== '**');
-    if (me?.userId) setMyUserId(me.userId);
+    if (viewer?.userId) setMyUserId(viewer.userId);
     const turnSeat = payload.currentTurnSeat;
-    if (turnSeat === null || turnSeat === undefined || !me?.userId) {
+    if (turnSeat === null || turnSeat === undefined || !viewer?.userId) {
       setTurnContext(null);
     } else {
       const actor = payload.seats?.find((s) => s.seatIndex === turnSeat);
-      if (actor?.userId !== me.userId) setTurnContext(null);
+      if (actor?.userId !== viewer.userId) setTurnContext(null);
     }
   }, []);
 
