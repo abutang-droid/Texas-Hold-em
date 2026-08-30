@@ -59,6 +59,8 @@ if ! table_has_snapshot_fix; then
   exit 1
 fi
 echo "OK table.tsx has applySnapshotMeFix"
+download "apps/mobile/app/_layout.tsx" "${TABLE_FIX_REF}"
+download "apps/mobile/app/index.tsx" "${TABLE_FIX_REF}"
 download "apps/mobile/src/components/ActionPanel.tsx"
 download "apps/mobile/src/components/ChipFlyLayer.tsx"
 download "apps/mobile/src/components/CommunityCardsRow.tsx"
