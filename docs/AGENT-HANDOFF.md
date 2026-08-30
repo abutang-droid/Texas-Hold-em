@@ -100,7 +100,7 @@ lsof -i :8081
 | `mac-diagnose.sh` | 打印 node/pnpm/8081/.env/关键文件，方便把输出贴给 Agent |
 
 **关键实现**：
-- `/tmp` 下 curl 的脚本 → 多镜像拉取最新 `mac-common.sh`（ghfast → gh-proxy → jsDelivr → gitmirror）；失败则用本地副本
+- `/tmp` 下 curl 的脚本 → 多镜像拉取最新 `mac-common.sh`；**进度日志必须打 stderr**（否则 `source "$(...)"` 路径被污染，脚本静默退出 —— PR #30 的隐藏 bug）
 - `ensure_workspace_deps` — 每次 `pnpm install`（已装则很快）；失败则 npmmirror
 - `free_expo_port` — 8081 被占时杀掉旧 Metro
 - `start_expo_dev_server` — 使用仓库内 expo 二进制 + `--web`；等待端口就绪后打开登录页
@@ -173,6 +173,7 @@ Layout 版本标记：`LAYOUT_REV = '2026-08-30-nav2'`（console 可确认是否
 | #27 | Metro 500：mirror 后需 build shared |
 | #29 | 脚本收敛到 `mac-common.sh` |
 | #30 | **Expo 启动修复** + `mac-start-mobile.sh`（已 merge `main`） |
+| #31 | **Expo 启动加固**：多镜像、完整同步清单、等待 Metro、`source` stdout 污染修复 |
 
 ---
 
