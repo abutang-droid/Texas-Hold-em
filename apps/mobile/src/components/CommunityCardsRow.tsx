@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     marginBottom: spacing.md,
-    minHeight: 54,
+    minHeight: 72,
     alignItems: 'center',
   },
 });
