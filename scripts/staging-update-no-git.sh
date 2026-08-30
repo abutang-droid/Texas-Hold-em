@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # Update Staging without git (zip deploy). Preserves .env and PM2 config.
-# Usage: bash scripts/staging-update-no-git.sh
+# Usage:
+#   bash scripts/staging-update-no-git.sh
+#   bash scripts/staging-update-no-git.sh cursor/poker-rules-6max-9b0a
+#   ZIP_URL=https://... bash scripts/staging-update-no-git.sh <branch>
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -8,8 +11,17 @@ cd "$ROOT"
 
 REPO="abutang-droid/Texas-Hold-em"
 BRANCH="${1:-main}"
-ZIP_URL="${ZIP_URL:-https://github.com/${REPO}/archive/refs/heads/${BRANCH}.zip}"
-# China mirror fallback: ZIP_URL=https://ghfast.top/https://github.com/.../archive/refs/heads/main.zip
+EXPECTED_ROOM_VERSION="${EXPECTED_ROOM_VERSION:-0.4.6}"
+
+zip_candidates=()
+if [ -n "${ZIP_URL:-}" ]; then
+  zip_candidates+=("${ZIP_URL}")
+fi
+zip_candidates+=(
+  "https://ghfast.top/https://github.com/${REPO}/archive/refs/heads/${BRANCH}.zip"
+  "https://gh-proxy.com/https://github.com/${REPO}/archive/refs/heads/${BRANCH}.zip"
+  "https://github.com/${REPO}/archive/refs/heads/${BRANCH}.zip"
+)
 
 TMP="/tmp/th-update-$$"
 ZIP="${TMP}.zip"
@@ -18,6 +30,7 @@ BACKUP_ENV="/tmp/th-env-backup-$$"
 echo "==> Texas Hold'em staging update (no-git)"
 echo "    Branch: ${BRANCH}"
 echo "    Target: ${ROOT}"
+echo "    Expect Room: ${EXPECTED_ROOM_VERSION}"
 
 if [ -f .env ]; then
   cp .env "$BACKUP_ENV"
@@ -25,10 +38,18 @@ if [ -f .env ]; then
 fi
 
 mkdir -p "$TMP"
-echo "==> Downloading ${ZIP_URL}"
-if ! curl -fsSL --retry 3 --retry-delay 2 -o "$ZIP" "$ZIP_URL"; then
-  echo "Download failed. Try mirror:" >&2
-  echo "  ZIP_URL=https://ghfast.top/https://github.com/${REPO}/archive/refs/heads/${BRANCH}.zip bash $0" >&2
+downloaded=0
+for candidate in "${zip_candidates[@]}"; do
+  echo "==> Downloading ${candidate}"
+  if curl -fsSL --retry 2 --retry-delay 2 --connect-timeout 20 -o "$ZIP" "$candidate"; then
+    downloaded=1
+    ZIP_URL="$candidate"
+    break
+  fi
+  echo "    failed, trying next mirror..." >&2
+done
+if [ "$downloaded" -ne 1 ]; then
+  echo "ERROR: all zip mirrors failed for branch ${BRANCH}" >&2
   exit 1
 fi
 
@@ -36,7 +57,7 @@ echo "==> Extracting"
 unzip -q -o "$ZIP" -d "$TMP"
 SRC="${TMP}/${REPO//\//-}-${BRANCH}"
 if [ ! -d "$SRC" ]; then
-  # GitHub zip folder name: Texas-Hold-em-main
+  # GitHub zip folder: slashes in branch become dashes
   SRC="$(find "$TMP" -maxdepth 1 -type d ! -path "$TMP" | head -1)"
 fi
 if [ ! -f "$SRC/apps/api/src/main.ts" ]; then
@@ -98,10 +119,11 @@ ROOM_P="${ROOM_PORT:-3001}"
 echo ""
 echo "==> Health:"
 curl -sf "http://127.0.0.1:${API_P}/health" && echo "" || echo "API health FAIL"
-curl -sf "http://127.0.0.1:${ROOM_P}/health" && echo "" || echo "Room health FAIL"
+ROOM_HEALTH="$(curl -sf "http://127.0.0.1:${ROOM_P}/health" || true)"
+echo "${ROOM_HEALTH:-Room health FAIL}"
 
-if ! curl -sf "http://127.0.0.1:${ROOM_P}/health" | grep -q '"version":"0.4.5"'; then
-  echo "WARN: room version not 0.4.5 — run: bash scripts/staging-redeploy-room.sh" >&2
+if ! echo "${ROOM_HEALTH}" | grep -q "\"version\":\"${EXPECTED_ROOM_VERSION}\""; then
+  echo "WARN: room version not ${EXPECTED_ROOM_VERSION} — run: bash scripts/staging-redeploy-room.sh" >&2
 fi
 
 echo "==> Register probe:"
@@ -111,4 +133,4 @@ curl -sf -X POST "http://127.0.0.1:${API_P}/api/v1/auth/register" \
   | head -c 150 && echo ""
 
 echo ""
-echo "Done. API 0.5.0 · Room 0.4.5 expected in health output above."
+echo "Done. API 0.5.0 · Room ${EXPECTED_ROOM_VERSION} expected in health output above."

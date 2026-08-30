@@ -193,6 +193,23 @@ ssh uoto@192.168.31.53
 curl -fsSL "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main/scripts/staging-server-deploy.sh" | bash -s main
 ```
 
+**部署 6-max 规则校正（PR #32，Room 0.4.6）— 在 Mac 上：**
+
+```bash
+cd ~/Texas-Hold-em
+bash scripts/staging-remote-deploy.sh cursor/poker-rules-6max-9b0a
+```
+
+**或在测试机 `uoto@tex` 上：**
+
+```bash
+curl -fsSL "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/cursor/poker-rules-6max-9b0a/scripts/staging-server-deploy.sh" \
+  | bash -s cursor/poker-rules-6max-9b0a
+curl -s http://127.0.0.1:3001/health
+```
+
+成功应看到 `"version":"0.4.6"`。
+
 或已在项目目录时：
 
 ```bash
