@@ -39,7 +39,7 @@ _load_mac_common() {
       echo "    try ${url}" >&2
       if curl -fsSL --connect-timeout 8 --max-time 30 --retry 2 --retry-delay 2 "${url}" -o "${dest}"; then
         if grep -q 'start_expo_dev_server' "${dest}" 2>/dev/null; then
-          if grep -q "MAC_COMMON_REV='2026-08-30-r3'" "${dest}" 2>/dev/null; then
+          if grep -q 'mac_urlencode_path' "${dest}" 2>/dev/null; then
             printf '%s\n' "${dest}"
             return 0
           fi
@@ -52,7 +52,7 @@ _load_mac_common() {
   done
 
   if [ -n "${fallback}" ]; then
-    echo "==> 未拉到 r3 mac-common，使用较旧可用版本" >&2
+    echo "==> 未拉到 r4 mac-common，使用较旧可用版本" >&2
     printf '%s\n' "${fallback}"
     return 0
   fi

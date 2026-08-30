@@ -50,6 +50,7 @@ for f in \
   apps/mobile/src/components/ActionPanel.tsx \
   apps/mobile/src/components/auth/AuthField.tsx \
   apps/mobile/src/components/ui/Card.tsx \
+  "apps/mobile/app/room/[code].tsx" \
   scripts/lib/mac-common.sh \
   scripts/mac-start-mobile.sh
 do

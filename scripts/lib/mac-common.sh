@@ -6,7 +6,7 @@
 #   # shellcheck source=lib/mac-common.sh
 #   source "$(mac_find_lib "$MAC_SCRIPT_SELF")"
 
-MAC_COMMON_REV='2026-08-30-r3'
+MAC_COMMON_REV='2026-08-30-r4'
 GITHUB_REPO='abutang-droid/Texas-Hold-em'
 MIRROR_BASE_DEFAULT='https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main'
 
@@ -261,17 +261,36 @@ mac_mirror_base() {
   printf '%s\n' "${MIRROR_BASE:-${MIRROR_BASE_DEFAULT}}"
 }
 
+# Encode [ ] in paths. curl treats [code] as a glob range ("bad range in URL").
+mac_urlencode_path() {
+  local rel="$1"
+  local out="" c i
+  i=0
+  while [ "${i}" -lt "${#rel}" ]; do
+    c="${rel:${i}:1}"
+    case "${c}" in
+      '[') out="${out}%5B" ;;
+      ']') out="${out}%5D" ;;
+      ' ') out="${out}%20" ;;
+      *) out="${out}${c}" ;;
+    esac
+    i=$((i + 1))
+  done
+  printf '%s' "${out}"
+}
+
 # Candidate raw-file URLs for a repo-relative path. ghfast first (CN), then other CDNs.
 mac_raw_urls() {
   local rel="$1"
-  local ref
+  local ref enc
   ref="$(mac_git_ref)"
+  enc="$(mac_urlencode_path "${rel}")"
   printf '%s\n' \
-    "https://ghfast.top/https://raw.githubusercontent.com/${GITHUB_REPO}/${ref}/${rel}" \
-    "https://gh-proxy.com/https://raw.githubusercontent.com/${GITHUB_REPO}/${ref}/${rel}" \
-    "https://cdn.jsdelivr.net/gh/${GITHUB_REPO}@${ref}/${rel}" \
-    "https://raw.gitmirror.com/${GITHUB_REPO}/${ref}/${rel}" \
-    "https://raw.githubusercontent.com/${GITHUB_REPO}/${ref}/${rel}"
+    "https://ghfast.top/https://raw.githubusercontent.com/${GITHUB_REPO}/${ref}/${enc}" \
+    "https://gh-proxy.com/https://raw.githubusercontent.com/${GITHUB_REPO}/${ref}/${enc}" \
+    "https://cdn.jsdelivr.net/gh/${GITHUB_REPO}@${ref}/${enc}" \
+    "https://raw.gitmirror.com/${GITHUB_REPO}/${ref}/${enc}" \
+    "https://raw.githubusercontent.com/${GITHUB_REPO}/${ref}/${enc}"
 }
 
 # Return 0 if dest looks like a real source file, not an HTML/404 body.
@@ -297,7 +316,7 @@ download_url_list_to() {
   mkdir -p "$(dirname "${dest}")"
   while IFS= read -r url; do
     [ -z "${url}" ] && continue
-    if curl -fsSL --connect-timeout 8 --max-time 30 --retry 2 --retry-delay 2 "${url}" -o "${tmp}"; then
+    if curl -g -fsSL --connect-timeout 8 --max-time 30 --retry 2 --retry-delay 2 "${url}" -o "${tmp}"; then
       if mac_file_looks_ok "${tmp}"; then
         mv "${tmp}" "${dest}"
         return 0
@@ -397,9 +416,13 @@ sync_mobile_from_mirror() {
   while IFS= read -r rel; do
     [ -z "${rel}" ] && continue
     if ! download_repo_file "${root}" "${rel}"; then
+      if [ -f "${root}/${rel}" ]; then
+        echo "    keep local ${rel}"
+        continue
+      fi
       case "${rel}" in
-        scripts/*)
-          echo "    skip optional ${rel} (not on this ref yet)"
+        scripts/*|apps/mobile/app/room/*)
+          echo "    skip optional ${rel}"
           ;;
         *)
           failed=1

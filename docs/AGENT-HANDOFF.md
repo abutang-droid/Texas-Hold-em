@@ -1,7 +1,7 @@
 # Agent 交接文档（Texas Hold'em）
 
 > **用途**：开新 Cursor 对话时，把本文档路径或全文贴给 Agent，可快速恢复上下文。  
-> **最后更新**：2026-08-30（r3：多镜像 + 完整同步清单 + Expo --web 等待端口）  
+> **最后更新**：2026-08-30（r4：curl `[code].tsx` URL 编码 / --globoff）  
 > **仓库**：`https://github.com/abutang-droid/Texas-Hold-em`  
 > **主分支**：`main`（开发以 `main` 为准，不再要求 checkout 旧 feature 分支）
 
@@ -44,7 +44,7 @@ Monorepo（pnpm workspace）：
 
 ## 3. 用户当前卡点（优先处理）
 
-**现象**：Mac 上 curl 脚本后 **Expo 没有启动**。上一轮最后一次失败是：
+**现象**：Mac 上 curl 脚本后 **Expo 没有启动**。2026-08-30 复现：r3 同步到 `apps/mobile/app/room/[code].tsx` 时 curl 报 `bad range in URL`（方括号被当成 glob）。r4 已 URL 编码 + `--globoff`。更早一次失败是：
 
 ```text
 curl: (56) The requested URL returned error: 404
