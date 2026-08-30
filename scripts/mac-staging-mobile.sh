@@ -19,10 +19,10 @@ fi
 bash scripts/mac-staging-check.sh
 
 # 移动端环境变量
-if [ ! -f apps/mobile/.env ]; then
-  cp apps/mobile/.env.staging.example apps/mobile/.env
-  echo "已创建 apps/mobile/.env"
-fi
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=lib/ensure-mobile-env.sh
+source "${SCRIPT_DIR}/lib/ensure-mobile-env.sh"
+ensure_mobile_env "$ROOT"
 
 echo ">>> pnpm install & build"
 pnpm install
