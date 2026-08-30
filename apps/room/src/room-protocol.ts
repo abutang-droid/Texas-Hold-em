@@ -124,6 +124,7 @@ export async function syncRoomSnapshot(table: InteractiveTable): Promise<void> {
 }
 
 export function broadcastState(io: Server, roomId: string, table: InteractiveTable): void {
+  table.clearBroadcastRequest();
   flushTableEvents(io, roomId, table);
   const sockets = io.sockets.adapter.rooms.get(roomId);
   if (!sockets) return;

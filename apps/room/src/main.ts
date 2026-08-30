@@ -201,7 +201,7 @@ export function startRoomServer(port: number): void {
   const httpServer = createServer((req, res) => {
     if (req.url === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.5.0' }));
+      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.5.1' }));
       return;
     }
     res.writeHead(404);
@@ -368,8 +368,14 @@ export function startRoomServer(port: number): void {
         ack?.({ ok: false, error: 'ROOM_NOT_FOUND' });
         return;
       }
-      const result = await standUpFlow({ io, table, roomId, userId });
-      ack?.(result);
+      try {
+        const result = await standUpFlow({ io, table, roomId, userId });
+        ack?.(result);
+      } catch (e) {
+        const message = (e as Error).message || 'INVALID_ACTION';
+        emitError(socket, 'INVALID_ACTION', msg?.requestId);
+        ack?.({ ok: false, error: message });
+      }
     });
 
     socket.on(

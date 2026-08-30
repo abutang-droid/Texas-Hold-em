@@ -65,6 +65,7 @@ download "apps/mobile/src/components/ActionPanel.tsx"
 download "apps/mobile/src/components/ChipFlyLayer.tsx"
 download "apps/mobile/src/components/CommunityCardsRow.tsx"
 download "apps/mobile/src/components/Table9Max.tsx"
+download "apps/mobile/src/components/ShowdownOverlay.tsx"
 download "apps/mobile/src/components/TurnTimer.tsx"
 download "apps/mobile/src/components/ui/PlayingCard.tsx"
 download "apps/mobile/src/locales/zh-CN.json"
@@ -75,7 +76,7 @@ download "apps/mobile/src/utils/nickname.ts"
 
 echo ""
 echo "Mac mini 客户端已更新。服务端请在家庭服务器 uoto@192.168.31.53 上单独部署，不要在这台 Mac 上跑 staging-update。"
-echo "服务器成功标志: curl -s http://127.0.0.1:3001/health  → version 0.5.0"
+echo "服务器成功标志: curl -s http://127.0.0.1:3001/health  → version 0.5.1"
 echo ""
 
 if [ -f "${REPO}/scripts/mac-mobile-dev.sh" ]; then

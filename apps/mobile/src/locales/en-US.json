@@ -171,6 +171,7 @@
     "profile_bot": "Bot",
     "profile_human": "Player",
     "standing_after_hand": "Standing up after this hand",
+    "now_watching": "Stood up — watching",
     "reconnecting": "Reconnecting…",
     "reconnected": "Back online",
     "connection_lost": "Connection lost",

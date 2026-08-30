@@ -77,7 +77,7 @@
 
 ## 部署后桌测
 
-Room health `"version":"0.5.0"` 表示本规则已上 Staging。桌测：
+Room health `"version":"0.5.1"` 表示本规则已上 Staging。桌测：
 
 1. 两人桌：Button 下 **1**，另一人下 **2**；翻前 Button 先动
 2. 行动条约 **20 秒**（不是 15 秒）

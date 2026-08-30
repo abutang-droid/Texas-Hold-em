@@ -261,17 +261,22 @@ export function Table9Max({
                 phase !== 'WAITING' &&
                 seat.status !== 'SIT_OUT' &&
                 seat.status !== 'FOLDED';
-              const heroOrRevealed =
-                !isSpectator &&
-                !!isHero &&
+              const realHoles =
                 !!seat?.holeCards &&
+                seat.holeCards.length >= 2 &&
                 seat.holeCards[0] !== '**';
-              const holeCards = heroOrRevealed
+              const showFaceUp =
+                realHoles &&
+                (!!isHero ||
+                  !!seat?.revealed ||
+                  phase === 'SHOWDOWN' ||
+                  phase === 'END_HAND');
+              const holeCards = showFaceUp
                 ? seat!.holeCards!
                 : inHand
                   ? ['**', '**']
                   : null;
-              const holeCompact = !heroOrRevealed;
+              const holeCompact = !showFaceUp;
               const isWinner = winnerSeats.includes(idx);
               const isDealer = buttonSeat === idx;
               const isSb = sbSeat === idx;

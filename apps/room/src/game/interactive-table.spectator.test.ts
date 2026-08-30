@@ -55,6 +55,70 @@ describe('official spectator flow', () => {
     assert.equal(state.seats.filter((s) => s.isBot).length, 5);
   });
 
+  it('defers stand-up while the player is in a live pot', () => {
+    const table = new InteractiveTable('O8');
+    table.addPlayer('u1', 'Alice', 100);
+    const live = table.getPublicState('u1');
+    assert.ok(['PRE_FLOP', 'FLOP', 'TURN', 'RIVER'].includes(live.phase));
+    const result = table.standUp('u1');
+    assert.equal(result.ok, true);
+    assert.equal(result.deferred, true);
+    assert.equal(table.hasPlayer('u1'), true);
+    assert.equal(table.getPublicState('u1').seats.find((s) => s.userId === 'u1')?.status, 'FOLDED');
+  });
+
+  it('reveals remaining hole cards after a contested all-in', () => {
+    const table = new InteractiveTable('SD1', {
+      roomType: 'PRIVATE',
+      maxSeats: 6,
+      smallBlind: 1,
+      bigBlind: 2,
+      buyInCap: 100,
+    });
+    table.addPlayer('u1', 'A', 100);
+    table.addPlayer('u2', 'B', 100);
+    assert.equal(table.getPublicState('u1').phase, 'PRE_FLOP');
+
+    let safety = 0;
+    while (table.getPublicState().phase !== 'END_HAND' && safety < 6) {
+      safety += 1;
+      const turn = table.getCurrentTurnSeat();
+      assert.ok(turn !== null, `expected a turn at step ${safety}`);
+      table.act(turn, 'all_in');
+    }
+
+    const end = table.getPublicState('u1');
+    assert.equal(end.phase, 'END_HAND');
+    assert.equal(end.seats.filter((s) => s.holeCards?.[0] && s.holeCards[0] !== '**').length, 2);
+    assert.equal(
+      table.getPublicState('u2').seats.filter((s) => s.holeCards?.[0] !== '**').length,
+      2,
+    );
+  });
+
+  it('does not reveal the winner when the other player folded', () => {
+    const table = new InteractiveTable('SD2', {
+      roomType: 'PRIVATE',
+      maxSeats: 6,
+      smallBlind: 1,
+      bigBlind: 2,
+      buyInCap: 100,
+    });
+    table.addPlayer('u1', 'A', 100);
+    table.addPlayer('u2', 'B', 100);
+    const turn = table.getCurrentTurnSeat();
+    assert.ok(turn !== null);
+    table.act(turn, 'fold');
+    const end = table.getPublicState('u1');
+    assert.equal(end.phase, 'END_HAND');
+    const folder = end.seats.find((s) => s.seatIndex === turn);
+    const winner = end.seats.find((s) => s.seatIndex !== turn);
+    assert.ok(folder && winner);
+    const asFolder = table.getPublicState(folder.userId);
+    const winnerSeen = asFolder.seats.find((s) => s.userId === winner.userId);
+    assert.equal(winnerSeen?.holeCards?.[0], '**');
+  });
+
   it('sits immediately when the table is waiting', () => {
     const table = new InteractiveTable('O4');
     table.addSpectator('u1', 'Alice', null);

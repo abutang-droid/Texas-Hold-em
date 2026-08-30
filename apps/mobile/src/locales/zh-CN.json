@@ -171,6 +171,7 @@
     "profile_bot": "机器人",
     "profile_human": "玩家",
     "standing_after_hand": "本局结束后起身",
+    "now_watching": "已起身，观战中",
     "reconnecting": "正在重连…",
     "reconnected": "已恢复连接",
     "connection_lost": "连接已断开",

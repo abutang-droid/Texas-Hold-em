@@ -77,6 +77,32 @@ function mergeCommunity(
   return incoming;
 }
 
+function hasFaceUpHoles(cards?: string[]): boolean {
+  return !!cards && cards.length >= 2 && cards[0] !== '**';
+}
+
+function mergeRevealedHoles(
+  prev: SeatView[],
+  incoming: SeatView[],
+  phase: string,
+  prevHandId: string | null,
+  nextHandId: string | null,
+): SeatView[] {
+  const sameHand = !!nextHandId && nextHandId === prevHandId;
+  const keepPhase = phase === 'SHOWDOWN' || phase === 'END_HAND';
+  const prevBySeat = new Map(prev.map((s) => [s.seatIndex, s]));
+  return incoming.map((seat) => {
+    if (hasFaceUpHoles(seat.holeCards)) {
+      return { ...seat, revealed: true };
+    }
+    const before = prevBySeat.get(seat.seatIndex);
+    if (sameHand && keepPhase && before?.revealed && hasFaceUpHoles(before.holeCards)) {
+      return { ...seat, holeCards: before.holeCards, revealed: true };
+    }
+    return { ...seat, revealed: false };
+  });
+}
+
 function mapSnapshot(payload: SnapshotPayload, currentTurnSeat: number | null): TableState {
   return {
     potTotal: payload.potTotal,
@@ -199,6 +225,13 @@ export default function TableScreen() {
         prev.handId,
         mapped.handId,
         mapped.phase,
+      );
+      mapped.seats = mergeRevealedHoles(
+        prev.seats,
+        mapped.seats,
+        mapped.phase,
+        prev.handId,
+        mapped.handId,
       );
       return mapped;
     });
@@ -782,18 +815,27 @@ export default function TableScreen() {
     router.back();
   };
 
+  // standUpAckFix: 2026-08-30 — always ack + notice; overlay must not eat the tap
   const standUp = () => {
-    socket?.emit(
-      'stand_up',
-      { requestId: `stand-${Date.now()}` },
-      (ack: { ok?: boolean; deferred?: boolean }) => {
-        if (!ack?.ok) {
-          showAlert(t('common.error'));
-          return;
-        }
-        if (ack.deferred) setHandNotice(t('table.standing_after_hand'));
-      },
-    );
+    if (!socket) {
+      showAlert(t('common.error'), t('table.connection_lost'));
+      return;
+    }
+    let settled = false;
+    const requestId = `stand-${Date.now()}`;
+    const finish = (ack?: { ok?: boolean; deferred?: boolean; error?: string }) => {
+      if (settled) return;
+      settled = true;
+      if (!ack?.ok) {
+        showAlert(t('common.error'), ack?.error ?? t('common.error'));
+        return;
+      }
+      setHandNotice(ack.deferred ? t('table.standing_after_hand') : t('table.now_watching'));
+    };
+    socket.emit('stand_up', { requestId }, finish);
+    setTimeout(() => {
+      if (!settled) setHandNotice(t('table.standing_after_hand'));
+    }, 1200);
   };
 
   // sitDownWebConfirm: 2026-08-30 — Expo web cannot use Alert.alert buttons
@@ -1010,7 +1052,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 16,
     left: 16,
-    zIndex: 11,
+    zIndex: 200,
     flexDirection: 'row',
     gap: 8,
   },

@@ -212,6 +212,7 @@ export class InteractiveTable {
   private pendingStandUp = new Set<string>();
   private spectators = new Map<string, { userId: string; nickname: string; avatarUrl: string | null }>();
   private finishingHand = false;
+  private broadcastRequested = false;
   private onPlayerRemoved?: (userId: string, chips: number) => void;
 
   constructor(roomId: string, config?: Partial<TableConfig>) {
@@ -396,7 +397,15 @@ export class InteractiveTable {
   }
 
   hasPendingEvents(): boolean {
-    return this.eventQueue.length > 0;
+    return this.eventQueue.length > 0 || this.broadcastRequested;
+  }
+
+  requestBroadcast(): void {
+    this.broadcastRequested = true;
+  }
+
+  clearBroadcastRequest(): void {
+    this.broadcastRequested = false;
   }
 
   private pushEvent(event: TableEvent): void {
@@ -992,6 +1001,7 @@ export class InteractiveTable {
       }
       this.phase = 'WAITING';
       this.tryStartHand();
+      this.requestBroadcast();
     }, HAND_PAUSE_MS);
   }
 
@@ -1069,6 +1079,24 @@ export class InteractiveTable {
     };
   }
 
+  /** Contested showdown: remaining players' hole cards are public until the next hand. */
+  private publicHoleCards(
+    p: PlayerState,
+    forUserId?: string,
+  ): string[] | ['**', '**'] {
+    const mine = p.holeCards.map((c) => c.rank + c.suit);
+    if (forUserId && p.userId === forUserId) return mine;
+    const live = this.players.filter(
+      (pl) => pl.status !== 'FOLDED' && pl.status !== 'SIT_OUT' && pl.holeCards.length === 2,
+    );
+    const contestedReveal =
+      (this.phase === 'SHOWDOWN' || this.phase === 'END_HAND') &&
+      live.length > 1 &&
+      live.some((pl) => pl.userId === p.userId);
+    if (contestedReveal) return mine;
+    return ['**', '**'];
+  }
+
   getPublicState(forUserId?: string): PublicTableState {
     const mySeat = forUserId
       ? this.players.find((p) => p.userId === forUserId)?.seatIndex ?? null
@@ -1117,10 +1145,7 @@ export class InteractiveTable {
         status: p.status,
         isBot: p.isBot,
         avatarUrl: p.isBot ? null : (this.avatarByUserId.get(p.userId) ?? null),
-        holeCards:
-          forUserId && p.userId === forUserId
-            ? p.holeCards.map((c) => c.rank + c.suit)
-            : (['**', '**'] as ['**', '**']),
+        holeCards: this.publicHoleCards(p, forUserId),
       })),
     };
   }
