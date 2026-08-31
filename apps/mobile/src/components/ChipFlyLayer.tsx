@@ -1,18 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { colors, typography } from '../theme';
-
-/** Seat positions (%), must match Table9Max SEAT_POSITIONS. */
-const SEAT_POSITIONS: Array<{ top: number; left: number }> = [
-  { top: 72, left: 50 },
-  { top: 62, left: 82 },
-  { top: 22, left: 78 },
-  { top: 12, left: 50 },
-  { top: 22, left: 22 },
-  { top: 62, left: 18 },
-];
-
-const POT = { top: 38, left: 50 };
+import { POT_LAYOUT, SEAT_LAYOUT } from './table-layout';
 
 export interface ChipFlyEvent {
   id: string;
@@ -31,9 +20,9 @@ function FlyingChip({ event, onDone }: { event: ChipFlyEvent; onDone: () => void
   const opacity = useRef(new Animated.Value(1)).current;
   const onDoneRef = useRef(onDone);
   onDoneRef.current = onDone;
-  const seat = SEAT_POSITIONS[event.seatIndex] ?? POT;
-  const from = event.direction === 'out' ? POT : seat;
-  const to = event.direction === 'out' ? seat : POT;
+  const seat = SEAT_LAYOUT[event.seatIndex] ?? POT_LAYOUT;
+  const from = event.direction === 'out' ? POT_LAYOUT : seat;
+  const to = event.direction === 'out' ? seat : POT_LAYOUT;
 
   useEffect(() => {
     progress.setValue(0);

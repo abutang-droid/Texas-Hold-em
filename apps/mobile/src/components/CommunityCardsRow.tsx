@@ -39,7 +39,7 @@ export function CommunityCardsRow({ cards }: Props) {
       if (seen.current[i] === code) continue;
       seen.current[i] = code;
       opacities[i].setValue(0.35);
-      slides[i].setValue(-18);
+      slides[i].setValue(-32);
       Animated.sequence([
         Animated.delay(isFlopDeal ? i * 160 : 40),
         Animated.parallel([

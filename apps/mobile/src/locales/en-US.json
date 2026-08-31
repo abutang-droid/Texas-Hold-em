@@ -172,6 +172,7 @@
     "profile_human": "Player",
     "standing_after_hand": "Standing up after this hand",
     "now_watching": "Stood up — watching",
+    "dealer": "Dealer",
     "reconnecting": "Reconnecting…",
     "reconnected": "Back online",
     "connection_lost": "Connection lost",

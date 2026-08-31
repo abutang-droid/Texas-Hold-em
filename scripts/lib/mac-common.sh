@@ -257,6 +257,9 @@ apps/mobile/src/theme/index.ts
 apps/mobile/src/utils/alert.ts
 apps/mobile/src/utils/nickname.ts
 apps/mobile/src/components/Table9Max.tsx
+apps/mobile/src/components/table-layout.ts
+apps/mobile/src/components/DealerStation.tsx
+apps/mobile/src/components/DealFlyLayer.tsx
 apps/mobile/src/components/ShowdownOverlay.tsx
 apps/mobile/src/components/ChipFlyLayer.tsx
 apps/mobile/src/components/CommunityCardsRow.tsx

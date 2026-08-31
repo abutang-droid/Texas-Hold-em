@@ -6,6 +6,9 @@ import { PlayingCard } from './ui/PlayingCard';
 import { CommunityCardsRow } from './CommunityCardsRow';
 import { PotDisplay } from './PotDisplay';
 import { ChipFlyLayer, type ChipFlyEvent } from './ChipFlyLayer';
+import { DealFlyLayer, boardDealEvents, holeDealEvents, type DealFlyEvent } from './DealFlyLayer';
+import { DealerStation } from './DealerStation';
+import { dealSeatOrder, SEAT_LAYOUT } from './table-layout';
 import { Avatar } from './Avatar';
 import type { SeatAction } from '../types/table';
 function formatStack(chips: number): string {
@@ -30,15 +33,7 @@ function SeatCountdown({ deadline }: { deadline: number }) {
   );
 }
 
-/** 6-max elliptical seat positions (%, %) */
-const SEAT_POSITIONS: Array<{ top: string; left: string }> = [
-  { top: '72%', left: '50%' },
-  { top: '62%', left: '82%' },
-  { top: '22%', left: '78%' },
-  { top: '12%', left: '50%' },
-  { top: '22%', left: '22%' },
-  { top: '62%', left: '18%' },
-];
+/** 6-max elliptical seat positions (%, %) — dealer occupies 12 o'clock. */
 
 export interface SeatView {
   seatIndex: number;
@@ -240,6 +235,59 @@ export function Table9Max({
   isSpectator = false,
 }: Props) {
   const [profileSeat, setProfileSeat] = useState<number | null>(null);
+  const [dealEvents, setDealEvents] = useState<DealFlyEvent[]>([]);
+  const holeDealKey = useRef<string>('');
+  const lastBoardLen = useRef(0);
+
+  const inHandSeats = seats
+    .filter(
+      (s) =>
+        phase !== 'WAITING' &&
+        s.status !== 'SIT_OUT' &&
+        s.status !== 'FOLDED',
+    )
+    .map((s) => s.seatIndex);
+  const inHandKey = inHandSeats.join(',');
+  const holeOrder = dealSeatOrder(buttonSeat, inHandSeats);
+
+  useEffect(() => {
+    if (!animateHoleDeal) {
+      holeDealKey.current = '';
+      return;
+    }
+    const key = `${phase}:${inHandKey}:${buttonSeat}`;
+    if (holeDealKey.current === key) return;
+    holeDealKey.current = key;
+    const order = dealSeatOrder(
+      buttonSeat,
+      inHandKey ? inHandKey.split(',').map((n) => Number(n)) : [],
+    );
+    setDealEvents((prev) => [
+      ...prev,
+      ...holeDealEvents({
+        handId: key,
+        dealOrder: order,
+      }),
+    ]);
+  }, [animateHoleDeal, buttonSeat, inHandKey, phase]);
+
+  useEffect(() => {
+    if (communityCards.length === 0) {
+      lastBoardLen.current = 0;
+      return;
+    }
+    if (communityCards.length > lastBoardLen.current) {
+      setDealEvents((prev) => [
+        ...prev,
+        ...boardDealEvents({
+          handId: communityCards.join(''),
+          fromCount: lastBoardLen.current,
+          toCount: communityCards.length,
+        }),
+      ]);
+    }
+    lastBoardLen.current = communityCards.length;
+  }, [communityCards]);
 
   return (
     <View style={styles.container}>
@@ -249,11 +297,16 @@ export function Table9Max({
         <View style={styles.rail}>
           <Pressable style={styles.felt} onPress={() => setProfileSeat(null)}>
             <View style={styles.feltPattern} />
+            <DealerStation dealing={dealEvents.length > 0} />
+            <DealFlyLayer
+              events={dealEvents}
+              onDone={(id) => setDealEvents((prev) => prev.filter((e) => e.id !== id))}
+            />
             <View style={styles.center}>
               <CommunityCardsRow cards={communityCards} />
               <PotDisplay potTotal={potTotal} potLabel={potLabel} />
             </View>
-            {SEAT_POSITIONS.map((pos, idx) => {
+            {SEAT_LAYOUT.map((pos, idx) => {
               const seat = seats.find((s) => s.seatIndex === idx);
               const isHero = heroUserId && seat?.userId === heroUserId;
               const inHand =
@@ -303,7 +356,7 @@ export function Table9Max({
                   }}
                   style={[
                     styles.seat,
-                    { top: pos.top as `${number}%`, left: pos.left as `${number}%` },
+                    { top: `${pos.top}%`, left: `${pos.left}%` },
                     seat?.isActive && styles.seatActive,
                     isHero && styles.seatHero,
                     isWinner && styles.seatWinner,
@@ -329,7 +382,9 @@ export function Table9Max({
                     <HoleCardsRow
                       cards={holeCards}
                       animate={animateHoleDeal}
-                      dealDelayMs={idx * 70}
+                      dealDelayMs={
+                        holeOrder.indexOf(idx) >= 0 ? 80 + holeOrder.indexOf(idx) * 90 : idx * 70
+                      }
                       faceDown={false}
                       compact={false}
                     />
@@ -379,7 +434,11 @@ export function Table9Max({
                             <HoleCardsRow
                               cards={holeCards}
                               animate={animateHoleDeal}
-                              dealDelayMs={idx * 70}
+                              dealDelayMs={
+                                holeOrder.indexOf(idx) >= 0
+                                  ? 80 + holeOrder.indexOf(idx) * 90
+                                  : idx * 70
+                              }
                               faceDown
                               compact
                             />
@@ -450,7 +509,7 @@ const styles = StyleSheet.create({
   },
   center: {
     position: 'absolute',
-    top: '38%',
+    top: '42%',
     left: '28%',
     width: '44%',
     alignItems: 'center',
