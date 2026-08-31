@@ -34,6 +34,7 @@ export function ActionPanel({ turn, onAction }: Props) {
 
   useEffect(() => {
     setBusy(false);
+    setRaiseMode(false);
   }, [turn.seatIndex, turn.deadline, turn.callAmount]);
 
   const fire = (action: PokerAction, amount?: number) => {
@@ -46,7 +47,7 @@ export function ActionPanel({ turn, onAction }: Props) {
   const canRaise = can('raise') && turn.maxRaise > turn.minRaise;
   const canCheck = can('check');
   const canCall = can('call') && turn.callAmount > 0;
-  const canFold = can('fold');
+  const canFold = true;
   const canAllIn = can('all_in');
 
   const onTrackLayout = (e: LayoutChangeEvent) => {
@@ -116,6 +117,14 @@ export function ActionPanel({ turn, onAction }: Props) {
           />
         </View>
         <View style={styles.row}>
+          <ActionBtn
+            label={t('game.action.fold')}
+            variant="fold"
+            onPress={() => {
+              setRaiseMode(false);
+              fire('fold');
+            }}
+          />
           <ActionBtn label={t('game.action.cancel')} variant="ghost" onPress={() => setRaiseMode(false)} />
           {canAllIn && (
             <ActionBtn

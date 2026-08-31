@@ -46,7 +46,7 @@ export function getValidActions(ctx: ActionContext): ValidActions {
   const noBetYet = ctx.currentBet <= 0;
   const canOpen = !ctx.raiseClosed && remaining > toCall;
 
-  if (!canCheck) actions.push('fold');
+  actions.push('fold');
   if (canCheck) actions.push('check');
   if (toCall > 0 && remaining >= toCall) actions.push('call');
   if (canOpen) {
