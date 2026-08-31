@@ -17,10 +17,10 @@ const RANK_LABEL: Record<string, string> = {
 };
 
 const SIZE = {
-  xs: { w: 11, h: 15, rank: 6, suit: 5, pip: 6, pad: 1 },
-  sm: { w: 34, h: 50, rank: 17, suit: 12, pip: 18, pad: 3 },
-  md: { w: 48, h: 68, rank: 24, suit: 15, pip: 26, pad: 4 },
-  lg: { w: 58, h: 82, rank: 28, suit: 18, pip: 32, pad: 5 },
+  xs: { w: 11, h: 15, rank: 8, suit: 7, pad: 0 },
+  sm: { w: 34, h: 50, rank: 22, suit: 20, pad: 2 },
+  md: { w: 48, h: 68, rank: 32, suit: 28, pad: 3 },
+  lg: { w: 58, h: 82, rank: 38, suit: 34, pad: 4 },
 } as const;
 
 function parseCard(code: string): { rank: string; suit: string; red: boolean } | null {
@@ -67,48 +67,29 @@ export function PlayingCard({ code, size = 'md', faceDown }: Props) {
   }
 
   const ink = parsed.red ? '#C62828' : '#1A1A1A';
-  const rankSize = parsed.rank === '10' ? dim.rank - 3 : dim.rank;
+  const rankSize = parsed.rank === '10' ? Math.max(8, dim.rank - 6) : dim.rank;
   const pip = SUIT_SYMBOL[parsed.suit];
 
   return (
-    <View style={[styles.card, styles.face, { width: dim.w, height: dim.h, padding: dim.pad }]}>
-      <View style={styles.corner}>
-        <Text
-          style={[styles.rank, { color: ink, fontSize: rankSize, lineHeight: rankSize + 1 }]}
-          allowFontScaling={false}
-        >
-          {parsed.rank}
-        </Text>
-        <Text
-          style={[styles.suit, { color: ink, fontSize: dim.suit, lineHeight: dim.suit + 1 }]}
-          allowFontScaling={false}
-        >
-          {pip}
-        </Text>
-      </View>
+    <View
+      style={[
+        styles.card,
+        styles.face,
+        { width: dim.w, height: dim.h, padding: dim.pad },
+      ]}
+    >
       <Text
-        style={[
-          styles.centerPip,
-          { color: ink, fontSize: dim.pip, lineHeight: dim.pip + 2, opacity: 0.22 },
-        ]}
+        style={[styles.rank, { color: ink, fontSize: rankSize, lineHeight: rankSize + 1 }]}
+        allowFontScaling={false}
+      >
+        {parsed.rank}
+      </Text>
+      <Text
+        style={[styles.suit, { color: ink, fontSize: dim.suit, lineHeight: dim.suit + 1 }]}
         allowFontScaling={false}
       >
         {pip}
       </Text>
-      <View style={[styles.corner, styles.cornerFlip]}>
-        <Text
-          style={[styles.rank, { color: ink, fontSize: Math.max(9, rankSize - 6), lineHeight: Math.max(10, rankSize - 5) }]}
-          allowFontScaling={false}
-        >
-          {parsed.rank}
-        </Text>
-        <Text
-          style={[styles.suit, { color: ink, fontSize: Math.max(8, dim.suit - 3), lineHeight: Math.max(9, dim.suit - 2) }]}
-          allowFontScaling={false}
-        >
-          {pip}
-        </Text>
-      </View>
     </View>
   );
 }
@@ -128,6 +109,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F7F4EE',
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   back: {
     backgroundColor: '#1A2332',
@@ -162,30 +145,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#C9A227',
     transform: [{ rotate: '45deg' }],
   },
-  corner: {
-    alignItems: 'flex-start',
-    zIndex: 2,
-  },
-  cornerFlip: {
-    position: 'absolute',
-    right: 3,
-    bottom: 2,
-    alignItems: 'flex-end',
-    transform: [{ rotate: '180deg' }],
-    opacity: 0.9,
-  },
   rank: {
-    fontWeight: '800',
-    letterSpacing: -0.6,
+    fontWeight: '900',
+    letterSpacing: -1,
+    textAlign: 'center',
   },
   suit: {
-    fontWeight: '700',
-    marginTop: -2,
-  },
-  centerPip: {
-    position: 'absolute',
-    alignSelf: 'center',
-    top: '38%',
-    fontWeight: '700',
+    fontWeight: '900',
+    marginTop: -4,
+    textAlign: 'center',
   },
 });
