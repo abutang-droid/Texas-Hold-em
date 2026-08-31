@@ -1035,8 +1035,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     left: 16,
-    right: 16,
     zIndex: 19,
+    maxWidth: '72%',
   },
   emojiWrapAboveActions: {
     bottom: 120,

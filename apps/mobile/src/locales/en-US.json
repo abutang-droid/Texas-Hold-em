@@ -177,6 +177,8 @@
     "dealer_waiting": "Waiting",
     "dealer_dealing": "Dealing…",
     "dealer_showing": "Showdown",
+    "emoji_open": "Emoji",
+    "emoji_close": "Close",
     "reconnecting": "Reconnecting…",
     "reconnected": "Back online",
     "connection_lost": "Connection lost",

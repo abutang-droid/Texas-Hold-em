@@ -177,6 +177,8 @@
     "dealer_waiting": "等待",
     "dealer_dealing": "发牌中…",
     "dealer_showing": "亮牌中",
+    "emoji_open": "表情",
+    "emoji_close": "收起",
     "reconnecting": "正在重连…",
     "reconnected": "已恢复连接",
     "connection_lost": "连接已断开",
