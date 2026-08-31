@@ -17,10 +17,10 @@ const RANK_LABEL: Record<string, string> = {
 };
 
 const SIZE = {
-  xs: { w: 11, h: 15, rank: 8, suit: 7, pad: 0 },
-  sm: { w: 34, h: 50, rank: 22, suit: 20, pad: 2 },
-  md: { w: 48, h: 68, rank: 32, suit: 28, pad: 3 },
-  lg: { w: 58, h: 82, rank: 38, suit: 34, pad: 4 },
+  xs: { w: 11, h: 15, rank: 7, suit: 8, pad: 0 },
+  sm: { w: 34, h: 50, rank: 14, suit: 22, pad: 2 },
+  md: { w: 48, h: 68, rank: 18, suit: 32, pad: 3 },
+  lg: { w: 58, h: 82, rank: 22, suit: 40, pad: 4 },
 } as const;
 
 function parseCard(code: string): { rank: string; suit: string; red: boolean } | null {
@@ -67,7 +67,7 @@ export function PlayingCard({ code, size = 'md', faceDown }: Props) {
   }
 
   const ink = parsed.red ? '#C62828' : '#1A1A1A';
-  const rankSize = parsed.rank === '10' ? Math.max(8, dim.rank - 6) : dim.rank;
+  const rankSize = parsed.rank === '10' ? Math.max(7, dim.rank - 5) : dim.rank;
   const pip = SUIT_SYMBOL[parsed.suit];
 
   return (
@@ -79,13 +79,22 @@ export function PlayingCard({ code, size = 'md', faceDown }: Props) {
       ]}
     >
       <Text
-        style={[styles.rank, { color: ink, fontSize: rankSize, lineHeight: rankSize + 1 }]}
+        style={[
+          styles.rank,
+          {
+            color: ink,
+            fontSize: rankSize,
+            lineHeight: rankSize + 1,
+            top: dim.pad,
+            right: dim.pad,
+          },
+        ]}
         allowFontScaling={false}
       >
         {parsed.rank}
       </Text>
       <Text
-        style={[styles.suit, { color: ink, fontSize: dim.suit, lineHeight: dim.suit + 1 }]}
+        style={[styles.suit, { color: ink, fontSize: dim.suit, lineHeight: dim.suit + 2 }]}
         allowFontScaling={false}
       >
         {pip}
@@ -146,13 +155,14 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '45deg' }],
   },
   rank: {
+    position: 'absolute',
     fontWeight: '900',
     letterSpacing: -1,
-    textAlign: 'center',
+    textAlign: 'right',
+    zIndex: 2,
   },
   suit: {
     fontWeight: '900',
-    marginTop: -4,
     textAlign: 'center',
   },
 });
