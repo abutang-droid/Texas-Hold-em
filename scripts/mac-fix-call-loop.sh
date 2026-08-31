@@ -59,6 +59,10 @@ if ! table_has_snapshot_fix; then
   exit 1
 fi
 echo "OK table.tsx has applySnapshotMeFix"
+if ! grep -q 'emojiOpen' "${REPO}/apps/mobile/app/table.tsx"; then
+  echo "ERROR: table.tsx missing collapsed emoji picker (emojiOpen)." >&2
+  exit 1
+fi
 download "apps/mobile/app/_layout.tsx" "${TABLE_FIX_REF}"
 download "apps/mobile/app/index.tsx" "${TABLE_FIX_REF}"
 download "apps/mobile/src/theme/index.ts"
@@ -74,6 +78,7 @@ download "apps/mobile/src/components/DealFlyLayer.tsx"
 download "apps/mobile/src/components/ShowdownOverlay.tsx"
 download "apps/mobile/src/components/TurnTimer.tsx"
 download "apps/mobile/src/components/HandStatusBar.tsx"
+download "apps/mobile/src/components/EmojiBar.tsx"
 download "apps/mobile/src/components/PotDisplay.tsx"
 download "apps/mobile/src/components/ui/PlayingCard.tsx"
 download "apps/mobile/src/components/ui/Button.tsx"

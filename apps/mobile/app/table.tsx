@@ -176,6 +176,7 @@ export default function TableScreen() {
   const [chipFlyEvents, setChipFlyEvents] = useState<ChipFlyEvent[]>([]);
   const [animateHoleDeal, setAnimateHoleDeal] = useState(false);
   const [seatEmojis, setSeatEmojis] = useState<Record<number, string>>({});
+  const [emojiOpen, setEmojiOpen] = useState(false);
   const [seatActions, setSeatActions] = useState<Record<number, SeatAction>>({});
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>('connected');
@@ -813,12 +814,14 @@ export default function TableScreen() {
   };
 
   const leaveTable = () => {
+    setEmojiOpen(false);
     socket?.emit('leave_room', { requestId: `leave-${Date.now()}` });
     router.back();
   };
 
   // standUpAckFix: 2026-08-30 — always ack + notice; overlay must not eat the tap
   const standUp = () => {
+    setEmojiOpen(false);
     if (!socket) {
       showAlert(t('common.error'), t('table.connection_lost'));
       return;
@@ -979,9 +982,15 @@ export default function TableScreen() {
         </View>
       )}
 
-      {!isPrivate && isSeated && (
+      {!isPrivate && isSeated && emojiOpen && (
         <View style={[styles.emojiWrap, isMyTurn && turnContext && styles.emojiWrapAboveActions]}>
-          <EmojiBar onSend={sendEmoji} />
+          <EmojiBar
+            onSend={(emojiId) => {
+              sendEmoji(emojiId);
+              setEmojiOpen(false);
+            }}
+            onClose={() => setEmojiOpen(false)}
+          />
         </View>
       )}
 
@@ -1009,6 +1018,18 @@ export default function TableScreen() {
       />
 
       <View style={styles.topActions}>
+        {isSeated && !isPrivate && (
+          <Pressable
+            style={styles.topBtn}
+            onPress={() => setEmojiOpen((open) => !open)}
+            accessibilityRole="button"
+            accessibilityLabel={emojiOpen ? t('table.emoji_close') : t('table.emoji_open')}
+          >
+            <Text style={styles.backText}>
+              {emojiOpen ? t('table.emoji_close') : t('table.emoji_open')}
+            </Text>
+          </Pressable>
+        )}
         {isSeated && !isPrivate && (
           <Pressable style={styles.topBtn} onPress={standUp}>
             <Text style={styles.backText}>{t('table.stand_up')}</Text>
