@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { getProfile, getAvatarPresets, updateProfile } from '../src/api/client';
 import { Avatar } from '../src/components/Avatar';
@@ -33,11 +33,13 @@ export default function ProfileScreen() {
     setPresets(presetList.presets);
   }, []);
 
-  useEffect(() => {
-    load()
-      .catch((e) => showAlert(t('auth.error_title'), (e as Error).message))
-      .finally(() => setLoading(false));
-  }, [load, t]);
+  useFocusEffect(
+    useCallback(() => {
+      load()
+        .catch((e) => showAlert(t('auth.error_title'), (e as Error).message))
+        .finally(() => setLoading(false));
+    }, [load, t]),
+  );
 
   const onSave = async () => {
     if (!nickname.trim()) {

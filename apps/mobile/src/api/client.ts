@@ -17,6 +17,7 @@ let token: string | null = null;
 let refreshToken: string | null = null;
 let unauthorizedHandler: (() => void) | null = null;
 let authChangeHandler: (() => void) | null = null;
+const authChangeListeners = new Set<() => void>();
 
 let suppressUnauthorized = false;
 
@@ -28,8 +29,42 @@ export function setAuthChangeHandler(handler: (() => void) | null) {
   authChangeHandler = handler;
 }
 
+/** Subscribe to session writes (login, logout, recharge, profile). */
+export function subscribeAuthChange(listener: () => void): () => void {
+  authChangeListeners.add(listener);
+  return () => {
+    authChangeListeners.delete(listener);
+  };
+}
+
 function notifyAuthChange() {
   authChangeHandler?.();
+  for (const listener of authChangeListeners) listener();
+}
+
+async function writeSessionUser(userPatch: Partial<UserProfile>, notify: boolean): Promise<void> {
+  const access = getToken();
+  if (!access) return;
+  const session = await loadSession();
+  const current = session?.user;
+  if (!current && userPatch.id == null) return;
+  const user: UserProfile = {
+    id: userPatch.id ?? current?.id ?? 0,
+    nickname: userPatch.nickname ?? current?.nickname ?? '',
+    avatarUrl: userPatch.avatarUrl !== undefined ? userPatch.avatarUrl : current?.avatarUrl,
+    chipsBalance: userPatch.chipsBalance ?? current?.chipsBalance ?? 0,
+    level: userPatch.level ?? current?.level ?? 1,
+    totalExp: userPatch.totalExp ?? current?.totalExp ?? 0,
+    preferredLocale: userPatch.preferredLocale ?? current?.preferredLocale ?? 'zh-CN',
+    accountType: userPatch.accountType ?? current?.accountType,
+  };
+  refreshToken = getRefreshToken() ?? session?.refreshToken ?? null;
+  await saveSession({
+    token: access,
+    refreshToken: refreshToken ?? '',
+    user,
+  });
+  if (notify) notifyAuthChange();
 }
 
 export function isAuthPath(path: string): boolean {
@@ -223,7 +258,11 @@ export async function setLeaderboardStealth(enabled: boolean) {
 }
 
 export async function getProfile() {
-  return request<UserProfile & { settings?: { leaderboardStealth?: boolean } }>('/api/v1/user/profile');
+  const data = await request<UserProfile & { settings?: { leaderboardStealth?: boolean } }>(
+    '/api/v1/user/profile',
+  );
+  await writeSessionUser(data, false);
+  return data;
 }
 
 export async function getAvatarPresets() {
@@ -261,8 +300,13 @@ export async function getShopProducts() {
   }>('/api/v1/shop/products');
 }
 
+async function rememberRechargeBalance<T extends { chipsBalance: number }>(data: T): Promise<T> {
+  await writeSessionUser({ chipsBalance: data.chipsBalance }, true);
+  return data;
+}
+
 export async function mockRecharge(amount: number, requestId: string) {
-  return request<{
+  const data = await request<{
     chipsBalance: number;
     amount: number;
     bonusChips: number;
@@ -271,6 +315,7 @@ export async function mockRecharge(amount: number, requestId: string) {
     method: 'POST',
     body: JSON.stringify({ amount, requestId }),
   });
+  return rememberRechargeBalance(data);
 }
 
 export async function shopRecharge(
@@ -280,7 +325,7 @@ export async function shopRecharge(
   receiptToken?: string,
   productId?: string,
 ) {
-  return request<{
+  const data = await request<{
     chipsBalance: number;
     amount: number;
     bonusChips: number;
@@ -289,6 +334,7 @@ export async function shopRecharge(
     method: 'POST',
     body: JSON.stringify({ channel, amount, requestId, receiptToken, productId }),
   });
+  return rememberRechargeBalance(data);
 }
 
 export async function getLeaderboard() {

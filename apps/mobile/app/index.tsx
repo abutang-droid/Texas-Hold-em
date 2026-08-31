@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Alert, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import {
   quickStart,
   getLeaderboard,
@@ -11,8 +11,10 @@ import {
   getProfile,
   formatApiError,
   getToken,
+  subscribeAuthChange,
   type UserProfile,
 } from '../src/api/client';
+import { loadSession } from '../src/storage/session';
 import { Screen } from '../src/components/ui/Screen';
 import { Card } from '../src/components/ui/Card';
 import { Button } from '../src/components/ui/Button';
@@ -99,13 +101,23 @@ export default function LobbyScreen() {
     }
   }, [t]);
 
+  useFocusEffect(
+    useCallback(() => {
+      if (!getToken()) {
+        setLoading(false);
+        return;
+      }
+      void init();
+    }, [init]),
+  );
+
   useEffect(() => {
-    if (!getToken()) {
-      setLoading(false);
-      return;
-    }
-    void init();
-  }, [init]);
+    return subscribeAuthChange(() => {
+      void loadSession().then((session) => {
+        if (session?.user) setUser(session.user);
+      });
+    });
+  }, []);
 
   const isGuest = user?.accountType === 'GUEST';
 

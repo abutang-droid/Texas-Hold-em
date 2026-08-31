@@ -89,7 +89,8 @@ export default function ShopScreen() {
         return;
       }
       const res = await shopRecharge(channel, product.chips, `iap-${Date.now()}`, receipt, product.id);
-      setBalance(res.chipsBalance);
+      const profile = await getProfile().catch(() => null);
+      setBalance(profile?.chipsBalance ?? res.chipsBalance);
       if (res.bonusChips > 0) {
         Alert.alert(t('shop.first_bonus_title'), t('shop.first_bonus_body', { bonus: res.bonusChips }));
       } else {
