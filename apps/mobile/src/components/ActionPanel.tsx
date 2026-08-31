@@ -3,7 +3,7 @@ import { View, Text, Pressable, StyleSheet, LayoutChangeEvent } from 'react-nati
 import { useTranslation } from 'react-i18next';
 import type { PokerAction, TurnContext } from '../types/table';
 import { TurnTimer } from './TurnTimer';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, palette, radius, shadows, spacing, typography } from '../theme';
 
 interface Props {
   turn: TurnContext;
@@ -191,6 +191,7 @@ function ActionBtn({
   variant: 'fold' | 'check' | 'call' | 'raise' | 'allin' | 'ghost';
   flex?: boolean;
 }) {
+  const lightLabel = variant === 'fold' || variant === 'check' || variant === 'ghost';
   return (
     <Pressable
       style={({ pressed }) => [
@@ -202,7 +203,7 @@ function ActionBtn({
       onPress={onPress}
     >
       <Text
-        style={[styles.btnText, (variant === 'raise' || variant === 'ghost') && styles.btnTextDark]}
+        style={[styles.btnText, lightLabel && styles.btnTextInk, variant === 'fold' && styles.btnTextFold]}
         numberOfLines={1}
       >
         {label}
@@ -213,14 +214,16 @@ function ActionBtn({
 
 const styles = StyleSheet.create({
   panel: {
-    backgroundColor: 'rgba(18,20,24,0.92)',
+    backgroundColor: palette.inverse,
     borderRadius: radius.lg,
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: palette.line,
+    ...shadows.card,
   },
   row: { flexDirection: 'row', gap: spacing.sm },
   btn: {
+    minHeight: 52,
     paddingVertical: 14,
     paddingHorizontal: 10,
     borderRadius: radius.md,
@@ -229,20 +232,33 @@ const styles = StyleSheet.create({
     minWidth: 72,
   },
   btnFlex: { flex: 1, minWidth: 0 },
-  btn_fold: { backgroundColor: colors.semantic.danger },
-  btn_check: { backgroundColor: '#424242' },
-  btn_call: { backgroundColor: colors.semantic.success },
-  btn_raise: { backgroundColor: colors.brand.secondary },
-  btn_allin: { backgroundColor: colors.brand.accent },
-  btn_ghost: { backgroundColor: 'rgba(255,255,255,0.1)' },
+  btn_fold: {
+    backgroundColor: palette.inverse,
+    borderWidth: 1.5,
+    borderColor: colors.semantic.danger,
+  },
+  btn_check: {
+    backgroundColor: palette.inverse,
+    borderWidth: 1.5,
+    borderColor: palette.line,
+  },
+  btn_call: { backgroundColor: colors.brand.primary },
+  btn_raise: { backgroundColor: colors.brand.primary },
+  btn_allin: { backgroundColor: colors.semantic.danger },
+  btn_ghost: {
+    backgroundColor: palette.inverse,
+    borderWidth: 1.5,
+    borderColor: palette.line,
+  },
   pressed: { opacity: 0.88, transform: [{ scale: 0.98 }] },
-  btnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
-  btnTextDark: { color: '#1A1A1A' },
+  btnText: { color: palette.inverse, fontWeight: '800', fontSize: 14 },
+  btnTextInk: { color: colors.text.primary },
+  btnTextFold: { color: colors.semantic.danger },
   raiseHint: { ...typography.caption, color: colors.text.secondary, marginBottom: spacing.sm },
-  raiseValue: { color: colors.brand.secondary, fontWeight: '700' },
+  raiseValue: { color: colors.brand.primary, fontWeight: '800' },
   track: {
     height: 36,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: palette.accentSoft,
     borderRadius: radius.md,
     marginBottom: spacing.sm,
     justifyContent: 'center',
@@ -253,7 +269,7 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     bottom: 0,
-    backgroundColor: 'rgba(201,162,39,0.35)',
+    backgroundColor: 'rgba(46,125,99,0.28)',
     borderRadius: radius.md,
   },
   thumb: {
@@ -262,18 +278,20 @@ const styles = StyleSheet.create({
     height: 20,
     marginLeft: -10,
     borderRadius: 10,
-    backgroundColor: colors.brand.secondary,
+    backgroundColor: colors.brand.primary,
     borderWidth: 2,
-    borderColor: '#fff',
+    borderColor: palette.inverse,
     top: 8,
   },
   presetRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md },
   preset: {
     flex: 1,
+    minHeight: 44,
     paddingVertical: spacing.sm,
     borderRadius: radius.sm,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: palette.accentSoft,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  presetText: { ...typography.micro, color: colors.text.primary, fontWeight: '600' },
+  presetText: { ...typography.micro, color: colors.brand.primary, fontWeight: '700' },
 });

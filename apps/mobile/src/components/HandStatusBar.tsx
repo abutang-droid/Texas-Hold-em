@@ -2,7 +2,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import type { LastAction } from '../types/table';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, palette, radius, shadows, spacing, typography } from '../theme';
 
 function formatAction(action: LastAction, t: TFunction): string {
   const keyMap: Record<string, string> = {
@@ -87,25 +87,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    backgroundColor: palette.inverse,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: palette.line,
+    ...shadows.button,
   },
-  phase: { ...typography.micro, color: colors.brand.secondary, fontWeight: '700' },
+  phase: { ...typography.micro, color: colors.brand.primary, fontWeight: '700' },
   blinds: { ...typography.micro, color: colors.text.secondary },
   lastAction: { ...typography.micro, color: colors.text.secondary, maxWidth: '100%' },
   notice: {
-    backgroundColor: 'rgba(201,162,39,0.2)',
+    backgroundColor: palette.accentSoft,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: radius.sm,
     borderWidth: 1,
-    borderColor: 'rgba(201,162,39,0.4)',
+    borderColor: 'rgba(46,125,99,0.28)',
   },
-  noticeText: { ...typography.micro, color: colors.brand.secondary, fontWeight: '600' },
+  noticeText: { ...typography.micro, color: colors.brand.primary, fontWeight: '600' },
   noticeReconnect: {
     borderColor: 'rgba(74,144,217,0.6)',
     backgroundColor: 'rgba(74,144,217,0.2)',

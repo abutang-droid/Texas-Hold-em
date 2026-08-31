@@ -18,7 +18,7 @@ import { Card } from '../src/components/ui/Card';
 import { Button } from '../src/components/ui/Button';
 import { GameModal } from '../src/components/ui/GameModal';
 import { Avatar } from '../src/components/Avatar';
-import { colors, spacing, typography } from '../src/theme';
+import { colors, palette, spacing, typography } from '../src/theme';
 
 function showUserMessage(title: string, body: string) {
   if (Platform.OS === 'web') {
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { ...typography.h2, color: colors.brand.secondary },
+  avatarText: { ...typography.h2, color: palette.inverse },
   nickname: { ...typography.h2, color: colors.text.primary },
   levelPill: {
     alignSelf: 'flex-start',
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
-    backgroundColor: 'rgba(201,162,39,0.15)',
+    backgroundColor: palette.accentSoft,
   },
   levelText: { ...typography.micro, color: colors.brand.secondary },
   gear: { fontSize: 22, color: colors.text.secondary },
@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: spacing.lg,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: palette.line,
     alignItems: 'center',
   },
   tilePressed: { opacity: 0.85 },
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.05)',
+    borderTopColor: palette.line,
   },
   lbRank: {
     width: 24,

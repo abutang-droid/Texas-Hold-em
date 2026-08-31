@@ -1,35 +1,35 @@
 {
   "color": {
     "brand": {
-      "primary": "#1B5E3B",
-      "secondary": "#C9A227",
-      "accent": "#8B0000"
+      "primary": "#2E7D63",
+      "secondary": "#2E7D63",
+      "accent": "#B45454"
     },
     "felt": {
-      "base": "#0F4A2F",
-      "rail": "#3D2817",
-      "railHighlight": "#5C3D24"
+      "base": "#F4F6F7",
+      "rail": "#E6E8EB",
+      "railHighlight": "#D7DBE0"
     },
     "bg": {
-      "lobby": "#121418",
-      "card": "#1E2228"
+      "lobby": "#EEF1F3",
+      "card": "#FFFFFF"
     },
     "text": {
-      "primary": "#F5F5F5",
-      "secondary": "#9E9E9E",
-      "disabled": "#616161"
+      "primary": "#17191C",
+      "secondary": "#6B7280",
+      "disabled": "#9CA3AF"
     },
     "semantic": {
-      "success": "#2E7D32",
-      "danger": "#C62828",
-      "warning": "#F9A825",
-      "info": "#1565C0"
+      "success": "#2E7D63",
+      "danger": "#B45454",
+      "warning": "#B45454",
+      "info": "#2E7D63"
     }
   },
   "spacing": [4, 8, 12, 16, 24, 32, 48, 64],
   "radius": {
-    "sm": 4,
-    "md": 8,
-    "lg": 12
+    "sm": 10,
+    "md": 14,
+    "lg": 18
   }
 }

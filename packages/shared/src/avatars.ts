@@ -6,11 +6,11 @@ export interface AvatarPreset {
 }
 
 export const AVATAR_PRESETS: AvatarPreset[] = [
-  { id: 'spade', emoji: '♠', color: '#C9A227', label: { 'en-US': 'Spade', 'zh-CN': '黑桃' } },
-  { id: 'heart', emoji: '♥', color: '#E74C3C', label: { 'en-US': 'Heart', 'zh-CN': '红心' } },
-  { id: 'diamond', emoji: '♦', color: '#3498DB', label: { 'en-US': 'Diamond', 'zh-CN': '方块' } },
-  { id: 'club', emoji: '♣', color: '#2ECC71', label: { 'en-US': 'Club', 'zh-CN': '梅花' } },
-  { id: 'ace', emoji: 'A', color: '#9B59B6', label: { 'en-US': 'Ace', 'zh-CN': 'Ace' } },
+  { id: 'spade', emoji: '♠', color: '#2E7D63', label: { 'en-US': 'Spade', 'zh-CN': '黑桃' } },
+  { id: 'heart', emoji: '♥', color: '#C23B3B', label: { 'en-US': 'Heart', 'zh-CN': '红心' } },
+  { id: 'diamond', emoji: '♦', color: '#2E7D63', label: { 'en-US': 'Diamond', 'zh-CN': '方块' } },
+  { id: 'club', emoji: '♣', color: '#17191C', label: { 'en-US': 'Club', 'zh-CN': '梅花' } },
+  { id: 'ace', emoji: 'A', color: '#6B7280', label: { 'en-US': 'Ace', 'zh-CN': 'Ace' } },
   { id: 'king', emoji: 'K', color: '#E67E22', label: { 'en-US': 'King', 'zh-CN': 'King' } },
   { id: 'chip', emoji: '🎰', color: '#1ABC9C', label: { 'en-US': 'Lucky', 'zh-CN': '幸运' } },
   { id: 'fire', emoji: '🔥', color: '#E74C3C', label: { 'en-US': 'Fire', 'zh-CN': '火热' } },

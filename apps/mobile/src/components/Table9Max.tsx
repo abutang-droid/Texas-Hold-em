@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Animated, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, palette, radius, shadows, spacing, typography } from '../theme';
 import { PlayingCard } from './ui/PlayingCard';
 import { CommunityCardsRow } from './CommunityCardsRow';
 import { PotDisplay } from './PotDisplay';
@@ -113,23 +113,23 @@ function SeatActionBadge({ action }: { action: SeatAction }) {
 }
 
 const ACTION_BG = {
-  fold: { backgroundColor: 'rgba(80,80,80,0.92)' },
-  check: { backgroundColor: 'rgba(70,120,180,0.92)' },
-  call: { backgroundColor: 'rgba(46,125,50,0.92)' },
-  raise: { backgroundColor: 'rgba(201,162,39,0.95)' },
-  allin: { backgroundColor: 'rgba(180,40,40,0.95)' },
-  blind: { backgroundColor: 'rgba(40,40,40,0.88)' },
-  turn: { backgroundColor: 'rgba(201,162,39,0.95)' },
+  fold: { backgroundColor: palette.chipStack },
+  check: { backgroundColor: palette.inverse, borderWidth: 1, borderColor: palette.line },
+  call: { backgroundColor: colors.brand.primary },
+  raise: { backgroundColor: colors.brand.primary },
+  allin: { backgroundColor: colors.semantic.danger },
+  blind: { backgroundColor: palette.accentSoft },
+  turn: { backgroundColor: palette.accentSoft },
 } as const;
 
 const ACTION_FG = {
-  fold: { color: '#E0E0E0' },
-  check: { color: '#fff' },
-  call: { color: '#fff' },
-  raise: { color: '#1A1A1A' },
-  allin: { color: '#fff' },
-  blind: { color: '#F3E6B8' },
-  turn: { color: '#1A1A1A' },
+  fold: { color: colors.text.secondary },
+  check: { color: colors.text.primary },
+  call: { color: palette.inverse },
+  raise: { color: palette.inverse },
+  allin: { color: palette.inverse },
+  blind: { color: colors.brand.primary },
+  turn: { color: colors.brand.primary },
 } as const;
 
 function HoleCardsRow({
@@ -138,12 +138,14 @@ function HoleCardsRow({
   dealDelayMs = 0,
   faceDown,
   compact,
+  size = 'sm',
 }: {
   cards: string[];
   animate?: boolean;
   dealDelayMs?: number;
   faceDown?: boolean;
   compact?: boolean;
+  size?: 'sm' | 'lg';
 }) {
   const slide = useRef(new Animated.Value(animate ? -14 : 0)).current;
   const opacity = useRef(new Animated.Value(animate ? 0.25 : 1)).current;
@@ -176,7 +178,7 @@ function HoleCardsRow({
         <View key={i} style={compact && i > 0 ? styles.rivalCardOverlap : undefined}>
           <PlayingCard
             code={compact ? '**' : c}
-            size={compact ? 'xs' : 'sm'}
+            size={compact ? 'xs' : size}
             faceDown={compact || faceDown || c === '**'}
           />
         </View>
@@ -297,7 +299,7 @@ export function Table9Max({
         <View style={styles.rail}>
           <Pressable style={styles.felt} onPress={() => setProfileSeat(null)}>
             <View style={styles.feltPattern} />
-            <DealerStation dealing={dealEvents.length > 0} />
+            <DealerStation dealing={dealEvents.length > 0} phase={phase} />
             <DealFlyLayer
               events={dealEvents}
               onDone={(id) => setDealEvents((prev) => prev.filter((e) => e.id !== id))}
@@ -358,6 +360,7 @@ export function Table9Max({
                     styles.seat,
                     { top: `${pos.top}%`, left: `${pos.left}%` },
                     seat?.isActive && styles.seatActive,
+                    seat?.status === 'FOLDED' && styles.seatFolded,
                     isHero && styles.seatHero,
                     isWinner && styles.seatWinner,
                     showProfile && styles.seatProfileOpen,
@@ -387,6 +390,7 @@ export function Table9Max({
                       }
                       faceDown={false}
                       compact={false}
+                      size={isHero ? 'lg' : 'sm'}
                     />
                   ) : null}
                   {seatEmojis[idx] ? (
@@ -399,6 +403,7 @@ export function Table9Max({
                       styles.seatBadge,
                       !seat && styles.seatBadgeEmpty,
                       canSit && styles.seatEmptyTappable,
+                      seat?.isActive && styles.seatBadgeActive,
                     ]}
                   >
                     {showProfile && seat ? (
@@ -474,38 +479,34 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg.lobby },
   railOuter: {
     flex: 1,
-    margin: spacing.lg,
-    borderRadius: 999,
-    padding: 6,
-    backgroundColor: colors.felt.rail,
+    margin: spacing.md,
+    borderRadius: 28,
+    padding: 0,
+    backgroundColor: 'transparent',
   },
   railHighlight: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 999,
-    borderWidth: 2,
-    borderColor: colors.felt.railHighlight,
-    opacity: 0.5,
+    display: 'none',
   },
   rail: {
     flex: 1,
-    borderRadius: 999,
-    padding: 10,
-    backgroundColor: colors.felt.rail,
+    borderRadius: 28,
+    padding: 0,
+    backgroundColor: 'transparent',
   },
   felt: {
     flex: 1,
-    borderRadius: 999,
+    borderRadius: 28,
     backgroundColor: colors.felt.base,
     position: 'relative',
-    borderWidth: 2,
-    borderColor: 'rgba(0,0,0,0.25)',
+    borderWidth: 1,
+    borderColor: palette.line,
   },
   feltPattern: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 999,
+    borderRadius: 22,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.04)',
-    margin: 24,
+    borderColor: 'rgba(23,25,28,0.04)',
+    margin: 18,
   },
   center: {
     position: 'absolute',
@@ -514,22 +515,6 @@ const styles = StyleSheet.create({
     width: '44%',
     alignItems: 'center',
   },
-  communityRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  potChip: {
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(201,162,39,0.4)',
-    alignItems: 'center',
-  },
-  potLabel: { ...typography.micro, color: colors.text.secondary },
-  pot: { ...typography.pot, color: colors.brand.secondary },
   seat: {
     position: 'absolute',
     width: 88,
@@ -545,12 +530,12 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: '#fff',
+    backgroundColor: colors.brand.primary,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 5,
   },
-  dealerBtnText: { fontSize: 10, fontWeight: '800', color: '#1A1A1A' },
+  dealerBtnText: { fontSize: 10, fontWeight: '800', color: palette.inverse },
   blindBadge: {
     position: 'absolute',
     top: -8,
@@ -569,21 +554,21 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
   avatarWrapActive: {
-    shadowColor: '#50c878',
-    shadowOpacity: 0.9,
-    shadowRadius: 10,
-    elevation: 6,
+    shadowColor: colors.brand.primary,
+    shadowOpacity: 0.28,
+    shadowRadius: 8,
+    elevation: 4,
   },
   avatarWrapHero: {
-    shadowColor: '#d4af37',
-    shadowOpacity: 0.55,
-    shadowRadius: 8,
+    shadowColor: colors.brand.primary,
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
   },
   avatarWrapWinner: {
-    shadowColor: '#d4af37',
-    shadowOpacity: 0.95,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowColor: colors.brand.primary,
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 5,
   },
   chipBadge: {
     position: 'absolute',
@@ -593,13 +578,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     paddingVertical: 1,
     borderRadius: 8,
-    backgroundColor: '#C9A227',
+    backgroundColor: palette.inverse,
     borderWidth: 1,
-    borderColor: '#1A1A1A',
+    borderColor: palette.line,
     alignItems: 'center',
   },
   chipBadgeText: {
-    color: '#1A1A1A',
+    color: colors.text.secondary,
     fontSize: 9,
     fontWeight: '800',
     lineHeight: 11,
@@ -608,15 +593,17 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -36,
     zIndex: 6,
-    backgroundColor: 'rgba(0,0,0,0.75)',
+    backgroundColor: palette.inverse,
     borderRadius: 16,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderWidth: 1,
-    borderColor: 'rgba(201,162,39,0.5)',
+    borderColor: palette.line,
+    ...shadows.button,
   },
   emojiBubbleText: { fontSize: 22 },
   seatActive: {},
+  seatFolded: { opacity: 0.45 },
   seatHero: { zIndex: 2 },
   seatWinner: { zIndex: 3 },
   seatProfileOpen: { zIndex: 24 },
@@ -627,14 +614,15 @@ const styles = StyleSheet.create({
     marginLeft: -70,
     width: 140,
     marginBottom: 8,
-    backgroundColor: 'rgba(18,20,24,0.96)',
+    backgroundColor: palette.inverse,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: 'rgba(201,162,39,0.55)',
+    borderColor: palette.line,
     paddingHorizontal: 10,
     paddingVertical: 10,
     alignItems: 'center',
     zIndex: 30,
+    ...shadows.card,
   },
   profileName: {
     ...typography.caption,
@@ -675,34 +663,47 @@ const styles = StyleSheet.create({
     position: 'relative',
     alignItems: 'center',
     overflow: 'visible',
+    backgroundColor: palette.inverse,
+    borderRadius: radius.md,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    minWidth: 72,
+    borderWidth: 1,
+    borderColor: palette.line,
+    ...shadows.button,
   },
   seatBadgeEmpty: {
     minWidth: 52,
     paddingHorizontal: 8,
     paddingVertical: 10,
-    borderRadius: radius.md,
-    backgroundColor: 'rgba(8,16,28,0.35)',
-    borderWidth: 1,
+    backgroundColor: 'transparent',
     borderStyle: 'dashed',
-    borderColor: 'rgba(212,175,55,0.28)',
+    borderColor: colors.text.disabled,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   seatEmptyTappable: {
-    borderColor: 'rgba(201,162,39,0.65)',
+    borderColor: colors.brand.primary,
     borderStyle: 'dashed',
-    backgroundColor: 'rgba(201,162,39,0.12)',
+    backgroundColor: palette.accentSoft,
+  },
+  seatBadgeActive: {
+    borderColor: colors.brand.primary,
+    borderWidth: 2,
+    backgroundColor: palette.accentSoft,
   },
   seatName: { ...typography.micro, color: colors.text.primary, maxWidth: 80 },
-  seatChips: { ...typography.micro, color: colors.brand.secondary, fontWeight: '700', marginTop: 2 },
+  seatChips: { ...typography.micro, color: colors.text.secondary, fontWeight: '700', marginTop: 2 },
   betChip: {
     marginTop: 4,
-    backgroundColor: 'rgba(201,162,39,0.9)',
+    backgroundColor: palette.accentSoft,
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 10,
+    borderRadius: 999,
     minWidth: 24,
     alignItems: 'center',
   },
-  betChipText: { ...typography.micro, color: '#1A1A1A', fontWeight: '700', fontSize: 10 },
+  betChipText: { ...typography.micro, color: colors.brand.primary, fontWeight: '700', fontSize: 10 },
   actionBadge: {
     marginTop: 4,
     paddingHorizontal: 6,
@@ -723,12 +724,12 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: '#1E88E5',
+    backgroundColor: colors.brand.primary,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#BBDEFB',
+    borderColor: palette.inverse,
   },
-  countdownText: { fontSize: 11, fontWeight: '800', color: '#fff' },
-  countdownUrgent: { color: '#FFCDD2' },
+  countdownText: { fontSize: 11, fontWeight: '800', color: palette.inverse },
+  countdownUrgent: { color: '#F8D7D7' },
 });

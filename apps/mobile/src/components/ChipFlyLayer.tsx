@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
-import { colors, typography } from '../theme';
+import { colors, palette, typography } from '../theme';
 import { POT_LAYOUT, SEAT_LAYOUT } from './table-layout';
 
 export interface ChipFlyEvent {
@@ -84,15 +84,15 @@ export function ChipFlyLayer({ events, onDone }: Props) {
 const styles = StyleSheet.create({
   chip: {
     position: 'absolute',
-    backgroundColor: colors.brand.secondary,
+    backgroundColor: palette.chipStack,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
     minWidth: 32,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#fff',
+    borderColor: palette.line,
     zIndex: 50,
   },
-  chipText: { ...typography.micro, color: '#1A1A1A', fontWeight: '800', fontSize: 10 },
+  chipText: { ...typography.micro, color: colors.text.primary, fontWeight: '800', fontSize: 10 },
 });

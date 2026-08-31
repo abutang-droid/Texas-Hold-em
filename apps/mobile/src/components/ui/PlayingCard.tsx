@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { radius } from '../../theme';
+import { colors, palette } from '../../theme';
 
 const SUIT_SYMBOL: Record<string, string> = {
   h: '♥',
@@ -16,11 +16,12 @@ const RANK_LABEL: Record<string, string> = {
   A: 'A',
 };
 
+/** xs opponent backs · sm board / revealed rivals · lg hero holes */
 const SIZE = {
-  xs: { w: 11, h: 15, rank: 7, suit: 8, pad: 0 },
-  sm: { w: 34, h: 50, rank: 14, suit: 22, pad: 2 },
-  md: { w: 48, h: 68, rank: 18, suit: 32, pad: 3 },
-  lg: { w: 58, h: 82, rank: 22, suit: 40, pad: 4 },
+  xs: { w: 26, h: 36, rank: 9, suit: 14, pad: 2 },
+  sm: { w: 46, h: 64, rank: 13, suit: 22, pad: 3 },
+  md: { w: 46, h: 64, rank: 13, suit: 22, pad: 3 },
+  lg: { w: 62, h: 88, rank: 18, suit: 32, pad: 4 },
 } as const;
 
 function parseCard(code: string): { rank: string; suit: string; red: boolean } | null {
@@ -39,21 +40,14 @@ interface Props {
 }
 
 function CardBack({ w, h }: { w: number; h: number }) {
-  const tight = w < 16;
+  const tight = w < 20;
   if (tight) {
     return <View style={[styles.card, styles.back, styles.backTiny, { width: w, height: h }]} />;
   }
-  const inset = Math.max(3, Math.round(w * 0.1));
-  const diamond = Math.max(8, Math.round(w * 0.28));
-  const inner = Math.max(4, Math.round(diamond * 0.42));
+  const diamond = Math.max(10, Math.round(w * 0.38));
   return (
     <View style={[styles.card, styles.back, { width: w, height: h }]}>
-      <View style={[styles.backInset, { top: inset, right: inset, bottom: inset, left: inset }]}>
-        <View style={[styles.backLineH, { width: diamond + 6 }]} />
-        <View style={[styles.backLineV, { height: diamond + 6 }]} />
-        <View style={[styles.backDiamond, { width: diamond, height: diamond }]} />
-        <View style={[styles.backDiamondInner, { width: inner, height: inner }]} />
-      </View>
+      <View style={[styles.backDiamond, { width: diamond, height: diamond }]} />
     </View>
   );
 }
@@ -66,8 +60,8 @@ export function PlayingCard({ code, size = 'md', faceDown }: Props) {
     return <CardBack w={dim.w} h={dim.h} />;
   }
 
-  const ink = parsed.red ? '#C62828' : '#1A1A1A';
-  const rankSize = parsed.rank === '10' ? Math.max(7, dim.rank - 5) : dim.rank;
+  const ink = parsed.red ? palette.redSuit : colors.text.primary;
+  const rankSize = parsed.rank === '10' ? Math.max(8, dim.rank - 3) : dim.rank;
   const pip = SUIT_SYMBOL[parsed.suit];
 
   return (
@@ -86,7 +80,7 @@ export function PlayingCard({ code, size = 'md', faceDown }: Props) {
             fontSize: rankSize,
             lineHeight: rankSize + 1,
             top: dim.pad,
-            right: dim.pad,
+            left: dim.pad,
           },
         ]}
         allowFontScaling={false}
@@ -105,64 +99,44 @@ export function PlayingCard({ code, size = 'md', faceDown }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: radius.sm + 1,
+    borderRadius: 8,
     overflow: 'hidden',
     marginHorizontal: 2,
   },
   backTiny: {
     marginHorizontal: 0,
-    borderRadius: 2,
+    borderRadius: 4,
     borderWidth: 1,
   },
   face: {
-    backgroundColor: '#F7F4EE',
+    backgroundColor: palette.inverse,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.12)',
+    borderColor: palette.line,
     alignItems: 'center',
     justifyContent: 'center',
   },
   back: {
-    backgroundColor: '#1A2332',
+    backgroundColor: palette.cardBack,
     borderWidth: 1,
-    borderColor: '#C9A227',
-  },
-  backInset: {
-    position: 'absolute',
-    borderWidth: 1,
-    borderColor: 'rgba(201,162,39,0.55)',
+    borderColor: palette.line,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  backLineH: {
-    position: 'absolute',
-    height: 1,
-    backgroundColor: 'rgba(201,162,39,0.45)',
-  },
-  backLineV: {
-    position: 'absolute',
-    width: 1,
-    backgroundColor: 'rgba(201,162,39,0.45)',
-  },
   backDiamond: {
-    borderWidth: 1.5,
-    borderColor: '#C9A227',
+    borderWidth: 1,
+    borderColor: colors.text.disabled,
     backgroundColor: 'transparent',
-    transform: [{ rotate: '45deg' }],
-  },
-  backDiamondInner: {
-    position: 'absolute',
-    backgroundColor: '#C9A227',
     transform: [{ rotate: '45deg' }],
   },
   rank: {
     position: 'absolute',
-    fontWeight: '900',
-    letterSpacing: -1,
-    textAlign: 'right',
+    fontWeight: '800',
+    letterSpacing: -0.6,
+    textAlign: 'left',
     zIndex: 2,
   },
   suit: {
-    fontWeight: '900',
+    fontWeight: '800',
     textAlign: 'center',
   },
 });

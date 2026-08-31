@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { ACTION_TIME_SEC, TIME_BANK_SEC } from '@texas-holdem/shared';
-import { colors, spacing, typography } from '../theme';
+import { colors, palette, spacing, typography } from '../theme';
 
 interface Props {
   deadline: number | null;
@@ -54,12 +54,12 @@ const styles = StyleSheet.create({
   track: {
     flex: 1,
     height: 6,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: palette.accentSoft,
     borderRadius: 3,
     overflow: 'hidden',
   },
-  fill: { height: '100%', backgroundColor: '#1E88E5', borderRadius: 3 },
+  fill: { height: '100%', backgroundColor: colors.brand.primary, borderRadius: 3 },
   fillUrgent: { backgroundColor: colors.semantic.danger },
-  label: { ...typography.micro, color: '#90CAF9', fontWeight: '700', minWidth: 28 },
+  label: { ...typography.micro, color: colors.brand.primary, fontWeight: '700', minWidth: 28 },
   labelUrgent: { color: colors.semantic.danger },
 });

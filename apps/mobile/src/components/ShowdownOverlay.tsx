@@ -2,10 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { HandWinner, SettlementPot, SettlementRefund } from '../types/table';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, palette, radius, shadows, spacing, typography } from '../theme';
 
-const TIMER_BLUE = '#1E88E5';
-const CHIP_GOLD = '#C9A227';
 const STEP_MS = 1600;
 
 interface Props {
@@ -227,12 +225,13 @@ const styles = StyleSheet.create({
   banner: {
     maxWidth: 380,
     width: '100%',
-    backgroundColor: 'rgba(18,20,24,0.94)',
-    borderRadius: radius.md,
+    backgroundColor: palette.inverse,
+    borderRadius: radius.lg,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderWidth: 1,
-    borderColor: 'rgba(201,162,39,0.55)',
+    borderColor: palette.line,
+    ...shadows.card,
   },
   topRow: {
     flexDirection: 'row',
@@ -243,12 +242,12 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.caption,
-    color: CHIP_GOLD,
+    color: colors.text.primary,
     fontWeight: '800',
     flex: 1,
   },
   timerChip: {
-    backgroundColor: TIMER_BLUE,
+    backgroundColor: colors.brand.primary,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 10,
@@ -256,7 +255,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   timerText: {
-    color: '#fff',
+    color: palette.inverse,
     fontSize: 12,
     fontWeight: '800',
   },
@@ -267,20 +266,20 @@ const styles = StyleSheet.create({
   },
   pot: {
     ...typography.micro,
-    color: CHIP_GOLD,
+    color: colors.brand.primary,
     fontWeight: '700',
     marginBottom: 6,
   },
   currentBox: {
-    backgroundColor: 'rgba(201,162,39,0.12)',
-    borderRadius: 8,
+    backgroundColor: palette.accentSoft,
+    borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 8,
     marginBottom: 6,
   },
   currentLabel: {
     ...typography.caption,
-    color: '#F5F5F5',
+    color: colors.text.primary,
     fontWeight: '800',
     textAlign: 'center',
   },
@@ -298,7 +297,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   stepLineActive: {
-    color: '#F5F5F5',
+    color: colors.text.primary,
     fontWeight: '700',
   },
 });

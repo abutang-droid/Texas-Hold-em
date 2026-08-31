@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { Animated, Text, StyleSheet, View } from 'react-native';
-import { colors, radius, spacing, typography } from '../theme';
+import { Animated, Text, StyleSheet } from 'react-native';
+import { colors, palette, radius, shadows, spacing, typography } from '../theme';
 
 interface Props {
   potTotal: number;
@@ -16,8 +16,8 @@ export function PotDisplay({ potTotal, potLabel }: Props) {
     const isReset = potTotal === 0 && prevPot.current > 0;
     if (increased && !isReset && potTotal > 0) {
       Animated.sequence([
-        Animated.timing(scale, { toValue: 1.12, duration: 120, useNativeDriver: true }),
-        Animated.spring(scale, { toValue: 1, friction: 5, useNativeDriver: true }),
+        Animated.timing(scale, { toValue: 1.08, duration: 120, useNativeDriver: true }),
+        Animated.spring(scale, { toValue: 1, friction: 6, useNativeDriver: true }),
       ]).start();
     }
     if (isReset) {
@@ -36,14 +36,15 @@ export function PotDisplay({ potTotal, potLabel }: Props) {
 
 const styles = StyleSheet.create({
   potChip: {
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: palette.inverse,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: 'rgba(201,162,39,0.4)',
+    borderColor: palette.line,
     alignItems: 'center',
+    ...shadows.button,
   },
   potLabel: { ...typography.micro, color: colors.text.secondary },
-  pot: { ...typography.pot, color: colors.brand.secondary },
+  pot: { ...typography.pot, color: colors.brand.primary },
 });

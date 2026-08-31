@@ -17,6 +17,7 @@ import {
   type RebuyApproval,
 } from '../src/components/PrivateTablePanels';
 import type { HandEndPayload, LastAction, PokerAction, SeatAction, TurnContext } from '../src/types/table';
+import { colors, palette, radius } from '../src/theme';
 
 const ROOM_URL = process.env.EXPO_PUBLIC_ROOM_URL ?? 'http://localhost:3001';
 
@@ -1022,7 +1023,7 @@ export default function TableScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#121418' },
+  container: { flex: 1, backgroundColor: colors.bg.lobby },
   actionWrap: {
     position: 'absolute',
     bottom: 20,
@@ -1072,33 +1073,39 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   topBtn: {
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    minHeight: 44,
+    justifyContent: 'center',
+    backgroundColor: palette.inverse,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: palette.line,
   },
-  backText: { color: '#C9A227', fontWeight: '600' },
+  backText: { color: colors.brand.primary, fontWeight: '700' },
   watchBanner: {
     position: 'absolute',
     top: 56,
     left: 16,
     right: 16,
     zIndex: 12,
-    backgroundColor: 'rgba(0,0,0,0.62)',
+    backgroundColor: palette.inverse,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 10,
+    borderRadius: radius.sm,
     borderWidth: 1,
-    borderColor: 'rgba(201,162,39,0.35)',
+    borderColor: palette.line,
   },
-  watchText: { color: '#F3E6B8', fontWeight: '600', textAlign: 'center', fontSize: 13 },
+  watchText: { color: colors.text.primary, fontWeight: '600', textAlign: 'center', fontSize: 13 },
   sitCta: {
     marginTop: 8,
     alignSelf: 'center',
-    backgroundColor: '#C9A227',
+    backgroundColor: colors.brand.primary,
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingVertical: 10,
+    borderRadius: radius.md,
+    minHeight: 44,
+    justifyContent: 'center',
   },
-  sitCtaText: { color: '#1A1A1A', fontWeight: '800', fontSize: 14 },
+  sitCtaText: { color: palette.inverse, fontWeight: '800', fontSize: 14 },
 });

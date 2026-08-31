@@ -80,8 +80,8 @@ export default function RootLayout() {
 
   return (
     <>
-      <StatusBar style="light" />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#121418' } }} />
+      <StatusBar style="dark" />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg.lobby } }} />
       <NavigationGuards bootReady={bootReady} authTick={authTick} />
       {!bootReady ? (
         <View style={styles.bootOverlay} pointerEvents="auto">

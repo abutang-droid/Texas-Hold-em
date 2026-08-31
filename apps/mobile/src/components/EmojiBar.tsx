@@ -1,7 +1,7 @@
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { TABLE_EMOJI_PRESETS } from '@texas-holdem/shared';
-import { colors, radius, spacing } from '../theme';
+import { colors, palette, radius, spacing } from '../theme';
 
 interface Props {
   onSend: (emojiId: string) => void;
@@ -33,12 +33,12 @@ export function EmojiBar({ onSend, disabled }: Props) {
 
 const styles = StyleSheet.create({
   wrap: {
-    backgroundColor: 'rgba(0,0,0,0.72)',
+    backgroundColor: palette.inverse,
     borderRadius: radius.lg,
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.sm,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: palette.line,
   },
   row: {
     flexDirection: 'row',
@@ -51,9 +51,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: colors.felt.base,
   },
-  btnPressed: { backgroundColor: 'rgba(201,162,39,0.25)' },
+  btnPressed: { backgroundColor: palette.accentSoft },
   btnDisabled: { opacity: 0.4 },
   emoji: { fontSize: 22 },
 });
