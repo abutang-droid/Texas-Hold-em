@@ -13,23 +13,16 @@ import {
 } from '../src/api/client';
 import { colors } from '../src/theme';
 
-const LAYOUT_REV = '2026-08-30-nav3';
+const LAYOUT_REV = '2026-08-31-nav4';
 
 function NavigationGuards({ bootReady, authTick }: { bootReady: boolean; authTick: number }) {
   const router = useRouter();
   const segments = useSegments();
   const rootNavigationState = useRootNavigationState();
-  const [navWaited, setNavWaited] = useState(false);
+  const navReady = !!rootNavigationState?.key;
 
   useEffect(() => {
-    if (!bootReady) return;
-    const id = setTimeout(() => setNavWaited(true), 800);
-    return () => clearTimeout(id);
-  }, [bootReady]);
-
-  useEffect(() => {
-    if (!bootReady) return;
-    if (!rootNavigationState?.key && !navWaited) return;
+    if (!bootReady || !navReady) return;
 
     const top = segments[0];
     const inAuth = top === 'auth';
@@ -43,7 +36,7 @@ function NavigationGuards({ bootReady, authTick }: { bootReady: boolean; authTic
     if (hasToken && !isOnboardingComplete() && !inOnboarding) {
       router.replace('/onboarding');
     }
-  }, [bootReady, navWaited, rootNavigationState?.key, segments, router, authTick]);
+  }, [bootReady, navReady, segments, router, authTick]);
 
   return null;
 }

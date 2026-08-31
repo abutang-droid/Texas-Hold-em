@@ -102,11 +102,10 @@ export default function LobbyScreen() {
   useEffect(() => {
     if (!getToken()) {
       setLoading(false);
-      router.replace('/auth/login');
       return;
     }
     void init();
-  }, [init, router]);
+  }, [init]);
 
   const onQuickStart = async () => {
     if (starting) return;
@@ -170,7 +169,7 @@ export default function LobbyScreen() {
       <Screen>
         <Button
           label={t('auth.login_btn')}
-          onPress={() => router.replace('/auth/login')}
+          onPress={() => router.push('/auth/login')}
           fullWidth
         />
       </Screen>
