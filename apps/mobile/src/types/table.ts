@@ -23,11 +23,37 @@ export interface LastAction {
   autoAction?: boolean;
 }
 
+export interface SeatAction {
+  type: string;
+  amount?: number;
+}
+
 export interface HandWinner {
   seatIndex: number;
   userId: string;
   nickname: string;
   winAmount: number;
+}
+
+export interface SettlementRefund {
+  seatIndex: number;
+  userId: string;
+  nickname: string;
+  amount: number;
+}
+
+export interface SettlementPotWinner {
+  seatIndex: number;
+  userId: string;
+  nickname: string;
+  amount: number;
+}
+
+export interface SettlementPot {
+  kind: 'main' | 'side';
+  sideIndex?: number;
+  amount: number;
+  winners: SettlementPotWinner[];
 }
 
 export interface HandEndPayload {
@@ -36,4 +62,6 @@ export interface HandEndPayload {
   potSize: number;
   boardCards: string;
   winners: HandWinner[];
+  refunds?: SettlementRefund[];
+  pots?: SettlementPot[];
 }

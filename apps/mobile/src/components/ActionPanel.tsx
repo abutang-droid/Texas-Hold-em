@@ -1,9 +1,9 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, LayoutChangeEvent } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { PokerAction, TurnContext } from '../types/table';
 import { TurnTimer } from './TurnTimer';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, palette, radius, shadows, spacing, typography } from '../theme';
 
 interface Props {
   turn: TurnContext;
@@ -30,12 +30,24 @@ export function ActionPanel({ turn, onAction }: Props) {
   }, [turn.minRaise, turn.maxRaise]);
 
   const [raiseTotal, setRaiseTotal] = useState(turn.minRaise);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    setBusy(false);
+    setRaiseMode(false);
+  }, [turn.seatIndex, turn.deadline, turn.callAmount]);
+
+  const fire = (action: PokerAction, amount?: number) => {
+    if (busy) return;
+    setBusy(true);
+    onAction(action, amount);
+  };
 
   const can = (a: PokerAction) => turn.validActions.includes(a);
   const canRaise = can('raise') && turn.maxRaise > turn.minRaise;
   const canCheck = can('check');
-  const canCall = can('call');
-  const canFold = can('fold');
+  const canCall = can('call') && turn.callAmount > 0;
+  const canFold = true;
   const canAllIn = can('all_in');
 
   const onTrackLayout = (e: LayoutChangeEvent) => {
@@ -53,7 +65,7 @@ export function ActionPanel({ turn, onAction }: Props) {
   );
 
   const confirmRaise = () => {
-    onAction('raise', raiseTotal);
+    fire('raise', raiseTotal);
     setRaiseMode(false);
   };
 
@@ -105,12 +117,20 @@ export function ActionPanel({ turn, onAction }: Props) {
           />
         </View>
         <View style={styles.row}>
+          <ActionBtn
+            label={t('game.action.fold')}
+            variant="fold"
+            onPress={() => {
+              setRaiseMode(false);
+              fire('fold');
+            }}
+          />
           <ActionBtn label={t('game.action.cancel')} variant="ghost" onPress={() => setRaiseMode(false)} />
           {canAllIn && (
             <ActionBtn
               label={t('game.action.allIn')}
               variant="allin"
-              onPress={() => onAction('all_in')}
+              onPress={() => fire('all_in')}
             />
           )}
           <ActionBtn label={t('game.action.raise')} variant="raise" onPress={confirmRaise} flex />
@@ -124,18 +144,18 @@ export function ActionPanel({ turn, onAction }: Props) {
       <TurnTimer deadline={turn.deadline} />
       <View style={styles.row}>
         {canFold && (
-          <ActionBtn label={t('game.action.fold')} variant="fold" onPress={() => onAction('fold')} flex />
+          <ActionBtn label={t('game.action.fold')} variant="fold" onPress={() => fire('fold')} flex />
         )}
         {canCheck && (
           <ActionBtn
             label={t('game.action.check')}
             variant="check"
-            onPress={() => onAction('check')}
+            onPress={() => fire('check')}
             flex
           />
         )}
         {canCall && (
-          <ActionBtn label={callLabel} variant="call" onPress={() => onAction('call')} flex />
+          <ActionBtn label={callLabel} variant="call" onPress={() => fire('call')} flex />
         )}
         {canRaise && (
           <ActionBtn
@@ -152,7 +172,7 @@ export function ActionPanel({ turn, onAction }: Props) {
           <ActionBtn
             label={t('game.action.allIn')}
             variant="allin"
-            onPress={() => onAction('all_in')}
+            onPress={() => fire('all_in')}
             flex
           />
         )}
@@ -180,6 +200,7 @@ function ActionBtn({
   variant: 'fold' | 'check' | 'call' | 'raise' | 'allin' | 'ghost';
   flex?: boolean;
 }) {
+  const lightLabel = variant === 'fold' || variant === 'check' || variant === 'ghost';
   return (
     <Pressable
       style={({ pressed }) => [
@@ -191,7 +212,7 @@ function ActionBtn({
       onPress={onPress}
     >
       <Text
-        style={[styles.btnText, (variant === 'raise' || variant === 'ghost') && styles.btnTextDark]}
+        style={[styles.btnText, lightLabel && styles.btnTextInk, variant === 'fold' && styles.btnTextFold]}
         numberOfLines={1}
       >
         {label}
@@ -202,14 +223,16 @@ function ActionBtn({
 
 const styles = StyleSheet.create({
   panel: {
-    backgroundColor: 'rgba(18,20,24,0.92)',
+    backgroundColor: palette.inverse,
     borderRadius: radius.lg,
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: palette.line,
+    ...shadows.card,
   },
   row: { flexDirection: 'row', gap: spacing.sm },
   btn: {
+    minHeight: 52,
     paddingVertical: 14,
     paddingHorizontal: 10,
     borderRadius: radius.md,
@@ -218,20 +241,33 @@ const styles = StyleSheet.create({
     minWidth: 72,
   },
   btnFlex: { flex: 1, minWidth: 0 },
-  btn_fold: { backgroundColor: colors.semantic.danger },
-  btn_check: { backgroundColor: '#424242' },
-  btn_call: { backgroundColor: colors.semantic.success },
-  btn_raise: { backgroundColor: colors.brand.secondary },
-  btn_allin: { backgroundColor: colors.brand.accent },
-  btn_ghost: { backgroundColor: 'rgba(255,255,255,0.1)' },
+  btn_fold: {
+    backgroundColor: palette.inverse,
+    borderWidth: 1.5,
+    borderColor: colors.semantic.danger,
+  },
+  btn_check: {
+    backgroundColor: palette.inverse,
+    borderWidth: 1.5,
+    borderColor: palette.line,
+  },
+  btn_call: { backgroundColor: colors.brand.primary },
+  btn_raise: { backgroundColor: colors.brand.primary },
+  btn_allin: { backgroundColor: colors.semantic.danger },
+  btn_ghost: {
+    backgroundColor: palette.inverse,
+    borderWidth: 1.5,
+    borderColor: palette.line,
+  },
   pressed: { opacity: 0.88, transform: [{ scale: 0.98 }] },
-  btnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
-  btnTextDark: { color: '#1A1A1A' },
+  btnText: { color: palette.inverse, fontWeight: '800', fontSize: 14 },
+  btnTextInk: { color: colors.text.primary },
+  btnTextFold: { color: colors.semantic.danger },
   raiseHint: { ...typography.caption, color: colors.text.secondary, marginBottom: spacing.sm },
-  raiseValue: { color: colors.brand.secondary, fontWeight: '700' },
+  raiseValue: { color: colors.brand.primary, fontWeight: '800' },
   track: {
     height: 36,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: palette.accentSoft,
     borderRadius: radius.md,
     marginBottom: spacing.sm,
     justifyContent: 'center',
@@ -242,7 +278,7 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     bottom: 0,
-    backgroundColor: 'rgba(201,162,39,0.35)',
+    backgroundColor: 'rgba(46,125,99,0.28)',
     borderRadius: radius.md,
   },
   thumb: {
@@ -251,18 +287,20 @@ const styles = StyleSheet.create({
     height: 20,
     marginLeft: -10,
     borderRadius: 10,
-    backgroundColor: colors.brand.secondary,
+    backgroundColor: colors.brand.primary,
     borderWidth: 2,
-    borderColor: '#fff',
+    borderColor: palette.inverse,
     top: 8,
   },
   presetRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md },
   preset: {
     flex: 1,
+    minHeight: 44,
     paddingVertical: spacing.sm,
     borderRadius: radius.sm,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: palette.accentSoft,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  presetText: { ...typography.micro, color: colors.text.primary, fontWeight: '600' },
+  presetText: { ...typography.micro, color: colors.brand.primary, fontWeight: '700' },
 });

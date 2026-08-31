@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { getLeaderboard } from '../src/api/client';
 import { Screen, ScreenHeader } from '../src/components/ui/Screen';
 import { Card } from '../src/components/ui/Card';
-import { colors, spacing, typography } from '../src/theme';
+import { colors, palette, spacing, typography } from '../src/theme';
 
 type Tab = 'profit' | 'pot';
 
@@ -129,20 +129,20 @@ const styles = StyleSheet.create({
   },
   tabActive: {
     backgroundColor: colors.brand.secondary,
-    color: '#1A1A1A',
+    color: palette.inverse,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
+    borderBottomColor: palette.line,
   },
   medal: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: colors.felt.base,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   medalSilver: { backgroundColor: '#9E9E9E' },
   medalBronze: { backgroundColor: '#8D6E63' },
   medalText: { ...typography.micro, color: colors.text.primary, fontWeight: '700' },
-  medalTextDark: { color: '#1A1A1A' },
+  medalTextDark: { color: palette.inverse },
   name: { flex: 1, ...typography.body, color: colors.text.primary },
   score: { ...typography.caption, color: colors.semantic.success, fontWeight: '700' },
   empty: { ...typography.body, color: colors.text.secondary, textAlign: 'center', padding: spacing.xl },

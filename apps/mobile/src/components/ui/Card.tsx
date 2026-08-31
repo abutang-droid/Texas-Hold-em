@@ -1,5 +1,5 @@
 import { View, StyleSheet, type ViewStyle } from 'react-native';
-import { colors, radius, shadows, spacing } from '../../theme';
+import { colors, palette, radius, shadows, spacing } from '../../theme';
 
 interface Props {
   children: React.ReactNode;
@@ -19,6 +19,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     padding: spacing.lg,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: palette.line,
   },
 });

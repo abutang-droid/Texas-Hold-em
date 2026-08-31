@@ -1,5 +1,5 @@
 import { Pressable, Text, StyleSheet, ActivityIndicator, type ViewStyle } from 'react-native';
-import { colors, radius, shadows, spacing, typography } from '../../theme';
+import { colors, palette, radius, shadows, spacing, typography } from '../../theme';
 
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost';
 
@@ -41,7 +41,7 @@ export function Button({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={isPrimary ? '#1A1A1A' : colors.brand.secondary} />
+        <ActivityIndicator color={isPrimary ? palette.inverse : colors.brand.primary} />
       ) : (
         <Text
           style={[
@@ -61,26 +61,30 @@ export function Button({
 
 const styles = StyleSheet.create({
   base: {
-    minHeight: 48,
+    minHeight: 52,
     paddingHorizontal: spacing.xl,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   fullWidth: { width: '100%' },
-  primary: { backgroundColor: colors.brand.secondary },
+  primary: { backgroundColor: colors.brand.primary },
   secondary: {
-    backgroundColor: 'transparent',
+    backgroundColor: palette.inverse,
     borderWidth: 1.5,
-    borderColor: colors.brand.secondary,
+    borderColor: palette.line,
   },
-  danger: { backgroundColor: colors.semantic.danger },
-  ghost: { backgroundColor: 'rgba(255,255,255,0.06)' },
-  disabled: { opacity: 0.55 },
+  danger: {
+    backgroundColor: palette.inverse,
+    borderWidth: 1.5,
+    borderColor: colors.semantic.danger,
+  },
+  ghost: { backgroundColor: 'transparent' },
+  disabled: { opacity: 0.45 },
   pressed: { opacity: 0.88, transform: [{ scale: 0.98 }] },
-  label: { ...typography.body, fontWeight: '700' },
-  labelPrimary: { color: '#1A1A1A' },
-  labelSecondary: { color: colors.brand.secondary },
-  labelDanger: { color: '#fff' },
+  label: { ...typography.body, fontWeight: '800', fontSize: 14 },
+  labelPrimary: { color: palette.inverse },
+  labelSecondary: { color: colors.text.primary },
+  labelDanger: { color: colors.semantic.danger },
   labelGhost: { color: colors.text.secondary },
 });

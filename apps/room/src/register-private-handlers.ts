@@ -1,7 +1,6 @@
 import type { Server, Socket } from 'socket.io';
 import {
   buyInChips,
-  cashOutChips,
   clearUserActiveRoom,
   setPrivateRoomStatusByRoomId,
 } from '@texas-holdem/db';
@@ -19,12 +18,11 @@ type RoomsMap = Map<string, InteractiveTable>;
 
 export async function cashOutAllPlayers(
   table: InteractiveTable,
-  roomId: string,
+  _roomId: string,
 ): Promise<void> {
   for (const uid of [...table.getSeatedHumanUserIds()]) {
     if (!table.hasPlayer(uid)) continue;
-    const chips = table.removePlayer(uid);
-    await cashOutChips(Number(uid), chips, `${roomId}:${uid}:dissolve`);
+    table.removePlayer(uid);
     await clearUserActiveRoom(Number(uid));
   }
 }

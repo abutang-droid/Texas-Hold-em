@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, radius, typography } from '../../theme';
+import { colors, palette } from '../../theme';
 
 const SUIT_SYMBOL: Record<string, string> = {
   h: '♥',
@@ -16,6 +16,14 @@ const RANK_LABEL: Record<string, string> = {
   A: 'A',
 };
 
+/** xs opponent backs · sm board / revealed rivals · lg hero holes */
+const SIZE = {
+  xs: { w: 26, h: 36, rank: 9, suit: 14, pad: 2 },
+  sm: { w: 46, h: 64, rank: 13, suit: 22, pad: 3 },
+  md: { w: 46, h: 64, rank: 13, suit: 22, pad: 3 },
+  lg: { w: 62, h: 88, rank: 18, suit: 32, pad: 4 },
+} as const;
+
 function parseCard(code: string): { rank: string; suit: string; red: boolean } | null {
   if (!code || code === '**' || code.length < 2) return null;
   const suit = code.slice(-1).toLowerCase();
@@ -27,31 +35,63 @@ function parseCard(code: string): { rank: string; suit: string; red: boolean } |
 
 interface Props {
   code: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   faceDown?: boolean;
 }
 
+function CardBack({ w, h }: { w: number; h: number }) {
+  const tight = w < 20;
+  if (tight) {
+    return <View style={[styles.card, styles.back, styles.backTiny, { width: w, height: h }]} />;
+  }
+  const diamond = Math.max(10, Math.round(w * 0.38));
+  return (
+    <View style={[styles.card, styles.back, { width: w, height: h }]}>
+      <View style={[styles.backDiamond, { width: diamond, height: diamond }]} />
+    </View>
+  );
+}
+
 export function PlayingCard({ code, size = 'md', faceDown }: Props) {
-  const dims = size === 'sm' ? styles.sm : size === 'lg' ? styles.lg : styles.md;
+  const dim = SIZE[size];
   const parsed = faceDown ? null : parseCard(code);
 
   if (!parsed) {
-    return (
-      <View style={[styles.card, dims, styles.back]}>
-        <View style={styles.backInner} />
-      </View>
-    );
+    return <CardBack w={dim.w} h={dim.h} />;
   }
 
-  const suitColor = parsed.red ? '#C62828' : colors.text.primary;
+  const ink = parsed.red ? palette.redSuit : colors.text.primary;
+  const rankSize = parsed.rank === '10' ? Math.max(8, dim.rank - 3) : dim.rank;
+  const pip = SUIT_SYMBOL[parsed.suit];
 
   return (
-    <View style={[styles.card, dims, styles.face]}>
-      <Text style={[styles.rank, { color: suitColor, fontSize: dims.fontSize }]}>
+    <View
+      style={[
+        styles.card,
+        styles.face,
+        { width: dim.w, height: dim.h, padding: dim.pad },
+      ]}
+    >
+      <Text
+        style={[
+          styles.rank,
+          {
+            color: ink,
+            fontSize: rankSize,
+            lineHeight: rankSize + 1,
+            top: dim.pad,
+            left: dim.pad,
+          },
+        ]}
+        allowFontScaling={false}
+      >
         {parsed.rank}
       </Text>
-      <Text style={[styles.suit, { color: suitColor, fontSize: (dims.fontSize ?? 14) + 4 }]}>
-        {SUIT_SYMBOL[parsed.suit]}
+      <Text
+        style={[styles.suit, { color: ink, fontSize: dim.suit, lineHeight: dim.suit + 2 }]}
+        allowFontScaling={false}
+      >
+        {pip}
       </Text>
     </View>
   );
@@ -59,37 +99,44 @@ export function PlayingCard({ code, size = 'md', faceDown }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 8,
+    overflow: 'hidden',
     marginHorizontal: 2,
   },
-  sm: { width: 28, height: 40, fontSize: 10 },
-  md: { width: 36, height: 50, fontSize: 12 },
-  lg: { width: 44, height: 62, fontSize: 14 },
+  backTiny: {
+    marginHorizontal: 0,
+    borderRadius: 4,
+    borderWidth: 1,
+  },
   face: {
-    backgroundColor: '#FAFAFA',
+    backgroundColor: palette.inverse,
+    borderWidth: 1,
+    borderColor: palette.line,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   back: {
-    backgroundColor: colors.brand.primary,
-    borderColor: colors.brand.secondary,
-  },
-  backInner: {
-    width: '70%',
-    height: '70%',
-    borderRadius: radius.sm,
+    backgroundColor: palette.cardBack,
     borderWidth: 1,
-    borderColor: 'rgba(201,162,39,0.5)',
-    backgroundColor: 'rgba(15,74,47,0.6)',
+    borderColor: palette.line,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backDiamond: {
+    borderWidth: 1,
+    borderColor: colors.text.disabled,
+    backgroundColor: 'transparent',
+    transform: [{ rotate: '45deg' }],
   },
   rank: {
-    fontSize: 12,
-    fontWeight: '700',
+    position: 'absolute',
+    fontWeight: '800',
+    letterSpacing: -0.6,
+    textAlign: 'left',
+    zIndex: 2,
   },
   suit: {
-    marginTop: -2,
-    fontWeight: '600',
+    fontWeight: '800',
+    textAlign: 'center',
   },
 });

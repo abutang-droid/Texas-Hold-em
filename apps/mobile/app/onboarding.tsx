@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { completeOnboarding } from '../src/storage/onboarding';
 import { Screen } from '../src/components/ui/Screen';
 import { Button } from '../src/components/ui/Button';
-import { colors, spacing, typography } from '../src/theme';
+import { colors, palette, spacing, typography } from '../src/theme';
 
 const STEPS = ['onboarding.step1', 'onboarding.step2', 'onboarding.step3'] as const;
 const STEP_ICONS = ['🎴', '💰', '♠️'];
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     marginBottom: spacing.xxl,
     borderWidth: 1,
-    borderColor: 'rgba(201,162,39,0.2)',
+    borderColor: palette.line,
   },
   body: { ...typography.body, color: colors.text.secondary, textAlign: 'center', lineHeight: 26 },
   age: {
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: spacing.sm, marginBottom: spacing.xxl },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.15)' },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: palette.chipStack },
   dotActive: { width: 24, backgroundColor: colors.brand.secondary },
   dotDone: { backgroundColor: colors.brand.primary },
   cta: { marginBottom: spacing.md, minHeight: 52 },

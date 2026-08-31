@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Alert, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import {
   quickStart,
   getLeaderboard,
@@ -11,14 +11,16 @@ import {
   getProfile,
   formatApiError,
   getToken,
+  subscribeAuthChange,
   type UserProfile,
 } from '../src/api/client';
+import { loadSession } from '../src/storage/session';
 import { Screen } from '../src/components/ui/Screen';
 import { Card } from '../src/components/ui/Card';
 import { Button } from '../src/components/ui/Button';
 import { GameModal } from '../src/components/ui/GameModal';
 import { Avatar } from '../src/components/Avatar';
-import { colors, spacing, typography } from '../src/theme';
+import { colors, palette, spacing, typography } from '../src/theme';
 
 function showUserMessage(title: string, body: string) {
   if (Platform.OS === 'web') {
@@ -99,24 +101,45 @@ export default function LobbyScreen() {
     }
   }, [t]);
 
+  useFocusEffect(
+    useCallback(() => {
+      if (!getToken()) {
+        setLoading(false);
+        return;
+      }
+      void init();
+    }, [init]),
+  );
+
   useEffect(() => {
-    if (!getToken()) {
-      setLoading(false);
-      return;
+    return subscribeAuthChange(() => {
+      void loadSession().then((session) => {
+        if (session?.user) setUser(session.user);
+      });
+    });
+  }, []);
+
+  const isGuest = user?.accountType === 'GUEST';
+
+  const requireRegistered = (): boolean => {
+    if (!user) {
+      showUserMessage(t('common.error'), t('errors.unauthorized'));
+      return false;
     }
-    void init();
-  }, [init]);
+    if (isGuest) {
+      setErrorModal({ title: t('common.error'), body: t('lobby.guest_play_blocked') });
+      return false;
+    }
+    return true;
+  };
 
   const onQuickStart = async () => {
     if (starting) return;
 
     // Compliance modals are already on screen — avoid silent web alerts behind them.
     if (compliancePending) return;
-    if (!user) {
-      showUserMessage(t('common.error'), t('errors.unauthorized'));
-      return;
-    }
-    if (user.chipsBalance < 2) {
+    if (!requireRegistered()) return;
+    if (user && user.chipsBalance < 2) {
       showUserMessage(t('bankruptcy.title'), t('errors.insufficient_chips'));
       return;
     }
@@ -165,7 +188,15 @@ export default function LobbyScreen() {
   };
 
   if (!getToken()) {
-    return <Screen loading loadingLabel={t('common.loading')} />;
+    return (
+      <Screen>
+        <Button
+          label={t('auth.login_btn')}
+          onPress={() => router.push('/auth/login')}
+          fullWidth
+        />
+      </Screen>
+    );
   }
 
   if (loading) {
@@ -198,10 +229,32 @@ export default function LobbyScreen() {
         label={starting ? t('lobby.quick_start_loading') : t('lobby.quick_start')}
         onPress={onQuickStart}
         loading={starting}
-        disabled={starting || compliancePending}
+        disabled={starting || compliancePending || isGuest}
         fullWidth
         style={styles.heroBtn}
       />
+      <Button
+        label={t('lobby.browse_tables')}
+        variant="secondary"
+        onPress={() => {
+          if (compliancePending) return;
+          if (!requireRegistered()) return;
+          router.push('/tables');
+        }}
+        disabled={starting || compliancePending || isGuest}
+        fullWidth
+        style={styles.browseBtn}
+      />
+      {isGuest ? (
+        <Button
+          label={t('lobby.register_to_play')}
+          variant="ghost"
+          onPress={() => router.push('/auth/register')}
+          fullWidth
+          style={styles.browseBtn}
+        />
+      ) : null}
+      {isGuest ? <Text style={styles.complianceHint}>{t('lobby.guest_play_blocked')}</Text> : null}
       {compliancePending ? (
         <Text style={styles.complianceHint}>
           {ageRequired ? t('errors.age_required') : t('errors.migration_required')}
@@ -210,7 +263,14 @@ export default function LobbyScreen() {
 
       <View style={styles.menuGrid}>
         <MenuTile icon="🛒" label={t('lobby.recharge')} onPress={() => router.push('/shop')} />
-        <MenuTile icon="🔒" label={t('lobby.private')} onPress={() => router.push('/private')} />
+        <MenuTile
+          icon="🔒"
+          label={t('lobby.private')}
+          onPress={() => {
+            if (!requireRegistered()) return;
+            router.push('/private');
+          }}
+        />
         <MenuTile
           icon="🏆"
           label={t('lobby.leaderboard')}
@@ -287,7 +347,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { ...typography.h2, color: colors.brand.secondary },
+  avatarText: { ...typography.h2, color: palette.inverse },
   nickname: { ...typography.h2, color: colors.text.primary },
   levelPill: {
     alignSelf: 'flex-start',
@@ -295,7 +355,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
-    backgroundColor: 'rgba(201,162,39,0.15)',
+    backgroundColor: palette.accentSoft,
   },
   levelText: { ...typography.micro, color: colors.brand.secondary },
   gear: { fontSize: 22, color: colors.text.secondary },
@@ -305,6 +365,7 @@ const styles = StyleSheet.create({
   balanceUnit: { ...typography.h2, color: colors.text.secondary },
   expText: { ...typography.micro, color: colors.text.secondary, marginTop: spacing.sm },
   heroBtn: { minHeight: 56, marginBottom: spacing.sm },
+  browseBtn: { minHeight: 52, marginBottom: spacing.sm },
   complianceHint: {
     ...typography.micro,
     color: colors.brand.secondary,
@@ -323,7 +384,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: spacing.lg,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: palette.line,
     alignItems: 'center',
   },
   tilePressed: { opacity: 0.85 },
@@ -343,7 +404,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.05)',
+    borderTopColor: palette.line,
   },
   lbRank: {
     width: 24,

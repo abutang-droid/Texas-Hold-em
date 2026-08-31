@@ -35,6 +35,22 @@ describe('actions', () => {
     expect(valid.callAmount).toBe(10);
   });
 
+  it('always allows fold on your turn, including when you can check', () => {
+    const players = [
+      player({ seatIndex: 0, betThisRound: 0, chips: 100 }),
+      player({ seatIndex: 1, betThisRound: 0, chips: 100 }),
+    ];
+    const valid = getValidActions({
+      players,
+      currentSeat: 0,
+      bigBlind: 2,
+      currentBet: 0,
+      minRaise: 2,
+    });
+    expect(valid.actions).toContain('fold');
+    expect(valid.actions).toContain('check');
+  });
+
   it('applies raise and updates current bet', () => {
     const p = player({ seatIndex: 0, chips: 100 });
     const result = applyAction({

@@ -30,3 +30,16 @@ export function dealCards(deck: Card[], count: number): { dealt: Card[]; remaini
     remaining: deck.slice(count),
   };
 }
+
+/** Standard street deal: burn one, then deal `count` community cards. */
+export function burnAndDeal(
+  deck: Card[],
+  count: number,
+): { burned: Card; dealt: Card[]; remaining: Card[] } {
+  if (deck.length < count + 1) {
+    throw new Error('Not enough cards in deck');
+  }
+  const burned = deck[0];
+  const dealt = deck.slice(1, 1 + count);
+  return { burned, dealt, remaining: deck.slice(1 + count) };
+}

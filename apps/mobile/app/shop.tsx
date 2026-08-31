@@ -11,7 +11,7 @@ import {
 import { Screen, ScreenHeader } from '../src/components/ui/Screen';
 import { Card } from '../src/components/ui/Card';
 import { Button } from '../src/components/ui/Button';
-import { colors, spacing, typography } from '../src/theme';
+import { colors, palette, spacing, typography } from '../src/theme';
 
 function sandboxReceipt(productId: string): string {
   const platform = Platform.OS === 'android' ? 'google' : 'apple';
@@ -89,7 +89,8 @@ export default function ShopScreen() {
         return;
       }
       const res = await shopRecharge(channel, product.chips, `iap-${Date.now()}`, receipt, product.id);
-      setBalance(res.chipsBalance);
+      const profile = await getProfile().catch(() => null);
+      setBalance(profile?.chipsBalance ?? res.chipsBalance);
       if (res.bonusChips > 0) {
         Alert.alert(t('shop.first_bonus_title'), t('shop.first_bonus_body', { bonus: res.bonusChips }));
       } else {
@@ -139,12 +140,12 @@ export default function ShopScreen() {
 
 const styles = StyleSheet.create({
   banner: {
-    backgroundColor: 'rgba(201,162,39,0.12)',
+    backgroundColor: palette.accentSoft,
     borderRadius: 8,
     padding: spacing.md,
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: 'rgba(201,162,39,0.3)',
+    borderColor: 'rgba(46,125,99,0.28)',
   },
   bannerText: { ...typography.caption, color: colors.brand.secondary, textAlign: 'center' },
   sandbox: {
@@ -169,7 +170,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: spacing.md,
   },
-  chipIconText: { fontSize: 20, color: colors.brand.secondary },
+  chipIconText: { fontSize: 20, color: palette.inverse },
   productInfo: { flex: 1 },
   productLabel: { ...typography.h2, color: colors.text.primary },
   productChips: { ...typography.caption, color: colors.brand.secondary, marginTop: 2 },

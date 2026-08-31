@@ -11,7 +11,7 @@ import {
 import { Screen, ScreenHeader } from '../src/components/ui/Screen';
 import { Card } from '../src/components/ui/Card';
 import { Button } from '../src/components/ui/Button';
-import { colors, spacing, typography } from '../src/theme';
+import { colors, palette, spacing, typography } from '../src/theme';
 
 export default function SettingsScreen() {
   const { t } = useTranslation();
@@ -77,8 +77,8 @@ export default function SettingsScreen() {
           <Switch
             value={stealth}
             onValueChange={onStealthToggle}
-            trackColor={{ false: '#333', true: colors.brand.primary }}
-            thumbColor={stealth ? colors.brand.secondary : '#888'}
+            trackColor={{ false: palette.chipStack, true: colors.brand.primary }}
+            thumbColor={stealth ? palette.inverse : colors.text.disabled}
           />
         </View>
       </Card>

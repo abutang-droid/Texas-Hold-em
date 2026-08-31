@@ -193,6 +193,32 @@ ssh uoto@192.168.31.53
 curl -fsSL "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main/scripts/staging-server-deploy.sh" | bash -s main
 ```
 
+**两台机器分开做（不要在 Mac mini 上跑服务端更新）：**
+
+| 机器 | 地址 | 做什么 |
+|------|------|--------|
+| 家庭服务器 | `uoto@192.168.31.53`（`uoto@tex`） | 更新 API :3000、Room :3001、Admin :5173 |
+| 本机 Mac mini | `je@jedeMac-mini` | 只跑 Expo 客户端 `localhost:8081` |
+
+**A. 家庭服务器上（SSH 上去再执行）：**
+
+```bash
+ssh uoto@192.168.31.53
+cd ~/Texas-Hold-em
+ZIP_URL="https://ghfast.top/https://github.com/abutang-droid/Texas-Hold-em/archive/refs/heads/cursor/poker-rules-6max-9b0a.zip" \
+  bash scripts/staging-update-no-git.sh cursor/poker-rules-6max-9b0a
+curl -s http://127.0.0.1:3001/health
+```
+
+成功应看到 `"version":"0.5.2"`。
+
+**B. Mac mini 上（只更新客户端并开 Expo）：**
+
+```bash
+curl -fsSL "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/cursor/poker-rules-6max-9b0a/scripts/mac-fix-call-loop.sh" -o /tmp/mac-fix-call.sh
+bash /tmp/mac-fix-call.sh
+```
+
 或已在项目目录时：
 
 ```bash

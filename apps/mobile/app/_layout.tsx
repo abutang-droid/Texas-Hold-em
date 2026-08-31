@@ -13,15 +13,16 @@ import {
 } from '../src/api/client';
 import { colors } from '../src/theme';
 
-const LAYOUT_REV = '2026-08-30-nav2';
+const LAYOUT_REV = '2026-08-31-nav4';
 
 function NavigationGuards({ bootReady, authTick }: { bootReady: boolean; authTick: number }) {
   const router = useRouter();
   const segments = useSegments();
   const rootNavigationState = useRootNavigationState();
+  const navReady = !!rootNavigationState?.key;
 
   useEffect(() => {
-    if (!bootReady || !rootNavigationState?.key) return;
+    if (!bootReady || !navReady) return;
 
     const top = segments[0];
     const inAuth = top === 'auth';
@@ -35,7 +36,7 @@ function NavigationGuards({ bootReady, authTick }: { bootReady: boolean; authTic
     if (hasToken && !isOnboardingComplete() && !inOnboarding) {
       router.replace('/onboarding');
     }
-  }, [bootReady, rootNavigationState?.key, segments, router, authTick]);
+  }, [bootReady, navReady, segments, router, authTick]);
 
   return null;
 }
@@ -53,8 +54,18 @@ export default function RootLayout() {
       void logout().then(bump);
     });
     setAuthChangeHandler(bump);
-    Promise.all([bootstrapSession(), hydrateOnboarding()]).finally(() => setBootReady(true));
+    let cancelled = false;
+    const finish = () => {
+      if (!cancelled) setBootReady(true);
+    };
+    const watchdog = setTimeout(finish, 6000);
+    Promise.all([bootstrapSession(), hydrateOnboarding()]).finally(() => {
+      clearTimeout(watchdog);
+      finish();
+    });
     return () => {
+      cancelled = true;
+      clearTimeout(watchdog);
       setUnauthorizedHandler(null);
       setAuthChangeHandler(null);
     };
@@ -62,8 +73,8 @@ export default function RootLayout() {
 
   return (
     <>
-      <StatusBar style="light" />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#121418' } }} />
+      <StatusBar style="dark" />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg.lobby } }} />
       <NavigationGuards bootReady={bootReady} authTick={authTick} />
       {!bootReady ? (
         <View style={styles.bootOverlay} pointerEvents="auto">

@@ -26,6 +26,18 @@ describe('side-pot', () => {
     expect(pots[1].eligibleSeatIndices.sort()).toEqual([1, 2]);
   });
 
+  it('spec case A=100 B=300 C=500', () => {
+    const pots = calculateSidePots([
+      { seatIndex: 0, totalBet: 100, isFolded: false, isAllIn: true },
+      { seatIndex: 1, totalBet: 300, isFolded: false, isAllIn: true },
+      { seatIndex: 2, totalBet: 500, isFolded: false, isAllIn: true },
+    ]);
+    expect(pots.map((p) => p.amount)).toEqual([300, 400, 200]);
+    expect(pots[0].eligibleSeatIndices.sort()).toEqual([0, 1, 2]);
+    expect(pots[1].eligibleSeatIndices.sort()).toEqual([1, 2]);
+    expect(pots[2].eligibleSeatIndices).toEqual([2]);
+  });
+
   it('excludes folded from eligibility', () => {
     const pots = calculateSidePots([
       { seatIndex: 0, totalBet: 20, isFolded: true, isAllIn: false },

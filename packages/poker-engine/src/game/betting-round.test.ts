@@ -4,6 +4,7 @@ import {
   markBlindPosted,
   recordPlayerAction,
   isBettingRoundComplete,
+  nextSeatNeedingAction,
 } from '../game/betting-round.js';
 import type { PlayerState } from '../game/settlement.js';
 
@@ -56,5 +57,21 @@ describe('betting round', () => {
     expect(state.actedSeats.has(0)).toBe(true);
     expect(state.actedSeats.has(1)).toBe(false);
     expect(isBettingRoundComplete(players, 10, state)).toBe(false);
+  });
+
+  it('does not hand the turn back to a caller who is already done', () => {
+    const state = createBettingRoundState({ bbSeat: 1 });
+    markBlindPosted(state, 0);
+    const players = [
+      player({ seatIndex: 0, betThisRound: 2 }),
+      player({ seatIndex: 1, betThisRound: 2 }),
+    ];
+    recordPlayerAction(state, 0, false);
+
+    expect(nextSeatNeedingAction(players, 0, 2, state)).toBe(1);
+
+    recordPlayerAction(state, 1, false);
+    expect(isBettingRoundComplete(players, 2, state)).toBe(true);
+    expect(nextSeatNeedingAction(players, 1, 2, state)).toBe(null);
   });
 });

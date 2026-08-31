@@ -6,11 +6,11 @@
     "orientation": "landscape",
     "icon": "./assets/icon.png",
     "scheme": "texasholdem",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#121418"
+      "backgroundColor": "#EEF1F3"
     },
     "ios": {
       "supportsTablet": true,
@@ -19,7 +19,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#121418"
+        "backgroundColor": "#EEF1F3"
       },
       "package": "com.texasholdem.app",
       "intentFilters": [

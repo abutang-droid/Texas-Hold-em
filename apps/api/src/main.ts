@@ -14,6 +14,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   ForbiddenException,
+  ServiceUnavailableException,
   ParseIntPipe,
 } from '@nestjs/common';
 import {
@@ -68,6 +69,7 @@ import {
 } from '@texas-holdem/db';
 import type { SupportedLocale } from '@texas-holdem/shared';
 import { AVATAR_PRESETS, DEFAULT_LOCALE, isValidPresetAvatarUrl, MAX_TABLE_SEATS, SUPPORTED_LOCALES } from '@texas-holdem/shared';
+import { assignPublicTable, listRoomPublicTables } from './room-match.js';
 
 function parseLocale(header?: string): SupportedLocale {
   if (!header) return DEFAULT_LOCALE;
@@ -104,7 +106,25 @@ function toProfile(user: UserRow) {
     privateRoomPermission: user.private_room_permission,
     ageVerified: !!user.age_verified_at,
     hasCompletedRecharge: !!user.has_completed_recharge,
+    accountType: user.account_type,
   };
+}
+
+function assertRegistered(user: UserRow): void {
+  if (user.account_type === 'GUEST') {
+    throw new ForbiddenException({ code: 'GUEST_NOT_ALLOWED', messageKey: 'errors.guest_not_allowed' });
+  }
+}
+
+function matchError(e: unknown): never {
+  const msg = (e as Error).message;
+  if (msg === 'NO_OPEN_TABLE') {
+    throw new BadRequestException({ code: 'NO_OPEN_TABLE', messageKey: 'errors.no_open_table' });
+  }
+  throw new ServiceUnavailableException({
+    code: 'ROOM_UNAVAILABLE',
+    messageKey: 'errors.room_unavailable',
+  });
 }
 
 async function assertPlayAllowed(userId: number): Promise<UserRow> {
@@ -432,21 +452,85 @@ class ApiController {
   async quickStart(@Headers('authorization') auth: string) {
     const { userId } = authUser(auth);
     const user = await assertPlayAllowed(userId);
+    assertRegistered(user);
     if (Number(user.chips_balance) < 2) {
       throw new BadRequestException({ code: 'INSUFFICIENT_CHIPS', messageKey: 'errors.insufficient_chips' });
     }
-    const roomId = `R${String(userId).padStart(4, '0')}${Date.now().toString().slice(-4)}`;
-    const roomServerUrl = process.env.ROOM_SERVER_URL ?? 'http://localhost:3001';
-    return {
-      code: 0,
-      message: 'ok',
-      data: {
-        roomId,
-        wsUrl: roomServerUrl,
-        buyInCap: 100,
-        blinds: { sb: 1, bb: 2 },
-      },
-    };
+    try {
+      const match = await assignPublicTable();
+      return { code: 0, message: 'ok', data: match };
+    } catch (e) {
+      matchError(e);
+    }
+  }
+
+  @Get('match/public-tables')
+  async publicTables(@Headers('authorization') auth: string) {
+    const { userId } = authUser(auth);
+    const user = await assertPlayAllowed(userId);
+    assertRegistered(user);
+    try {
+      const tables = await listRoomPublicTables();
+      return { code: 0, message: 'ok', data: { tables } };
+    } catch (e) {
+      matchError(e);
+    }
+  }
+
+  @Post('match/join-table')
+  async joinPublicTable(
+    @Headers('authorization') auth: string,
+    @Body() body: { roomId?: string },
+  ) {
+    const { userId } = authUser(auth);
+    const user = await assertPlayAllowed(userId);
+    assertRegistered(user);
+    if (Number(user.chips_balance) < 2) {
+      throw new BadRequestException({ code: 'INSUFFICIENT_CHIPS', messageKey: 'errors.insufficient_chips' });
+    }
+    const roomId = body.roomId?.trim();
+    if (!roomId) throw new BadRequestException({ code: 'INVALID_ROOM', messageKey: 'errors.room_not_found' });
+    try {
+      const tables = await listRoomPublicTables();
+      const row = tables.find((t) => t.roomId === roomId);
+      if (!row) throw new BadRequestException({ code: 'ROOM_NOT_FOUND', messageKey: 'errors.room_not_found' });
+      if (!row.joinable) {
+        throw new BadRequestException({ code: 'ROOM_FULL', messageKey: 'errors.room_full' });
+      }
+      const roomServerUrl = process.env.ROOM_SERVER_URL ?? 'http://localhost:3001';
+      return {
+        code: 0,
+        message: 'ok',
+        data: {
+          roomId: row.roomId,
+          wsUrl: roomServerUrl,
+          buyInCap: 100,
+          blinds: { sb: 1, bb: 2 },
+        },
+      };
+    } catch (e) {
+      if (e instanceof BadRequestException) throw e;
+      matchError(e);
+    }
+  }
+
+  @Post('match/switch-table')
+  async switchTable(
+    @Headers('authorization') auth: string,
+    @Body() body: { currentRoomId?: string },
+  ) {
+    const { userId } = authUser(auth);
+    const user = await assertPlayAllowed(userId);
+    assertRegistered(user);
+    if (Number(user.chips_balance) < 2) {
+      throw new BadRequestException({ code: 'INSUFFICIENT_CHIPS', messageKey: 'errors.insufficient_chips' });
+    }
+    try {
+      const match = await assignPublicTable(body.currentRoomId);
+      return { code: 0, message: 'ok', data: match };
+    } catch (e) {
+      matchError(e);
+    }
   }
 
   @Get('leaderboard/weekly-profit')
@@ -545,7 +629,9 @@ class PrivateController {
     }
     const { userId } = authUser(auth);
     const user = await findUserById(userId);
-    if (!user?.private_room_permission) {
+    if (!user) throw new UnauthorizedException();
+    assertRegistered(user);
+    if (!user.private_room_permission) {
       throw new ForbiddenException({ code: 'FORBIDDEN', messageKey: 'errors.private_permission_required' });
     }
     const maxSeats = MAX_TABLE_SEATS;
@@ -589,6 +675,7 @@ class PrivateController {
     const { userId } = authUser(auth);
     const user = await findUserById(userId);
     if (!user) throw new UnauthorizedException();
+    assertRegistered(user);
     const room = await findPrivateRoomByCode(body.roomCode);
     if (!room) throw new BadRequestException({ code: 'ROOM_NOT_FOUND', messageKey: 'errors.room_not_found' });
     const roomServerUrl = process.env.ROOM_SERVER_URL ?? 'http://localhost:3001';

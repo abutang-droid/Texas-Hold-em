@@ -24,9 +24,27 @@ export {
 } from './table-emojis.js';
 export type { TableEmojiPreset } from './table-emojis.js';
 
-export { MAX_TABLE_SEATS, MIN_TABLE_SEATS } from './table-config.js';
+export {
+  MAX_TABLE_SEATS,
+  MIN_TABLE_SEATS,
+  OFFICIAL_SMALL_BLIND,
+  OFFICIAL_BIG_BLIND,
+  OFFICIAL_MIN_BUY_IN,
+  OFFICIAL_MAX_BUY_IN,
+  ACTION_TIME_SEC,
+  TIME_BANK_SEC,
+  ACTION_TIME_MS,
+  TIME_BANK_MS,
+  HAND_PAUSE_MS,
+  MIN_PUBLIC_TABLES,
+  MIN_PUBLIC_TABLE_BOTS,
+  PUBLIC_TABLE_ID_PREFIX,
+  publicTableId,
+  isPublicTableId,
+  targetPublicTableCount,
+} from './table-config.js';
 
-export type PlayerActionType = 'fold' | 'check' | 'call' | 'raise' | 'all_in';
+export type PlayerActionType = 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'all_in';
 
 export type GamePhase =
   | 'WAITING'

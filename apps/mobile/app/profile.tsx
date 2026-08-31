@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { getProfile, getAvatarPresets, updateProfile } from '../src/api/client';
 import { Avatar } from '../src/components/Avatar';
@@ -9,7 +9,7 @@ import { Card } from '../src/components/ui/Card';
 import { Button } from '../src/components/ui/Button';
 import { AuthField } from '../src/components/auth/AuthField';
 import { showAlert } from '../src/utils/alert';
-import { colors, spacing, typography } from '../src/theme';
+import { colors, palette, spacing, typography } from '../src/theme';
 
 export default function ProfileScreen() {
   const { t } = useTranslation();
@@ -33,11 +33,13 @@ export default function ProfileScreen() {
     setPresets(presetList.presets);
   }, []);
 
-  useEffect(() => {
-    load()
-      .catch((e) => showAlert(t('auth.error_title'), (e as Error).message))
-      .finally(() => setLoading(false));
-  }, [load, t]);
+  useFocusEffect(
+    useCallback(() => {
+      load()
+        .catch((e) => showAlert(t('auth.error_title'), (e as Error).message))
+        .finally(() => setLoading(false));
+    }, [load, t]),
+  );
 
   const onSave = async () => {
     if (!nickname.trim()) {
@@ -104,7 +106,7 @@ const styles = StyleSheet.create({
   section: { ...typography.caption, color: colors.text.secondary, marginBottom: spacing.sm },
   presetGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.lg },
   presetItem: { width: '22%', alignItems: 'center', padding: spacing.xs, borderRadius: 8 },
-  presetSelected: { backgroundColor: 'rgba(201,162,39,0.15)', borderWidth: 1, borderColor: colors.brand.secondary },
+  presetSelected: { backgroundColor: palette.accentSoft, borderWidth: 1, borderColor: colors.brand.primary },
   presetCircle: {
     width: 44,
     height: 44,

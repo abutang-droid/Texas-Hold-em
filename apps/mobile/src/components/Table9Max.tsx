@@ -1,11 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
-import { colors, radius, spacing, typography } from '../theme';
+import { View, Text, StyleSheet, Animated, Pressable } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { colors, palette, radius, shadows, spacing, typography } from '../theme';
 import { PlayingCard } from './ui/PlayingCard';
 import { CommunityCardsRow } from './CommunityCardsRow';
 import { PotDisplay } from './PotDisplay';
 import { ChipFlyLayer, type ChipFlyEvent } from './ChipFlyLayer';
+import { DealFlyLayer, boardDealEvents, holeDealEvents, type DealFlyEvent } from './DealFlyLayer';
+import { DealerStation } from './DealerStation';
+import { dealSeatOrder, SEAT_LAYOUT } from './table-layout';
 import { Avatar } from './Avatar';
+import type { SeatAction } from '../types/table';
+function formatStack(chips: number): string {
+  if (chips >= 10_000) return `${Math.round(chips / 1000)}k`;
+  if (chips >= 1000) return `${(chips / 1000).toFixed(1).replace(/\.0$/, '')}k`;
+  return String(chips);
+}
 
 function SeatCountdown({ deadline }: { deadline: number }) {
   const [sec, setSec] = useState(0);
@@ -23,15 +33,7 @@ function SeatCountdown({ deadline }: { deadline: number }) {
   );
 }
 
-/** 6-max elliptical seat positions (%, %) */
-const SEAT_POSITIONS: Array<{ top: string; left: string }> = [
-  { top: '72%', left: '50%' },
-  { top: '62%', left: '82%' },
-  { top: '22%', left: '78%' },
-  { top: '12%', left: '50%' },
-  { top: '22%', left: '22%' },
-  { top: '62%', left: '18%' },
-];
+/** 6-max elliptical seat positions (%, %) — dealer occupies 12 o'clock. */
 
 export interface SeatView {
   seatIndex: number;
@@ -61,29 +63,155 @@ interface Props {
   chipFlyEvents?: ChipFlyEvent[];
   animateHoleDeal?: boolean;
   seatEmojis?: Record<number, string>;
+  phase?: string;
   onChipFlyDone?: (id: string) => void;
+  onSeatPress?: (seatIndex: number) => void;
+  emptySeatLabel?: string;
+  seatActions?: Record<number, SeatAction>;
+  isSpectator?: boolean;
 }
 
-function HoleCardsRow({ cards, animate }: { cards: string[]; animate?: boolean }) {
-  const scale = useRef(new Animated.Value(animate ? 0.5 : 1)).current;
-  const opacity = useRef(new Animated.Value(animate ? 0 : 1)).current;
+const ACTION_I18N: Record<string, string> = {
+  fold: 'game.action.fold',
+  check: 'game.action.check',
+  call: 'game.action.call',
+  raise: 'game.action.raise',
+  bet: 'game.action.bet',
+  all_in: 'game.action.allIn',
+  sb: 'game.action.sb',
+  bb: 'game.action.bb',
+  thinking: 'game.action.thinking',
+};
+
+function actionTone(type: string): 'fold' | 'check' | 'call' | 'raise' | 'allin' | 'blind' | 'turn' {
+  if (type === 'fold') return 'fold';
+  if (type === 'check') return 'check';
+  if (type === 'call') return 'call';
+  if (type === 'raise' || type === 'bet') return 'raise';
+  if (type === 'all_in') return 'allin';
+  if (type === 'sb' || type === 'bb') return 'blind';
+  if (type === 'thinking') return 'turn';
+  return 'check';
+}
+
+function SeatActionBadge({ action }: { action: SeatAction }) {
+  const { t } = useTranslation();
+  const key = ACTION_I18N[action.type] ?? 'game.action.check';
+  const showAmt =
+    action.amount != null &&
+    action.amount > 0 &&
+    ['call', 'raise', 'bet', 'all_in', 'sb', 'bb'].includes(action.type);
+  const tone = actionTone(action.type);
+  return (
+    <View style={[styles.actionBadge, ACTION_BG[tone]]}>
+      <Text style={[styles.actionBadgeText, ACTION_FG[tone]]} numberOfLines={1}>
+        {t(key)}
+        {showAmt ? ` ${action.amount}` : ''}
+      </Text>
+    </View>
+  );
+}
+
+const ACTION_BG = {
+  fold: { backgroundColor: palette.chipStack },
+  check: { backgroundColor: palette.inverse, borderWidth: 1, borderColor: palette.line },
+  call: { backgroundColor: colors.brand.primary },
+  raise: { backgroundColor: colors.brand.primary },
+  allin: { backgroundColor: colors.semantic.danger },
+  blind: { backgroundColor: palette.accentSoft },
+  turn: { backgroundColor: palette.accentSoft },
+} as const;
+
+const ACTION_FG = {
+  fold: { color: colors.text.secondary },
+  check: { color: colors.text.primary },
+  call: { color: palette.inverse },
+  raise: { color: palette.inverse },
+  allin: { color: palette.inverse },
+  blind: { color: colors.brand.primary },
+  turn: { color: colors.brand.primary },
+} as const;
+
+function HoleCardsRow({
+  cards,
+  animate,
+  dealDelayMs = 0,
+  faceDown,
+  compact,
+  size = 'sm',
+}: {
+  cards: string[];
+  animate?: boolean;
+  dealDelayMs?: number;
+  faceDown?: boolean;
+  compact?: boolean;
+  size?: 'sm' | 'lg';
+}) {
+  const slide = useRef(new Animated.Value(animate ? -14 : 0)).current;
+  const opacity = useRef(new Animated.Value(animate ? 0.25 : 1)).current;
 
   useEffect(() => {
-    if (!animate) return;
-    scale.setValue(0.5);
-    opacity.setValue(0);
-    Animated.parallel([
-      Animated.spring(scale, { toValue: 1, friction: 7, useNativeDriver: true }),
-      Animated.timing(opacity, { toValue: 1, duration: 320, useNativeDriver: true }),
+    if (!animate) {
+      slide.setValue(0);
+      opacity.setValue(1);
+      return;
+    }
+    slide.setValue(-16);
+    opacity.setValue(0.25);
+    Animated.sequence([
+      Animated.delay(dealDelayMs),
+      Animated.parallel([
+        Animated.spring(slide, { toValue: 0, friction: 7, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 1, duration: 280, useNativeDriver: true }),
+      ]),
     ]).start();
-  }, [animate, scale, opacity]);
+  }, [animate, dealDelayMs, opacity, slide]);
 
   return (
-    <Animated.View style={[styles.holeCards, { opacity, transform: [{ scale }] }]}>
+    <Animated.View
+      style={[
+        compact ? styles.holeCardsEmbedded : styles.holeCards,
+        { opacity, transform: [{ translateY: slide }] },
+      ]}
+    >
       {cards.map((c, i) => (
-        <PlayingCard key={i} code={c} size="sm" />
+        <View key={i} style={compact && i > 0 ? styles.rivalCardOverlap : undefined}>
+          <PlayingCard
+            code={compact ? '**' : c}
+            size={compact ? 'xs' : size}
+            faceDown={compact || faceDown || c === '**'}
+          />
+        </View>
       ))}
     </Animated.View>
+  );
+}
+
+function SeatProfileCard({
+  nickname,
+  chips,
+  isBot,
+  avatarUrl,
+}: {
+  nickname: string;
+  chips: number;
+  isBot?: boolean;
+  avatarUrl?: string | null;
+}) {
+  const { t } = useTranslation();
+  return (
+    <View style={styles.profileCard}>
+      <Avatar nickname={nickname} avatarUrl={avatarUrl} size="md" />
+      <Text style={styles.profileName} numberOfLines={2}>
+        {nickname}
+      </Text>
+      <Text style={styles.profileMeta}>
+        {isBot ? t('table.profile_bot') : t('table.profile_human')}
+      </Text>
+      <Text style={styles.profileChips}>
+        {t('table.profile_chips', { amount: chips.toLocaleString() })}
+      </Text>
+    </View>
   );
 }
 
@@ -101,40 +229,141 @@ export function Table9Max({
   chipFlyEvents = [],
   animateHoleDeal = false,
   seatEmojis = {},
+  phase = 'WAITING',
   onChipFlyDone,
+  onSeatPress,
+  emptySeatLabel,
+  seatActions = {},
+  isSpectator = false,
 }: Props) {
+  const [profileSeat, setProfileSeat] = useState<number | null>(null);
+  const [dealEvents, setDealEvents] = useState<DealFlyEvent[]>([]);
+  const holeDealKey = useRef<string>('');
+  const lastBoardLen = useRef(0);
+
+  const inHandSeats = seats
+    .filter(
+      (s) =>
+        phase !== 'WAITING' &&
+        s.status !== 'SIT_OUT' &&
+        s.status !== 'FOLDED',
+    )
+    .map((s) => s.seatIndex);
+  const inHandKey = inHandSeats.join(',');
+  const holeOrder = dealSeatOrder(buttonSeat, inHandSeats);
+
+  useEffect(() => {
+    if (!animateHoleDeal) {
+      holeDealKey.current = '';
+      return;
+    }
+    const key = `${phase}:${inHandKey}:${buttonSeat}`;
+    if (holeDealKey.current === key) return;
+    holeDealKey.current = key;
+    const order = dealSeatOrder(
+      buttonSeat,
+      inHandKey ? inHandKey.split(',').map((n) => Number(n)) : [],
+    );
+    setDealEvents((prev) => [
+      ...prev,
+      ...holeDealEvents({
+        handId: key,
+        dealOrder: order,
+      }),
+    ]);
+  }, [animateHoleDeal, buttonSeat, inHandKey, phase]);
+
+  useEffect(() => {
+    if (communityCards.length === 0) {
+      lastBoardLen.current = 0;
+      return;
+    }
+    if (communityCards.length > lastBoardLen.current) {
+      setDealEvents((prev) => [
+        ...prev,
+        ...boardDealEvents({
+          handId: communityCards.join(''),
+          fromCount: lastBoardLen.current,
+          toCount: communityCards.length,
+        }),
+      ]);
+    }
+    lastBoardLen.current = communityCards.length;
+  }, [communityCards]);
+
   return (
     <View style={styles.container}>
       <ChipFlyLayer events={chipFlyEvents} onDone={(id) => onChipFlyDone?.(id)} />
       <View style={styles.railOuter}>
         <View style={styles.railHighlight} />
         <View style={styles.rail}>
-          <View style={styles.felt}>
+          <Pressable style={styles.felt} onPress={() => setProfileSeat(null)}>
             <View style={styles.feltPattern} />
+            <DealerStation dealing={dealEvents.length > 0} phase={phase} />
+            <DealFlyLayer
+              events={dealEvents}
+              onDone={(id) => setDealEvents((prev) => prev.filter((e) => e.id !== id))}
+            />
             <View style={styles.center}>
               <CommunityCardsRow cards={communityCards} />
               <PotDisplay potTotal={potTotal} potLabel={potLabel} />
             </View>
-            {SEAT_POSITIONS.map((pos, idx) => {
+            {SEAT_LAYOUT.map((pos, idx) => {
               const seat = seats.find((s) => s.seatIndex === idx);
               const isHero = heroUserId && seat?.userId === heroUserId;
-              const hasVisibleCards =
-                seat?.holeCards &&
-                seat.holeCards[0] !== '**' &&
-                (isHero || seat.revealed);
+              const inHand =
+                !!seat &&
+                phase !== 'WAITING' &&
+                seat.status !== 'SIT_OUT' &&
+                seat.status !== 'FOLDED';
+              const realHoles =
+                !!seat?.holeCards &&
+                seat.holeCards.length >= 2 &&
+                seat.holeCards[0] !== '**';
+              const showFaceUp =
+                realHoles &&
+                (!!isHero ||
+                  !!seat?.revealed ||
+                  phase === 'SHOWDOWN' ||
+                  phase === 'END_HAND');
+              const holeCards = showFaceUp
+                ? seat!.holeCards!
+                : inHand
+                  ? ['**', '**']
+                  : null;
+              const holeCompact = !showFaceUp;
               const isWinner = winnerSeats.includes(idx);
               const isDealer = buttonSeat === idx;
               const isSb = sbSeat === idx;
               const isBb = bbSeat === idx;
+              const canSit = !seat && !!onSeatPress;
+              const streetAction =
+                seatActions[idx] ??
+                (seat?.status === 'FOLDED'
+                  ? { type: 'fold' }
+                  : seat?.status === 'ALL_IN'
+                    ? { type: 'all_in' }
+                    : undefined);
+              const badgeAction = seat?.isActive
+                ? { type: 'thinking' }
+                : streetAction;
+              const showProfile = profileSeat === idx && !!seat;
               return (
-                <View
+                <Pressable
                   key={idx}
+                  disabled={!canSit && !seat}
+                  onPress={() => {
+                    if (canSit) onSeatPress?.(idx);
+                    else if (!seat) setProfileSeat(null);
+                  }}
                   style={[
                     styles.seat,
-                    { top: pos.top as `${number}%`, left: pos.left as `${number}%` },
+                    { top: `${pos.top}%`, left: `${pos.left}%` },
                     seat?.isActive && styles.seatActive,
+                    seat?.status === 'FOLDED' && styles.seatFolded,
                     isHero && styles.seatHero,
                     isWinner && styles.seatWinner,
+                    showProfile && styles.seatProfileOpen,
                   ]}
                 >
                   {isDealer && seat ? (
@@ -152,31 +381,82 @@ export function Table9Max({
                       <Text style={styles.blindBadgeText}>BB</Text>
                     </View>
                   ) : null}
-                  {hasVisibleCards && (
+                  {!holeCompact && holeCards ? (
                     <HoleCardsRow
-                      cards={seat.holeCards!}
-                      animate={animateHoleDeal && !!isHero}
+                      cards={holeCards}
+                      animate={animateHoleDeal}
+                      dealDelayMs={
+                        holeOrder.indexOf(idx) >= 0 ? 80 + holeOrder.indexOf(idx) * 90 : idx * 70
+                      }
+                      faceDown={false}
+                      compact={false}
+                      size={isHero ? 'lg' : 'sm'}
                     />
-                  )}
+                  ) : null}
                   {seatEmojis[idx] ? (
                     <View style={styles.emojiBubble}>
                       <Text style={styles.emojiBubbleText}>{seatEmojis[idx]}</Text>
                     </View>
                   ) : null}
-                  <View style={[styles.seatBadge, seat?.isActive && styles.seatBadgeActive, isHero && styles.seatHeroBadge, isWinner && styles.seatWinnerBadge]}>
+                  <View
+                    style={[
+                      styles.seatBadge,
+                      !seat && styles.seatBadgeEmpty,
+                      canSit && styles.seatEmptyTappable,
+                      seat?.isActive && styles.seatBadgeActive,
+                    ]}
+                  >
+                    {showProfile && seat ? (
+                      <SeatProfileCard
+                        nickname={seat.nickname}
+                        chips={seat.chips}
+                        isBot={seat.isBot}
+                        avatarUrl={seat.avatarUrl}
+                      />
+                    ) : null}
                     {seat ? (
-                      <View style={styles.avatarWrap}>
-                        <Avatar nickname={seat.nickname} avatarUrl={seat.avatarUrl} size="sm" />
+                      <View
+                        style={[
+                          styles.avatarWrap,
+                          seat.isActive && styles.avatarWrapActive,
+                          isHero && styles.avatarWrapHero,
+                          isWinner && styles.avatarWrapWinner,
+                        ]}
+                      >
+                        <Avatar
+                          nickname={seat.nickname}
+                          avatarUrl={seat.avatarUrl}
+                          size="sm"
+                          onPress={() =>
+                            setProfileSeat((cur) => (cur === idx ? null : idx))
+                          }
+                        />
+                        <View style={styles.chipBadge}>
+                          <Text style={styles.chipBadgeText}>{formatStack(seat.chips)}</Text>
+                        </View>
+                        {holeCompact && holeCards ? (
+                          <View style={styles.rivalHoles}>
+                            <HoleCardsRow
+                              cards={holeCards}
+                              animate={animateHoleDeal}
+                              dealDelayMs={
+                                holeOrder.indexOf(idx) >= 0
+                                  ? 80 + holeOrder.indexOf(idx) * 90
+                                  : idx * 70
+                              }
+                              faceDown
+                              compact
+                            />
+                          </View>
+                        ) : null}
                       </View>
-                    ) : null}
-                    <Text style={styles.seatName} numberOfLines={1}>
-                      {seat?.nickname ?? '—'}
-                      {seat?.isBot ? ' 🤖' : ''}
-                    </Text>
-                    {seat ? (
-                      <Text style={styles.seatChips}>{seat.chips.toLocaleString()}</Text>
-                    ) : null}
-                    {seat && (seat.betThisRound ?? 0) > 0 ? (
+                    ) : (
+                      <Text style={styles.seatName} numberOfLines={1}>
+                        {canSit ? emptySeatLabel ?? '坐下' : '—'}
+                      </Text>
+                    )}
+                    {seat && badgeAction ? <SeatActionBadge action={badgeAction} /> : null}
+                    {seat && (seat.betThisRound ?? 0) > 0 && (!streetAction || seat.isActive) ? (
                       <View style={styles.betChip}>
                         <Text style={styles.betChipText}>{seat.betThisRound}</Text>
                       </View>
@@ -185,10 +465,10 @@ export function Table9Max({
                       <SeatCountdown deadline={turnDeadline} />
                     ) : null}
                   </View>
-                </View>
+                </Pressable>
               );
             })}
-          </View>
+          </Pressable>
         </View>
       </View>
     </View>
@@ -199,68 +479,49 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg.lobby },
   railOuter: {
     flex: 1,
-    margin: spacing.lg,
-    borderRadius: 999,
-    padding: 6,
-    backgroundColor: colors.felt.rail,
+    margin: spacing.md,
+    borderRadius: 28,
+    padding: 0,
+    backgroundColor: 'transparent',
   },
   railHighlight: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 999,
-    borderWidth: 2,
-    borderColor: colors.felt.railHighlight,
-    opacity: 0.5,
+    display: 'none',
   },
   rail: {
     flex: 1,
-    borderRadius: 999,
-    padding: 10,
-    backgroundColor: colors.felt.rail,
+    borderRadius: 28,
+    padding: 0,
+    backgroundColor: 'transparent',
   },
   felt: {
     flex: 1,
-    borderRadius: 999,
+    borderRadius: 28,
     backgroundColor: colors.felt.base,
     position: 'relative',
-    borderWidth: 2,
-    borderColor: 'rgba(0,0,0,0.25)',
+    borderWidth: 1,
+    borderColor: palette.line,
   },
   feltPattern: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 999,
+    borderRadius: 22,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.04)',
-    margin: 24,
+    borderColor: 'rgba(23,25,28,0.04)',
+    margin: 18,
   },
   center: {
     position: 'absolute',
-    top: '38%',
+    top: '40%',
     left: '28%',
     width: '44%',
     alignItems: 'center',
   },
-  communityRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  potChip: {
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(201,162,39,0.4)',
-    alignItems: 'center',
-  },
-  potLabel: { ...typography.micro, color: colors.text.secondary },
-  pot: { ...typography.pot, color: colors.brand.secondary },
   seat: {
     position: 'absolute',
     width: 88,
     marginLeft: -44,
     marginTop: -20,
     alignItems: 'center',
+    overflow: 'visible',
   },
   dealerBtn: {
     position: 'absolute',
@@ -269,12 +530,12 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: '#fff',
+    backgroundColor: colors.brand.primary,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 5,
   },
-  dealerBtnText: { fontSize: 10, fontWeight: '800', color: '#1A1A1A' },
+  dealerBtnText: { fontSize: 10, fontWeight: '800', color: palette.inverse },
   blindBadge: {
     position: 'absolute',
     top: -8,
@@ -287,67 +548,175 @@ const styles = StyleSheet.create({
   sbBadge: { backgroundColor: '#4A90D9' },
   bbBadge: { backgroundColor: '#C94A4A' },
   blindBadgeText: { fontSize: 8, fontWeight: '800', color: '#fff' },
-  avatarWrap: { marginBottom: 4 },
+  avatarWrap: {
+    marginBottom: 2,
+    position: 'relative',
+    overflow: 'visible',
+  },
+  avatarWrapActive: {
+    shadowColor: colors.brand.primary,
+    shadowOpacity: 0.28,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  avatarWrapHero: {
+    shadowColor: colors.brand.primary,
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+  },
+  avatarWrapWinner: {
+    shadowColor: colors.brand.primary,
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  chipBadge: {
+    position: 'absolute',
+    right: -8,
+    bottom: -3,
+    minWidth: 22,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 8,
+    backgroundColor: palette.inverse,
+    borderWidth: 1,
+    borderColor: palette.line,
+    alignItems: 'center',
+  },
+  chipBadgeText: {
+    color: colors.text.secondary,
+    fontSize: 9,
+    fontWeight: '800',
+    lineHeight: 11,
+  },
   emojiBubble: {
     position: 'absolute',
     top: -36,
     zIndex: 6,
-    backgroundColor: 'rgba(0,0,0,0.75)',
+    backgroundColor: palette.inverse,
     borderRadius: 16,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderWidth: 1,
-    borderColor: 'rgba(201,162,39,0.5)',
+    borderColor: palette.line,
+    ...shadows.button,
   },
   emojiBubbleText: { fontSize: 22 },
   seatActive: {},
+  seatFolded: { opacity: 0.45 },
   seatHero: { zIndex: 2 },
   seatWinner: { zIndex: 3 },
+  seatProfileOpen: { zIndex: 24 },
+  profileCard: {
+    position: 'absolute',
+    bottom: '100%',
+    left: '50%',
+    marginLeft: -70,
+    width: 140,
+    marginBottom: 8,
+    backgroundColor: palette.inverse,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: palette.line,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    alignItems: 'center',
+    zIndex: 30,
+    ...shadows.card,
+  },
+  profileName: {
+    ...typography.caption,
+    color: colors.text.primary,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginTop: 6,
+  },
+  profileMeta: {
+    ...typography.micro,
+    color: colors.text.secondary,
+    marginTop: 2,
+  },
+  profileChips: {
+    ...typography.micro,
+    color: colors.brand.secondary,
+    fontWeight: '700',
+    marginTop: 4,
+  },
   holeCards: {
     flexDirection: 'row',
     marginBottom: 4,
   },
+  holeCardsEmbedded: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rivalHoles: {
+    position: 'absolute',
+    left: 42,
+    top: 10,
+    zIndex: 4,
+  },
+  rivalCardOverlap: {
+    marginLeft: -5,
+  },
   seatBadge: {
     position: 'relative',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 6,
+    overflow: 'visible',
+    backgroundColor: palette.inverse,
     borderRadius: radius.md,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    paddingHorizontal: 8,
+    paddingVertical: 8,
     minWidth: 72,
+    borderWidth: 1,
+    borderColor: palette.line,
+    ...shadows.button,
+  },
+  seatBadgeEmpty: {
+    minWidth: 52,
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    backgroundColor: 'transparent',
+    borderStyle: 'dashed',
+    borderColor: colors.text.disabled,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  seatEmptyTappable: {
+    borderColor: colors.brand.primary,
+    borderStyle: 'dashed',
+    backgroundColor: palette.accentSoft,
   },
   seatBadgeActive: {
-    borderColor: colors.brand.secondary,
+    borderColor: colors.brand.primary,
     borderWidth: 2,
-    backgroundColor: 'rgba(201,162,39,0.15)',
-  },
-  seatHeroBadge: {
-    borderColor: colors.semantic.info,
-  },
-  seatWinnerBadge: {
-    borderColor: colors.brand.secondary,
-    borderWidth: 2,
-    backgroundColor: 'rgba(201,162,39,0.35)',
-    shadowColor: colors.brand.secondary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 8,
-    elevation: 8,
+    backgroundColor: palette.accentSoft,
   },
   seatName: { ...typography.micro, color: colors.text.primary, maxWidth: 80 },
-  seatChips: { ...typography.micro, color: colors.brand.secondary, fontWeight: '700', marginTop: 2 },
+  seatChips: { ...typography.micro, color: colors.text.secondary, fontWeight: '700', marginTop: 2 },
   betChip: {
     marginTop: 4,
-    backgroundColor: 'rgba(201,162,39,0.9)',
+    backgroundColor: palette.accentSoft,
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 10,
+    borderRadius: 999,
     minWidth: 24,
     alignItems: 'center',
   },
-  betChipText: { ...typography.micro, color: '#1A1A1A', fontWeight: '700', fontSize: 10 },
+  betChipText: { ...typography.micro, color: colors.brand.primary, fontWeight: '700', fontSize: 10 },
+  actionBadge: {
+    marginTop: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    minWidth: 36,
+    alignItems: 'center',
+  },
+  actionBadgeText: {
+    ...typography.micro,
+    fontWeight: '800',
+    fontSize: 10,
+  },
   countdown: {
     position: 'absolute',
     top: -10,
@@ -355,12 +724,12 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: colors.brand.secondary,
+    backgroundColor: colors.brand.primary,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#fff',
+    borderColor: palette.inverse,
   },
-  countdownText: { fontSize: 11, fontWeight: '800', color: '#1A1A1A' },
-  countdownUrgent: { color: colors.semantic.danger },
+  countdownText: { fontSize: 11, fontWeight: '800', color: palette.inverse },
+  countdownUrgent: { color: '#F8D7D7' },
 });

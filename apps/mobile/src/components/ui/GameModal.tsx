@@ -1,5 +1,5 @@
 import { Modal, View, Text, StyleSheet } from 'react-native';
-import { colors, radius, spacing, typography } from '../../theme';
+import { colors, palette, radius, shadows, spacing, typography } from '../../theme';
 import { Button } from './Button';
 
 interface Props {
@@ -36,7 +36,7 @@ export function GameModal({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.75)',
+    backgroundColor: 'rgba(23,25,28,0.35)',
     justifyContent: 'center',
     padding: spacing.xl,
   },
@@ -45,8 +45,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     padding: spacing.xl,
     borderWidth: 1,
-    borderColor: 'rgba(201,162,39,0.25)',
+    borderColor: palette.line,
     overflow: 'hidden',
+    ...shadows.card,
   },
   accent: {
     position: 'absolute',

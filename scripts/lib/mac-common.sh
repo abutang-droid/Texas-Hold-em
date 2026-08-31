@@ -127,6 +127,54 @@ free_expo_port() {
   fi
 }
 
+# Crash: "me is not defined" in applySnapshot. Pin the known-good file.
+ensure_table_snapshot_fix() {
+  local root="$1"
+  local dest="${root}/apps/mobile/app/table.tsx"
+  if grep -q 'applySnapshotMeFix' "${dest}" 2>/dev/null \
+    && grep -q 'sitDownWebConfirm' "${dest}" 2>/dev/null; then
+    echo "OK table.tsx has applySnapshotMeFix + sitDownWebConfirm"
+    return 0
+  fi
+  echo "==> table.tsx is stale — replacing sit/snapshot fix from branch"
+  local slug="abutang-droid/Texas-Hold-em"
+  local ref="cursor/poker-rules-6max-9b0a"
+  local stamp
+  stamp="$(date +%s)"
+  local url
+  for url in \
+    "https://raw.githubusercontent.com/${slug}/${ref}/apps/mobile/app/table.tsx?t=${stamp}" \
+    "https://ghfast.top/https://raw.githubusercontent.com/${slug}/${ref}/apps/mobile/app/table.tsx" \
+    "https://raw.gitmirror.com/${slug}/${ref}/apps/mobile/app/table.tsx"
+  do
+    if curl -fsSL --globoff --retry 2 --connect-timeout 20 -o "${dest}.tmp" "$url"; then
+      mv "${dest}.tmp" "${dest}"
+      break
+    fi
+    rm -f "${dest}.tmp"
+  done
+  if ! grep -q 'applySnapshotMeFix' "${dest}" 2>/dev/null \
+    || ! grep -q 'sitDownWebConfirm' "${dest}" 2>/dev/null; then
+    echo "ERROR: could not install fixed table.tsx — Expo would still crash / fail to sit" >&2
+    return 1
+  fi
+  echo "OK replaced table.tsx"
+  local alertDest="${root}/apps/mobile/src/utils/alert.ts"
+  if ! grep -q 'export function showConfirm' "${alertDest}" 2>/dev/null; then
+    echo "==> Replacing alert.ts (web confirm for sit-down)"
+    for url in \
+      "https://raw.githubusercontent.com/${slug}/${ref}/apps/mobile/src/utils/alert.ts?t=${stamp}" \
+      "https://ghfast.top/https://raw.githubusercontent.com/${slug}/${ref}/apps/mobile/src/utils/alert.ts"
+    do
+      if curl -fsSL --globoff --retry 2 --connect-timeout 20 -o "${alertDest}.tmp" "$url"; then
+        mv "${alertDest}.tmp" "${alertDest}"
+        break
+      fi
+      rm -f "${alertDest}.tmp"
+    done
+  fi
+}
+
 start_expo_dev_server() {
   local root="$1"
   local port="${EXPO_PORT:-8081}"
@@ -196,6 +244,8 @@ apps/mobile/app/index.tsx
 apps/mobile/app/onboarding.tsx
 apps/mobile/app/private.tsx
 apps/mobile/app/table.tsx
+apps/mobile/app/tables.tsx
+apps/mobile/src/types/table.ts
 apps/mobile/app/auth/_layout.tsx
 apps/mobile/app/auth/login.tsx
 apps/mobile/app/auth/register.tsx
@@ -206,13 +256,32 @@ apps/mobile/src/auth/routes.ts
 apps/mobile/src/i18n/index.ts
 apps/mobile/src/theme/index.ts
 apps/mobile/src/utils/alert.ts
+apps/mobile/src/utils/nickname.ts
 apps/mobile/src/components/Table9Max.tsx
+apps/mobile/src/components/table-layout.ts
+apps/mobile/src/components/DealerStation.tsx
+apps/mobile/src/components/DealFlyLayer.tsx
+apps/mobile/src/components/ShowdownOverlay.tsx
 apps/mobile/src/components/ChipFlyLayer.tsx
+apps/mobile/src/components/CommunityCardsRow.tsx
+apps/mobile/src/components/ActionPanel.tsx
+apps/mobile/src/components/TurnTimer.tsx
+apps/mobile/src/components/HandStatusBar.tsx
+apps/mobile/src/components/PotDisplay.tsx
+apps/mobile/src/components/PrivateTablePanels.tsx
+apps/mobile/src/components/ui/PlayingCard.tsx
 apps/mobile/src/components/ui/GameModal.tsx
 apps/mobile/src/components/ui/Button.tsx
 apps/mobile/src/components/ui/Screen.tsx
+apps/mobile/src/components/ui/Card.tsx
+apps/mobile/src/components/auth/AuthField.tsx
 apps/mobile/src/components/Avatar.tsx
 apps/mobile/src/components/EmojiBar.tsx
+apps/mobile/app/shop.tsx
+apps/mobile/app/settings.tsx
+apps/mobile/app/leaderboard.tsx
+apps/mobile/app/profile.tsx
+docs/DESIGN-SPEC.md
 apps/mobile/src/locales/en-US.json
 apps/mobile/src/locales/zh-CN.json
 packages/shared/package.json

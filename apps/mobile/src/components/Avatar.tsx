@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { parseAvatarPreset } from '@texas-holdem/shared';
-import { colors, typography } from '../theme';
+import { colors, palette } from '../theme';
 
 interface Props {
   nickname: string;
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
   circle: {
     backgroundColor: colors.brand.primary,
     borderWidth: 2,
-    borderColor: colors.brand.secondary,
+    borderColor: palette.line,
     alignItems: 'center',
     justifyContent: 'center',
   },
