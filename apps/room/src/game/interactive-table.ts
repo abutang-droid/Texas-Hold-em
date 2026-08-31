@@ -34,6 +34,7 @@ import {
 import {
   ACTION_TIME_MS,
   MAX_TABLE_SEATS,
+  MIN_PUBLIC_TABLE_BOTS,
   OFFICIAL_BIG_BLIND,
   OFFICIAL_MAX_BUY_IN,
   OFFICIAL_SMALL_BLIND,
@@ -231,6 +232,9 @@ export class InteractiveTable {
     this.roomId = roomId;
     this.config = { ...OFFICIAL_DEFAULT, ...config };
     this.minRaise = this.config.bigBlind;
+    if (this.config.roomType === 'OFFICIAL') {
+      this.fillOfficialBots();
+    }
   }
 
   getHostUserId(): string | undefined {
@@ -348,8 +352,8 @@ export class InteractiveTable {
     if (standing && !p.isBot) {
       this.addSpectator(userId, p.nickname, avatar);
     }
-    if (!p.isBot && this.realPlayerCount === 0 && this.spectators.size === 0) {
-      this.players = this.players.filter((pl) => !pl.isBot);
+    if (!p.isBot) {
+      this.fillOfficialBots();
     }
     if (!p.isBot) {
       this.onPlayerRemoved?.(userId, chips);
@@ -564,20 +568,25 @@ export class InteractiveTable {
     }
   }
 
-  /** Official: 5 bots + empty seats for humans. Spectators can watch a live bot game. */
+  /** Official: keep at least 3 bots before humans sit; leave empty seats for joiners. */
   private fillOfficialBots(): void {
     if (this.config.roomType === 'PRIVATE') return;
-    const seatedHumans = this.players.filter((p) => !p.isBot).length;
-    if (seatedHumans === 0 && this.spectators.size === 0) {
-      this.players = this.players.filter((pl) => !pl.isBot);
-      return;
-    }
     if (this.phase !== 'WAITING' && this.phase !== 'END_HAND') return;
     if (this.botFillTimer) {
       clearTimeout(this.botFillTimer);
       this.botFillTimer = null;
     }
-    const botTarget = Math.min(5, this.config.maxSeats - seatedHumans);
+    const seatedHumans = this.players.filter((p) => !p.isBot).length;
+    const botTarget =
+      seatedHumans === 0
+        ? MIN_PUBLIC_TABLE_BOTS
+        : Math.min(MIN_PUBLIC_TABLE_BOTS, this.config.maxSeats - seatedHumans);
+    let bots = this.players.filter((p) => p.isBot);
+    while (bots.length > botTarget) {
+      const bot = bots.pop();
+      if (!bot) break;
+      this.players = this.players.filter((p) => p.userId !== bot.userId);
+    }
     let botCount = this.players.filter((p) => p.isBot).length;
     while (botCount < botTarget) {
       const n = this.players.length;

@@ -244,6 +244,7 @@ apps/mobile/app/index.tsx
 apps/mobile/app/onboarding.tsx
 apps/mobile/app/private.tsx
 apps/mobile/app/table.tsx
+apps/mobile/app/tables.tsx
 apps/mobile/src/types/table.ts
 apps/mobile/app/auth/_layout.tsx
 apps/mobile/app/auth/login.tsx

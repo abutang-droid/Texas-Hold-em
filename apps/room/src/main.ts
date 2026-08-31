@@ -11,7 +11,8 @@ import {
 } from '@texas-holdem/db';
 import type { ActionType } from '@texas-holdem/poker-engine';
 import { getTableEmoji, isValidTableEmojiId } from '@texas-holdem/shared';
-import { createServer } from 'node:http';
+import { countSeatedHumans, ensurePublicTables, pickJoinableTable } from './public-lobby.js';
+import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { getClientIp } from './client-ip.js';
 import {
   broadcastState,
@@ -112,6 +113,12 @@ async function handleJoin(
   );
   if (cached) return cached;
 
+  const guestBlocked = await rejectIfGuest(userId);
+  if (guestBlocked) {
+    emitError(socket, 'GUEST_NOT_ALLOWED', msg.requestId, 'errors.guest_not_allowed');
+    return { ok: false, error: 'GUEST_NOT_ALLOWED' };
+  }
+
   const table = await getOrCreateRoom(msg.roomId, io);
   const cap = table.config.buyInCap;
   const actualBuyIn = Math.min(cap, Math.floor(msg.buyInAmount ?? cap));
@@ -172,6 +179,27 @@ async function handleJoin(
   }
 }
 
+async function rejectIfGuest(userId: string): Promise<boolean> {
+  const user = await findUserById(Number(userId));
+  return !user || user.account_type === 'GUEST';
+}
+
+function writeJson(res: ServerResponse, status: number, body: unknown): void {
+  res.writeHead(status, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(body));
+}
+
+async function readJsonBody(req: IncomingMessage): Promise<Record<string, unknown>> {
+  const chunks: Buffer[] = [];
+  await new Promise<void>((resolve, reject) => {
+    req.on('data', (c: Buffer) => chunks.push(c));
+    req.on('end', () => resolve());
+    req.on('error', reject);
+  });
+  if (chunks.length === 0) return {};
+  return JSON.parse(Buffer.concat(chunks).toString('utf8')) as Record<string, unknown>;
+}
+
 async function guardOfficialSitIp(
   socket: Socket,
   table: InteractiveTable,
@@ -198,17 +226,46 @@ async function guardOfficialSitIp(
 }
 
 export function startRoomServer(port: number): void {
+  let io!: Server;
+  const createOfficial = (roomId: string) => getOrCreateRoom(roomId, io);
+
   const httpServer = createServer((req, res) => {
-    if (req.url === '/health') {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ status: 'ok', service: 'room', version: '0.5.2' }));
-      return;
-    }
-    res.writeHead(404);
-    res.end();
+    void (async () => {
+      const path = (req.url ?? '/').split('?')[0];
+      if (path === '/health') {
+        writeJson(res, 200, { status: 'ok', service: 'room', version: '0.6.0' });
+        return;
+      }
+      if (req.method === 'GET' && path === '/public-tables') {
+        const tables = await ensurePublicTables(rooms, createOfficial);
+        writeJson(res, 200, { tables, realUsers: countSeatedHumans(rooms) });
+        return;
+      }
+      if (req.method === 'POST' && path === '/public-tables/assign') {
+        const body = await readJsonBody(req);
+        await ensurePublicTables(rooms, createOfficial);
+        const exclude = typeof body.excludeRoomId === 'string' ? body.excludeRoomId : undefined;
+        const table = pickJoinableTable(rooms, exclude);
+        if (!table) {
+          writeJson(res, 409, { error: 'NO_OPEN_TABLE' });
+          return;
+        }
+        writeJson(res, 200, {
+          roomId: table.roomId,
+          buyInCap: table.config.buyInCap,
+          blinds: { sb: table.config.smallBlind, bb: table.config.bigBlind },
+        });
+        return;
+      }
+      res.writeHead(404);
+      res.end();
+    })().catch((err) => {
+      console.error('room http error:', err);
+      writeJson(res, 500, { error: 'INTERNAL' });
+    });
   });
 
-  const io = new SocketServer(httpServer, {
+  io = new SocketServer(httpServer, {
     cors: { origin: true },
     path: '/socket.io',
   });
@@ -316,6 +373,11 @@ export function startRoomServer(port: number): void {
         }
         if (table.hasPlayer(userId)) {
           ack?.({ ok: true, seatIndex: table.getPublicState(userId).mySeatIndex, nextHand: false });
+          return;
+        }
+        if (await rejectIfGuest(userId)) {
+          emitError(socket, 'GUEST_NOT_ALLOWED', msg.requestId, 'errors.guest_not_allowed');
+          ack?.({ ok: false, error: 'GUEST_NOT_ALLOWED' });
           return;
         }
         const cap = table.config.buyInCap;
@@ -487,6 +549,9 @@ export function startRoomServer(port: number): void {
 
   httpServer.listen(port, () => {
     console.log(`Room server (Socket.io) listening on http://localhost:${port}`);
+    void ensurePublicTables(rooms, createOfficial).catch((err) => {
+      console.error('public table warm-up failed:', err);
+    });
   });
 }
 

@@ -4,7 +4,7 @@ import { showAlert, showConfirm } from '../src/utils/alert';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { io, Socket } from 'socket.io-client';
-import { getToken, restoreSession, submitReport } from '../src/api/client';
+import { getToken, restoreSession, submitReport, switchPublicTable, formatApiError } from '../src/api/client';
 import { Table9Max, type SeatView } from '../src/components/Table9Max';
 import type { ChipFlyEvent } from '../src/components/ChipFlyLayer';
 import { ActionPanel } from '../src/components/ActionPanel';
@@ -177,6 +177,7 @@ export default function TableScreen() {
   const [animateHoleDeal, setAnimateHoleDeal] = useState(false);
   const [seatEmojis, setSeatEmojis] = useState<Record<number, string>>({});
   const [emojiOpen, setEmojiOpen] = useState(false);
+  const [changingTable, setChangingTable] = useState(false);
   const [seatActions, setSeatActions] = useState<Record<number, SeatAction>>({});
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>('connected');
@@ -819,6 +820,23 @@ export default function TableScreen() {
     router.back();
   };
 
+  const changeTable = async () => {
+    if (changingTable || isPrivate) return;
+    setChangingTable(true);
+    setEmojiOpen(false);
+    try {
+      const match = await switchPublicTable(roomId);
+      socket?.emit('leave_room', { requestId: `leave-switch-${Date.now()}` });
+      router.replace({
+        pathname: '/table',
+        params: { roomId: match.roomId, buyInCap: String(match.buyInCap ?? 100) },
+      });
+    } catch (e) {
+      showAlert(t('common.error'), formatApiError((e as Error).message, t));
+      setChangingTable(false);
+    }
+  };
+
   // standUpAckFix: 2026-08-30 — always ack + notice; overlay must not eat the tap
   const standUp = () => {
     setEmojiOpen(false);
@@ -863,8 +881,10 @@ export default function TableScreen() {
                   ? 'errors.insufficient_chips'
                   : ack?.error === 'ROOM_FULL'
                     ? 'errors.room_full'
-                    : ack?.error === 'SEAT_TAKEN'
-                      ? 'errors.seat_taken'
+                  : ack?.error === 'SEAT_TAKEN'
+                    ? 'errors.seat_taken'
+                    : ack?.error === 'GUEST_NOT_ALLOWED'
+                      ? 'errors.guest_not_allowed'
                       : null;
             showAlert(t('common.error'), errKey ? t(errKey) : ack?.error ?? t('common.error'));
             return;
@@ -1027,6 +1047,13 @@ export default function TableScreen() {
           >
             <Text style={styles.backText}>
               {emojiOpen ? t('table.emoji_close') : t('table.emoji_open')}
+            </Text>
+          </Pressable>
+        )}
+        {!isPrivate && (
+          <Pressable style={styles.topBtn} onPress={() => void changeTable()} disabled={changingTable}>
+            <Text style={styles.backText}>
+              {changingTable ? t('table.change_table_loading') : t('table.change_table')}
             </Text>
           </Pressable>
         )}

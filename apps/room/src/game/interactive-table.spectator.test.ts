@@ -3,7 +3,14 @@ import { describe, it } from 'node:test';
 import { InteractiveTable, type HandEndSummary } from './interactive-table.js';
 
 describe('official spectator flow', () => {
-  it('starts a live 5-bot game when a spectator joins', () => {
+  it('seeds 3 bots on an empty official table', () => {
+    const table = new InteractiveTable('O0');
+    const state = table.getPublicState();
+    assert.equal(state.seats.filter((s) => s.isBot).length, 3);
+    assert.equal(state.emptySeats.length, 3);
+  });
+
+  it('starts a live 3-bot game when a spectator joins', () => {
     const table = new InteractiveTable('O1');
     table.addSpectator('u1', 'Alice', null);
     table.ensureOfficialGameRunning();
@@ -11,8 +18,8 @@ describe('official spectator flow', () => {
     const state = table.getPublicState('u1');
     assert.equal(state.role, 'spectator');
     assert.equal(state.mySeatIndex, null);
-    assert.equal(state.seats.filter((s) => s.isBot).length, 5);
-    assert.equal(state.emptySeats.length, 1);
+    assert.equal(state.seats.filter((s) => s.isBot).length, 3);
+    assert.equal(state.emptySeats.length, 3);
     assert.equal(state.phase, 'PRE_FLOP');
     assert.ok((state.potTotal ?? 0) > 0);
   });
@@ -52,7 +59,7 @@ describe('official spectator flow', () => {
     assert.equal(state.role, 'spectator');
     assert.equal(state.mySeatIndex, null);
     assert.equal(state.seats.some((s) => s.userId === 'u1'), false);
-    assert.equal(state.seats.filter((s) => s.isBot).length, 5);
+    assert.equal(state.seats.filter((s) => s.isBot).length, 3);
   });
 
   it('defers stand-up while the player is in a live pot', () => {

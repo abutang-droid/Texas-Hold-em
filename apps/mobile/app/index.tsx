@@ -107,16 +107,27 @@ export default function LobbyScreen() {
     void init();
   }, [init]);
 
+  const isGuest = user?.accountType === 'GUEST';
+
+  const requireRegistered = (): boolean => {
+    if (!user) {
+      showUserMessage(t('common.error'), t('errors.unauthorized'));
+      return false;
+    }
+    if (isGuest) {
+      setErrorModal({ title: t('common.error'), body: t('lobby.guest_play_blocked') });
+      return false;
+    }
+    return true;
+  };
+
   const onQuickStart = async () => {
     if (starting) return;
 
     // Compliance modals are already on screen — avoid silent web alerts behind them.
     if (compliancePending) return;
-    if (!user) {
-      showUserMessage(t('common.error'), t('errors.unauthorized'));
-      return;
-    }
-    if (user.chipsBalance < 2) {
+    if (!requireRegistered()) return;
+    if (user && user.chipsBalance < 2) {
       showUserMessage(t('bankruptcy.title'), t('errors.insufficient_chips'));
       return;
     }
@@ -206,10 +217,32 @@ export default function LobbyScreen() {
         label={starting ? t('lobby.quick_start_loading') : t('lobby.quick_start')}
         onPress={onQuickStart}
         loading={starting}
-        disabled={starting || compliancePending}
+        disabled={starting || compliancePending || isGuest}
         fullWidth
         style={styles.heroBtn}
       />
+      <Button
+        label={t('lobby.browse_tables')}
+        variant="secondary"
+        onPress={() => {
+          if (compliancePending) return;
+          if (!requireRegistered()) return;
+          router.push('/tables');
+        }}
+        disabled={starting || compliancePending || isGuest}
+        fullWidth
+        style={styles.browseBtn}
+      />
+      {isGuest ? (
+        <Button
+          label={t('lobby.register_to_play')}
+          variant="ghost"
+          onPress={() => router.push('/auth/register')}
+          fullWidth
+          style={styles.browseBtn}
+        />
+      ) : null}
+      {isGuest ? <Text style={styles.complianceHint}>{t('lobby.guest_play_blocked')}</Text> : null}
       {compliancePending ? (
         <Text style={styles.complianceHint}>
           {ageRequired ? t('errors.age_required') : t('errors.migration_required')}
@@ -218,7 +251,14 @@ export default function LobbyScreen() {
 
       <View style={styles.menuGrid}>
         <MenuTile icon="🛒" label={t('lobby.recharge')} onPress={() => router.push('/shop')} />
-        <MenuTile icon="🔒" label={t('lobby.private')} onPress={() => router.push('/private')} />
+        <MenuTile
+          icon="🔒"
+          label={t('lobby.private')}
+          onPress={() => {
+            if (!requireRegistered()) return;
+            router.push('/private');
+          }}
+        />
         <MenuTile
           icon="🏆"
           label={t('lobby.leaderboard')}
@@ -313,6 +353,7 @@ const styles = StyleSheet.create({
   balanceUnit: { ...typography.h2, color: colors.text.secondary },
   expText: { ...typography.micro, color: colors.text.secondary, marginTop: spacing.sm },
   heroBtn: { minHeight: 56, marginBottom: spacing.sm },
+  browseBtn: { minHeight: 52, marginBottom: spacing.sm },
   complianceHint: {
     ...typography.micro,
     color: colors.brand.secondary,

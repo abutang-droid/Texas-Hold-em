@@ -36,6 +36,12 @@ export {
   ACTION_TIME_MS,
   TIME_BANK_MS,
   HAND_PAUSE_MS,
+  MIN_PUBLIC_TABLES,
+  MIN_PUBLIC_TABLE_BOTS,
+  PUBLIC_TABLE_ID_PREFIX,
+  publicTableId,
+  isPublicTableId,
+  targetPublicTableCount,
 } from './table-config.js';
 
 export type PlayerActionType = 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'all_in';

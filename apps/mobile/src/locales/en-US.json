@@ -6,8 +6,11 @@
     "ok": "OK"
   },
   "lobby": {
-    "quick_start": "Quick Start",
-    "quick_start_loading": "Starting…",
+    "quick_start": "Quick Join",
+    "quick_start_loading": "Joining…",
+    "browse_tables": "Choose a table",
+    "guest_play_blocked": "Guests cannot join games. Please register first.",
+    "register_to_play": "Register",
     "recharge": "Recharge",
     "private": "Private Room",
     "weekly_top": "Weekly Top",
@@ -88,7 +91,11 @@
     "network_timeout": "Request timed out — check your network connection",
     "network_unreachable": "Cannot reach server — check API URL and WiFi",
     "request_failed": "Request failed",
-    "table_six_only": "Tables are 6-max only"
+    "table_six_only": "Tables are 6-max only",
+    "guest_not_allowed": "Guests cannot join games. Please register first.",
+    "no_open_table": "No open seats right now. Try again shortly.",
+    "room_unavailable": "Table service is unavailable",
+    "room_not_found": "That table was not found"
   },
   "auth": {
     "login_title": "Sign In",
@@ -162,6 +169,15 @@
     "sit_down": "Sit down",
     "stand_up": "Stand up",
     "leave_table": "Leave",
+    "change_table": "Change table",
+    "change_table_loading": "Changing table…",
+    "tables_title": "Public tables",
+    "tables_subtitle": "Join any table with an open seat",
+    "tables_empty": "No joinable tables right now",
+    "tables_seats": "{{humans}} players · {{bots}} bots · {{empty}} open",
+    "tables_full": "Full",
+    "tables_join": "Join",
+    "tables_refresh": "Refresh",
     "seat_empty": "Sit",
     "sit_confirm_title": "Sit down",
     "sit_confirm_body": "Buy in {{amount}} chips?",

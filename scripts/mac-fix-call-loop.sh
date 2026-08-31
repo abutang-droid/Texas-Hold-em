@@ -65,6 +65,8 @@ if ! grep -q 'emojiOpen' "${REPO}/apps/mobile/app/table.tsx"; then
 fi
 download "apps/mobile/app/_layout.tsx" "${TABLE_FIX_REF}"
 download "apps/mobile/app/index.tsx" "${TABLE_FIX_REF}"
+download "apps/mobile/app/tables.tsx" "${TABLE_FIX_REF}"
+download "apps/mobile/src/api/client.ts" "${TABLE_FIX_REF}"
 download "apps/mobile/src/theme/index.ts"
 download "packages/shared/src/design-tokens/colors.json"
 download "packages/shared/src/avatars.ts"

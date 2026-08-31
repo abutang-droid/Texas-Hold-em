@@ -6,8 +6,11 @@
     "ok": "确定"
   },
   "lobby": {
-    "quick_start": "快速开始",
+    "quick_start": "快速加入",
     "quick_start_loading": "正在进入…",
+    "browse_tables": "选择牌桌",
+    "guest_play_blocked": "游客不能加入游戏，请先注册账号",
+    "register_to_play": "去注册",
     "recharge": "充值",
     "private": "私人场",
     "weekly_top": "本周盈利榜",
@@ -88,7 +91,11 @@
     "network_timeout": "请求超时，请检查网络连接",
     "network_unreachable": "无法连接服务器，请检查 API 地址与 WiFi",
     "request_failed": "请求失败",
-    "table_six_only": "牌桌固定为 6 人场"
+    "table_six_only": "牌桌固定为 6 人场",
+    "guest_not_allowed": "游客不能加入游戏，请先注册",
+    "no_open_table": "暂时没有空闲座位，请稍后再试",
+    "room_unavailable": "牌桌服务暂不可用",
+    "room_not_found": "找不到这张牌桌"
   },
   "auth": {
     "login_title": "登录",
@@ -162,6 +169,15 @@
     "sit_down": "坐下",
     "stand_up": "起身",
     "leave_table": "离场",
+    "change_table": "换桌",
+    "change_table_loading": "正在换桌…",
+    "tables_title": "公共牌桌",
+    "tables_subtitle": "选择有空位的桌子加入",
+    "tables_empty": "暂无可加入的牌桌",
+    "tables_seats": "{{humans}} 人 · {{bots}} 机器人 · 空位 {{empty}}",
+    "tables_full": "已满",
+    "tables_join": "加入",
+    "tables_refresh": "刷新",
     "seat_empty": "坐下",
     "sit_confirm_title": "坐下参与",
     "sit_confirm_body": "带入 {{amount}} 筹码开始游戏？",

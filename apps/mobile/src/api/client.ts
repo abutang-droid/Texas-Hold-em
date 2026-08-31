@@ -10,6 +10,7 @@ export interface UserProfile {
   level: number;
   totalExp: number;
   preferredLocale: string;
+  accountType?: 'GUEST' | 'REGISTERED' | string;
 }
 
 let token: string | null = null;
@@ -330,10 +331,39 @@ export async function selfExclude(days: number) {
   });
 }
 
+export interface PublicTableInfo {
+  roomId: string;
+  label: string;
+  seatedHumans: number;
+  bots: number;
+  emptySeats: number;
+  maxSeats: number;
+  phase: string;
+  joinable: boolean;
+}
+
 export async function quickStart() {
   return request<{ roomId: string; wsUrl: string; buyInCap: number }>('/api/v1/match/quick-start', {
     method: 'POST',
     body: JSON.stringify({}),
+  });
+}
+
+export async function listPublicTables() {
+  return request<{ tables: PublicTableInfo[] }>('/api/v1/match/public-tables');
+}
+
+export async function joinPublicTable(roomId: string) {
+  return request<{ roomId: string; wsUrl: string; buyInCap: number }>('/api/v1/match/join-table', {
+    method: 'POST',
+    body: JSON.stringify({ roomId }),
+  });
+}
+
+export async function switchPublicTable(currentRoomId?: string) {
+  return request<{ roomId: string; wsUrl: string; buyInCap: number }>('/api/v1/match/switch-table', {
+    method: 'POST',
+    body: JSON.stringify({ currentRoomId }),
   });
 }
 
