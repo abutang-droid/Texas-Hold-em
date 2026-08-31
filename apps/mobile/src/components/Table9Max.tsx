@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
   },
   center: {
     position: 'absolute',
-    top: '42%',
+    top: '40%',
     left: '28%',
     width: '44%',
     alignItems: 'center',
