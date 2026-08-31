@@ -13,17 +13,17 @@ interface Props {
   cards: string[];
 }
 
-/** Always 5 slots. New cards fade/slide in; never scale to 0 (that looked like a blank board). */
+/** Only dealt board cards. Empty slots stay blank until the dealer puts a card there. */
 export function CommunityCardsRow({ cards }: Props) {
   const seen = useRef<string[]>(['', '', '', '', '']);
-  const opacities = useRef(Array.from({ length: SLOTS }, () => new Animated.Value(1))).current;
+  const opacities = useRef(Array.from({ length: SLOTS }, () => new Animated.Value(0))).current;
   const slides = useRef(Array.from({ length: SLOTS }, () => new Animated.Value(0))).current;
 
   useEffect(() => {
     if (cards.length === 0) {
       seen.current = ['', '', '', '', ''];
       for (let i = 0; i < SLOTS; i += 1) {
-        opacities[i].setValue(1);
+        opacities[i].setValue(0);
         slides[i].setValue(0);
       }
       return;
@@ -50,33 +50,36 @@ export function CommunityCardsRow({ cards }: Props) {
     }
   }, [boardKey(cards), opacities, slides]);
 
+  if (cards.length === 0) {
+    return <View style={styles.empty} />;
+  }
+
   return (
     <View style={styles.row}>
-      {Array.from({ length: SLOTS }, (_, i) => {
-        const code = cards[i];
-        const faceUp = !!code;
-        return (
-          <Animated.View
-            key={`slot-${i}`}
-            style={{
-              opacity: faceUp ? opacities[i] : 1,
-              transform: [{ translateY: faceUp ? slides[i] : 0 }],
-            }}
-          >
-            <PlayingCard code={code || '**'} faceDown={!faceUp} size="md" />
-          </Animated.View>
-        );
-      })}
+      {cards.map((code, i) => (
+        <Animated.View
+          key={`slot-${i}`}
+          style={{
+            opacity: opacities[i],
+            transform: [{ translateY: slides[i] }],
+          }}
+        >
+          <PlayingCard code={code} size="md" />
+        </Animated.View>
+      ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  empty: {
+    height: 0,
+    marginBottom: 0,
+  },
   row: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginBottom: spacing.md,
-    minHeight: 72,
     alignItems: 'center',
   },
 });
