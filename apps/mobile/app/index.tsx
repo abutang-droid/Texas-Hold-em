@@ -234,6 +234,18 @@ export default function LobbyScreen() {
         style={styles.heroBtn}
       />
       <Button
+        label={t('lobby.caribbean_stud')}
+        variant="secondary"
+        onPress={() => {
+          if (compliancePending) return;
+          if (!requireRegistered()) return;
+          router.push('/stud');
+        }}
+        disabled={starting || compliancePending || isGuest}
+        fullWidth
+        style={styles.browseBtn}
+      />
+      <Button
         label={t('lobby.browse_tables')}
         variant="secondary"
         onPress={() => {

@@ -66,3 +66,26 @@ export type { HandResult, HandLogEntry } from './game/hand-runner.js';
 // Bot
 export { decideBotAction } from './bot/rule-bot.js';
 export type { BotDecision, BotDecisionInput } from './bot/rule-bot.js';
+
+// Caribbean Stud (player vs dealer)
+export {
+  STUD_ANTE_OPTIONS,
+  STUD_MIN_ANTE,
+  STUD_PAYTABLE,
+  antePayoutOdds,
+  dealerQualifies,
+  startStudHand,
+  foldStudHand,
+  raiseStudHand,
+  toStudClientView,
+  serializeStudHand,
+  parseStudHand,
+  isAllowedAnte,
+} from './stud/caribbean-stud.js';
+export type {
+  StudHand,
+  StudPhase,
+  StudOutcome,
+  StudResult,
+  StudClientView,
+} from './stud/caribbean-stud.js';

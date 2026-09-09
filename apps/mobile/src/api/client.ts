@@ -305,6 +305,60 @@ async function rememberRechargeBalance<T extends { chipsBalance: number }>(data:
   return data;
 }
 
+export interface StudResultView {
+  outcome: 'fold' | 'dealer_no_qualify' | 'player_win' | 'dealer_win' | 'push';
+  dealerQualified: boolean;
+  playerCategory: string;
+  dealerCategory: string;
+  anteOdds: number;
+  payout: number;
+  net: number;
+}
+
+export interface StudHandView {
+  handId: number;
+  phase: 'DECISION' | 'SETTLED';
+  ante: number;
+  raiseAmount: number;
+  raiseToCall: number;
+  playerCards: string[];
+  dealerCards: string[];
+  community: string[];
+  result: StudResultView | null;
+  chipsBalance: number;
+}
+
+export async function getStudConfig() {
+  return request<{
+    game: string;
+    title: string;
+    anteOptions: number[];
+    paytable: Array<{ category: string; odds: number }>;
+    dealerQualify: string;
+    raiseMultiple: number;
+  }>('/api/v1/stud/config');
+}
+
+export async function getStudHand() {
+  return request<{ hand: StudHandView | null; chipsBalance: number }>('/api/v1/stud/hand');
+}
+
+export async function startStudHand(ante: number) {
+  const data = await request<StudHandView>('/api/v1/stud/start', {
+    method: 'POST',
+    body: JSON.stringify({ ante }),
+  });
+  return rememberRechargeBalance(data);
+}
+
+export async function actStudHand(action: 'fold' | 'raise') {
+  const data = await request<StudHandView>('/api/v1/stud/act', {
+    method: 'POST',
+    body: JSON.stringify({ action }),
+  });
+  return rememberRechargeBalance(data);
+}
+
 export async function mockRecharge(amount: number, requestId: string) {
   const data = await request<{
     chipsBalance: number;

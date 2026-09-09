@@ -70,6 +70,7 @@ import {
 import type { SupportedLocale } from '@texas-holdem/shared';
 import { AVATAR_PRESETS, DEFAULT_LOCALE, isValidPresetAvatarUrl, MAX_TABLE_SEATS, SUPPORTED_LOCALES } from '@texas-holdem/shared';
 import { assignPublicTable, listRoomPublicTables } from './room-match.js';
+import { actCaribbeanStud, loadOpenStud, startCaribbeanStud, studConfig } from './caribbean-stud-http.js';
 
 function parseLocale(header?: string): SupportedLocale {
   if (!header) return DEFAULT_LOCALE;
@@ -443,6 +444,73 @@ class ApiController {
       }
       if (msg === 'INVALID_AMOUNT' || msg === 'INVALID_PRODUCT') {
         throw new BadRequestException({ code: 'INVALID_PRODUCT', messageKey: 'errors.invalid_product' });
+      }
+      throw e;
+    }
+  }
+
+  @Get('stud/config')
+  studRules() {
+    return { code: 0, message: 'ok', data: studConfig() };
+  }
+
+  @Get('stud/hand')
+  async studHand(@Headers('authorization') auth: string) {
+    const { userId } = authUser(auth);
+    const user = await assertPlayAllowed(userId);
+    assertRegistered(user);
+    const data = await loadOpenStud(userId);
+    return { code: 0, message: 'ok', data };
+  }
+
+  @Post('stud/start')
+  async studStart(@Headers('authorization') auth: string, @Body() body: { ante?: number }) {
+    const { userId } = authUser(auth);
+    const user = await assertPlayAllowed(userId);
+    assertRegistered(user);
+    const ante = Math.floor(Number(body.ante ?? 0));
+    if (Number(user.chips_balance) < ante) {
+      throw new BadRequestException({ code: 'INSUFFICIENT_CHIPS', messageKey: 'errors.insufficient_chips' });
+    }
+    try {
+      const hand = await startCaribbeanStud(userId, ante);
+      return { code: 0, message: 'ok', data: hand };
+    } catch (e) {
+      const msg = (e as Error).message;
+      if (msg === 'INVALID_ANTE') {
+        throw new BadRequestException({ code: 'INVALID_ANTE', messageKey: 'errors.invalid_ante' });
+      }
+      if (msg === 'HAND_IN_PROGRESS') {
+        throw new BadRequestException({ code: 'HAND_IN_PROGRESS', messageKey: 'errors.hand_in_progress' });
+      }
+      if (msg === 'INSUFFICIENT_CHIPS') {
+        throw new BadRequestException({ code: 'INSUFFICIENT_CHIPS', messageKey: 'errors.insufficient_chips' });
+      }
+      throw e;
+    }
+  }
+
+  @Post('stud/act')
+  async studAct(
+    @Headers('authorization') auth: string,
+    @Body() body: { action?: 'fold' | 'raise' },
+  ) {
+    const { userId } = authUser(auth);
+    const user = await assertPlayAllowed(userId);
+    assertRegistered(user);
+    if (body.action !== 'fold' && body.action !== 'raise') {
+      throw new BadRequestException({ code: 'INVALID_ACTION', messageKey: 'errors.request_failed' });
+    }
+    try {
+      const hand = await actCaribbeanStud(userId, body.action);
+      return { code: 0, message: 'ok', data: hand };
+    } catch (e) {
+      const msg = (e as Error).message;
+      if (msg === 'HAND_NOT_FOUND' || msg === 'HAND_NOT_OPEN') {
+        throw new BadRequestException({ code: 'HAND_NOT_FOUND', messageKey: 'errors.hand_not_found' });
+      }
+      if (msg === 'INSUFFICIENT_CHIPS') {
+        throw new BadRequestException({ code: 'INSUFFICIENT_CHIPS', messageKey: 'errors.insufficient_chips' });
       }
       throw e;
     }
@@ -972,7 +1040,7 @@ class HealthController {
     return {
       status: 'ok',
       service: 'api',
-      version: '0.5.0',
+      version: '0.7.0',
       features: { emailAuth: true, guestAuth: true, oauth: true },
     };
   }
