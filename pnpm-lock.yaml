@@ -57,6 +57,9 @@ importers:
       '@texas-holdem/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@texas-holdem/poker-engine':
+        specifier: workspace:*
+        version: link:../../packages/poker-engine
       '@texas-holdem/shared':
         specifier: workspace:*
         version: link:../../packages/shared
