@@ -276,6 +276,7 @@ apps/mobile/app/auth/_layout.tsx
 apps/mobile/app/auth/login.tsx
 apps/mobile/app/auth/register.tsx
 apps/mobile/src/api/client.ts
+apps/mobile/src/config/lan.ts
 apps/mobile/src/storage/onboarding.ts
 apps/mobile/src/storage/session.ts
 apps/mobile/src/auth/routes.ts
