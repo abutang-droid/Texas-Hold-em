@@ -1,13 +1,13 @@
 # Mac mini · 连接 Staging 服务器开发
 
-Mac **只跑 Expo 客户端**；API / Room / 数据库在 **`192.168.31.53`** 上。
+Mac **只跑 Expo 客户端**；API / Room / 数据库在 **`192.168.31.4`** 上。
 
 ---
 
 ## 一、架构
 
 ```text
-Mac mini                          Staging LXC (192.168.31.53)
+Mac mini                          Staging LXC (192.168.31.4)
 ├── git clone                     ├── API   :3000
 ├── pnpm dev mobile (Expo)  ───►  ├── Room  :3001
 └── 浏览器 / 真机                  └── Admin :5173
@@ -51,12 +51,12 @@ bash scripts/mac-staging-check.sh
 应看到：
 
 ```text
-✓ Ping 192.168.31.53
-✓ API   http://192.168.31.53:3000/health
-✓ Room  http://192.168.31.53:3001/health
+✓ Ping 192.168.31.4
+✓ API   http://192.168.31.4:3000/health
+✓ Room  http://192.168.31.4:3001/health
 ```
 
-若失败 → 先在 **192.168.31.53** 上跑 `sudo bash scripts/staging-install-all.sh`。
+若失败 → 先在 **192.168.31.4** 上跑 `sudo bash scripts/staging-install-all.sh`。
 
 ---
 
@@ -102,8 +102,8 @@ cd apps/mobile && npx expo start --clear
 `apps/mobile/.env`：
 
 ```bash
-EXPO_PUBLIC_API_URL=http://192.168.31.53:3000
-EXPO_PUBLIC_ROOM_URL=http://192.168.31.53:3001
+EXPO_PUBLIC_API_URL=http://192.168.31.4:3000
+EXPO_PUBLIC_ROOM_URL=http://192.168.31.4:3001
 ```
 
 改 IP 后需重启 Expo（`--clear`）。
@@ -115,7 +115,7 @@ EXPO_PUBLIC_ROOM_URL=http://192.168.31.53:3001
 浏览器直接开（无需 Mac 跑服务）：
 
 ```text
-http://192.168.31.53:5173
+http://192.168.31.4:5173
 ```
 
 登录密钥 = 服务器 `.env` 里的 `ADMIN_API_KEY`。
@@ -136,10 +136,10 @@ http://192.168.31.53:5173
 
 ---
 
-## 八、可选：Mac 本地全栈（不连 .53）
+## 八、可选：Mac 本地全栈（不连家庭服务器）
 
 见 `docs/LOCAL_DEV.md`（需本机 PostgreSQL / Docker）。
 
 ---
 
-*Staging IP: 192.168.31.53 · 网关: 192.168.31.1*
+*Staging IP: 192.168.31.4 · 网关: 192.168.31.1*

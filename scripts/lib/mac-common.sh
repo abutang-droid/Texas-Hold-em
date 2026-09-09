@@ -7,6 +7,12 @@
 #   source "$(mac_find_lib "$MAC_SCRIPT_SELF")"
 
 MIRROR_BASE_DEFAULT='https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main'
+# Home LAN staging host (LXC). Override with STAGING_LAN_IP=... if the address changes again.
+STAGING_LAN_IP_DEFAULT='192.168.31.4'
+
+staging_lan_ip() {
+  printf '%s\n' "${STAGING_LAN_IP:-${STAGING_LAN_IP_DEFAULT}}"
+}
 
 # --- repo root (never resolves to / when script lives in /tmp) ---
 resolve_repo_root() {
@@ -51,29 +57,49 @@ require_repo_root() {
 }
 
 # --- .env (never fails if example file missing) ---
+# Existing .env is rewritten to the current STAGING_LAN_IP so a moved LXC
+# does not leave login on a dead address. Set KEEP_MOBILE_ENV=1 to skip.
 ensure_mobile_env() {
   local root="$1"
   local env_file="${root}/apps/mobile/.env"
   local example="${root}/apps/mobile/.env.staging.example"
-
-  if [ -f "${env_file}" ]; then
-    return 0
-  fi
+  local ip tmp
+  ip="$(staging_lan_ip)"
 
   mkdir -p "${root}/apps/mobile"
 
-  if [ -f "${example}" ]; then
-    cp "${example}" "${env_file}"
-    echo "==> Created apps/mobile/.env from .env.staging.example"
+  if [ ! -f "${env_file}" ]; then
+    if [ -f "${example}" ]; then
+      cp "${example}" "${env_file}"
+      echo "==> Created apps/mobile/.env from .env.staging.example"
+    else
+      cat > "${env_file}" <<EOF
+# Staging LAN — auto-created by mac scripts
+EXPO_PUBLIC_API_URL=http://${ip}:3000
+EXPO_PUBLIC_ROOM_URL=http://${ip}:3001
+EOF
+      echo "==> Created apps/mobile/.env (default staging URLs)"
+    fi
+  fi
+
+  if [ "${KEEP_MOBILE_ENV:-}" = "1" ]; then
+    echo "==> KEEP_MOBILE_ENV=1 — left apps/mobile/.env unchanged"
     return 0
   fi
 
-  cat > "${env_file}" <<'EOF'
-# Staging LAN — auto-created by mac scripts
-EXPO_PUBLIC_API_URL=http://192.168.31.53:3000
-EXPO_PUBLIC_ROOM_URL=http://192.168.31.53:3001
-EOF
-  echo "==> Created apps/mobile/.env (default staging URLs)"
+  tmp="$(mktemp)"
+  if [ -s "${env_file}" ]; then
+    grep -v '^EXPO_PUBLIC_API_URL=' "${env_file}" | grep -v '^EXPO_PUBLIC_ROOM_URL=' > "${tmp}" || true
+  else
+    : > "${tmp}"
+  fi
+  {
+    cat "${tmp}"
+    printf 'EXPO_PUBLIC_API_URL=http://%s:3000\n' "${ip}"
+    printf 'EXPO_PUBLIC_ROOM_URL=http://%s:3001\n' "${ip}"
+  } > "${env_file}"
+  rm -f "${tmp}"
+  echo "==> apps/mobile/.env → http://${ip}:3000 / :3001"
 }
 
 # --- dependencies ---

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Mac mini：启动 Expo 客户端，连接局域网 Staging（192.168.31.53）
+# Mac mini：启动 Expo 客户端，连接局域网 Staging（192.168.31.4）
 set -euo pipefail
 
 MAC_SCRIPT_SELF="${BASH_SOURCE[0]:-$0}"

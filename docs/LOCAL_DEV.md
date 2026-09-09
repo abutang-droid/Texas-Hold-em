@@ -88,7 +88,7 @@ brew services stop postgresql@16 redis   # Homebrew 方式
 
 **`No package.json` 或只有 README**：确认分支为 `cursor/phase4-open-beta-2fc9`。
 
-## Mac mini 连 Staging 服务器（192.168.31.53）
+## Mac mini 连 Staging 服务器（192.168.31.4）
 
 仅跑客户端、后端在 LXC 上时，见 **`docs/MAC-MINI-STAGING.md`**：
 

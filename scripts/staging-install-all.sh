@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Texas Hold'em · Staging 一键安装（独立 LXC 192.168.31.53）
+# Texas Hold'em · Staging 一键安装（独立 LXC 192.168.31.4）
 # 用法: curl -fsSL ... | bash   或   bash scripts/staging-install-all.sh
 set -euo pipefail
 

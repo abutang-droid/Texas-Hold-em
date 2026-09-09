@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run ON the staging server (192.168.31.53) from any directory.
+# Run ON the staging server (192.168.31.4) from any directory.
 #
 #   bash scripts/staging-server-deploy.sh
 #   bash scripts/staging-server-deploy.sh cursor/poker-rules-6max-9b0a

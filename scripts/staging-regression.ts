@@ -5,7 +5,7 @@
  *   bash scripts/staging-regression.sh
  *
  * Or:
- *   API_URL=http://192.168.31.53:3000 ROOM_URL=http://192.168.31.53:3001 \
+ *   API_URL=http://192.168.31.4:3000 ROOM_URL=http://192.168.31.4:3001 \
  *     pnpm staging:regression
  */
 const API = process.env.API_URL ?? 'http://localhost:3000';
@@ -261,7 +261,7 @@ async function main() {
   console.log('  [ ] Private room create + share + join via code');
   console.log(`  [ ] Deep link texasholdem://room/${roomCode || 'XXXXXX'} (device only)`);
   console.log('  [ ] Showdown overlay no flicker');
-  console.log('  [ ] Admin http://192.168.31.53:5173 users/hands/economy');
+  console.log('  [ ] Admin http://192.168.31.4:5173 users/hands/economy');
 }
 
 main().catch((err) => {

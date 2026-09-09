@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# Deploy to Staging LXC from your Mac (same LAN as 192.168.31.53).
+# Deploy to Staging LXC from your Mac (same LAN as 192.168.31.4).
 #
 # Usage:
 #   bash scripts/staging-remote-deploy.sh cursor/poker-rules-6max-9b0a
 #   bash scripts/staging-remote-deploy.sh main
-#   STAGING_IP=192.168.31.53 bash scripts/staging-remote-deploy.sh
+#   STAGING_IP=192.168.31.4 bash scripts/staging-remote-deploy.sh
 #
 # Requires: ssh access to uoto@STAGING_IP (see docs/MAC-MINI-操作指南.md)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-STAGING_IP="${STAGING_IP:-192.168.31.53}"
+STAGING_IP="${STAGING_IP:-${STAGING_LAN_IP:-192.168.31.4}}"
 STAGING_USER="${STAGING_USER:-uoto}"
 STAGING_REPO="${STAGING_REPO:-~/Texas-Hold-em}"
 BRANCH="${1:-main}"

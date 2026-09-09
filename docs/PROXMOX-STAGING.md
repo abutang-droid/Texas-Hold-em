@@ -6,7 +6,7 @@
 | Proxmox 主机 | 12 代 i7 · 32 GB RAM |
 | 部署方式 | **仅新建独立 LXC**（不使用 `192.168.31.52` 共享部署） |
 | 已有服务器 `192.168.31.52` | 跑其他应用 · **本方案不部署其上** |
-| **LXC `th-staging` IP** | **`192.168.31.53`** · 网关 `192.168.31.1` |
+| **LXC `th-staging` IP** | **`192.168.31.4`** · 网关 `192.168.31.1` |
 | 公网 | 前期仅局域网；后期可选 Cloudflare Tunnel |
 
 ---
@@ -34,12 +34,12 @@
 ```text
 家庭 WiFi（网关 192.168.31.1）
    │
-   ├── Mac mini ─────────── http://192.168.31.53:3000  (API)
-   │                        http://192.168.31.53:3001  (Room)
+   ├── Mac mini ─────────── http://192.168.31.4:3000  (API)
+   │                        http://192.168.31.4:3001  (Room)
    │
    ├── Ubuntu 192.168.31.52  ← 原有应用，不改动
    │
-   └── LXC th-staging 192.168.31.53  ← Texas Hold'em 专用
+   └── LXC th-staging 192.168.31.4  ← Texas Hold'em 专用
          ├── Docker: PostgreSQL + Redis
          └── PM2: api · room · admin
 ```
@@ -66,7 +66,7 @@ Web UI → **Create CT**：
 | Template | `ubuntu-24.04-standard` |
 | CPU / RAM | **4 核 · 8192 MB**（Swap 2048） |
 | Disk | **80 GB** |
-| IPv4 | **Static `192.168.31.53/24`** |
+| IPv4 | **Static `192.168.31.4/24`** |
 | Gateway | **`192.168.31.1`** |
 | DNS | `192.168.31.1` 或 `223.5.5.5` |
 | Features | ✅ **nesting=1**（Docker 必须） |
@@ -81,7 +81,7 @@ pct start <CTID>
 SSH 登录：
 
 ```bash
-ssh root@192.168.31.53
+ssh root@192.168.31.4
 ```
 
 ### 2.2 LXC 内一键初始化
@@ -99,7 +99,7 @@ sudo bash scripts/staging-bootstrap.sh
 
 ```bash
 cp infra/staging/.env.lan.example .env
-nano .env   # 改 JWT_SECRET、ADMIN_API_KEY；IP 默认 192.168.31.53
+nano .env   # 改 JWT_SECRET、ADMIN_API_KEY；IP 默认 192.168.31.4
 
 docker compose up -d
 pnpm install && pnpm build && pnpm migrate
@@ -109,16 +109,16 @@ bash scripts/staging-up.sh
 ### 2.4 Mac mini 验证
 
 ```bash
-curl http://192.168.31.53:3000/health
-curl http://192.168.31.53:3001/health
-open http://192.168.31.53:5173
+curl http://192.168.31.4:3000/health
+curl http://192.168.31.4:3001/health
+open http://192.168.31.4:5173
 ```
 
 Expo `.env`：
 
 ```bash
-EXPO_PUBLIC_API_URL=http://192.168.31.53:3000
-EXPO_PUBLIC_ROOM_URL=http://192.168.31.53:3001
+EXPO_PUBLIC_API_URL=http://192.168.31.4:3000
+EXPO_PUBLIC_ROOM_URL=http://192.168.31.4:3001
 ```
 
 ---
@@ -301,4 +301,4 @@ docker exec th-postgres pg_dump -U th texas_holdem | gzip > ~/backup/th-$(date +
 
 ---
 
-*文档版本 v1.2 · 2026-08-28 · 新建 LXC 192.168.31.53 推荐路径*
+*文档版本 v1.2 · 2026-08-28 · 新建 LXC 192.168.31.4 推荐路径*
