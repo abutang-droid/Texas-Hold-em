@@ -128,6 +128,17 @@ function matchError(e: unknown): never {
   });
 }
 
+function throwStudHttp(e: unknown): never {
+  const msg = (e as Error).message;
+  if (msg === 'STUD_NOT_MIGRATED') {
+    throw new ServiceUnavailableException({
+      code: 'STUD_UNAVAILABLE',
+      messageKey: 'errors.stud_unavailable',
+    });
+  }
+  throw e;
+}
+
 async function assertPlayAllowed(userId: number): Promise<UserRow> {
   const user = await findUserById(userId);
   if (!user) throw new UnauthorizedException();
@@ -459,8 +470,12 @@ class ApiController {
     const { userId } = authUser(auth);
     const user = await assertPlayAllowed(userId);
     assertRegistered(user);
-    const data = await loadOpenStud(userId);
-    return { code: 0, message: 'ok', data };
+    try {
+      const data = await loadOpenStud(userId);
+      return { code: 0, message: 'ok', data };
+    } catch (e) {
+      throwStudHttp(e);
+    }
   }
 
   @Post('stud/start')
@@ -486,7 +501,7 @@ class ApiController {
       if (msg === 'INSUFFICIENT_CHIPS') {
         throw new BadRequestException({ code: 'INSUFFICIENT_CHIPS', messageKey: 'errors.insufficient_chips' });
       }
-      throw e;
+      throwStudHttp(e);
     }
   }
 
@@ -512,7 +527,7 @@ class ApiController {
       if (msg === 'INSUFFICIENT_CHIPS') {
         throw new BadRequestException({ code: 'INSUFFICIENT_CHIPS', messageKey: 'errors.insufficient_chips' });
       }
-      throw e;
+      throwStudHttp(e);
     }
   }
 
@@ -1041,7 +1056,7 @@ class HealthController {
       status: 'ok',
       service: 'api',
       version: '0.7.0',
-      features: { emailAuth: true, guestAuth: true, oauth: true },
+      features: { emailAuth: true, guestAuth: true, oauth: true, caribbeanStud: true },
     };
   }
 }

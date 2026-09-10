@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Mac mini：检查与 Staging 服务器（默认 192.168.31.53）的连通性
+# Mac mini：检查与 Staging 服务器（默认 192.168.31.4）的连通性
 set -euo pipefail
 
-STAGING_IP="${STAGING_IP:-192.168.31.53}"
+STAGING_IP="${STAGING_IP:-${STAGING_LAN_IP:-192.168.31.4}}"
 API_PORT="${API_PORT:-3000}"
 ROOM_PORT="${ROOM_PORT:-3001}"
 ADMIN_PORT="${ADMIN_PORT:-5173}"

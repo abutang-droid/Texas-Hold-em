@@ -5,11 +5,11 @@
 set -euo pipefail
 
 REPO="${TH_REPO_ROOT:-$HOME/Texas-Hold-em}"
-BRANCH="${MAC_GIT_REF:-cursor/poker-rules-6max-9b0a}"
+BRANCH="${MAC_GIT_REF:-cursor/home-server-ip-9b0a}"
 SLUG="abutang-droid/Texas-Hold-em"
 
 # Pin table.tsx to a commit so ghfast/jsdelivr cannot serve the crashing snapshot.
-TABLE_FIX_REF="${TABLE_FIX_REF:-cursor/poker-rules-6max-9b0a}"
+TABLE_FIX_REF="${TABLE_FIX_REF:-cursor/home-server-ip-9b0a}"
 
 download() {
   local rel="$1"
@@ -70,6 +70,7 @@ download "apps/mobile/app/shop.tsx" "${TABLE_FIX_REF}"
 download "apps/mobile/app/profile.tsx" "${TABLE_FIX_REF}"
 download "apps/mobile/app/stud.tsx" "${TABLE_FIX_REF}"
 download "apps/mobile/src/api/client.ts" "${TABLE_FIX_REF}"
+download "apps/mobile/src/config/lan.ts" "${TABLE_FIX_REF}"
 download "apps/mobile/src/storage/session.ts" "${TABLE_FIX_REF}"
 download "apps/mobile/src/theme/index.ts"
 download "packages/shared/src/design-tokens/colors.json"
@@ -99,7 +100,7 @@ download "apps/mobile/src/types/table.ts"
 download "apps/mobile/src/utils/nickname.ts"
 
 echo ""
-echo "Mac mini 客户端已更新。服务端请在家庭服务器 uoto@192.168.31.53 上单独部署，不要在这台 Mac 上跑 staging-update。"
+echo "Mac mini 客户端已更新。服务端请在家庭服务器 uoto@192.168.31.4 上单独部署，不要在这台 Mac 上跑 staging-update。"
 echo "服务器成功标志: curl -s http://127.0.0.1:3001/health  → version 0.6.0"
 echo ""
 

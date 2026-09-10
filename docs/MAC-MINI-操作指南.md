@@ -1,13 +1,13 @@
 # Mac mini 操作指南（网页版）
 
 > **核心原则：日常只在 Mac 上操作。** 终端开 1 条命令 → 浏览器玩游戏。  
-> 服务器 `192.168.31.53` 装好后基本不用碰。
+> 服务器 `192.168.31.4` 装好后基本不用碰。
 
 ---
 
 ## 先分清两台机器
 
-| | Mac mini | 服务器 192.168.31.53 |
+| | Mac mini | 服务器 192.168.31.4 |
 |---|----------|----------------------|
 | 系统 | macOS | Ubuntu Linux |
 | 终端提示符 | 你的名字，如 `yourname@Mac-mini` | 如 `uoto@tex` |
@@ -31,7 +31,7 @@ uname -s
 | 用途 | 地址 | 何时打开 |
 |------|------|----------|
 | **玩游戏** | http://localhost:8081 | 终端跑完启动命令后 |
-| **运营后台** | http://192.168.31.53:5173 | 随时，纯浏览器 |
+| **运营后台** | http://192.168.31.4:5173 | 随时，纯浏览器 |
 
 把这两个加到 Safari / Chrome 书签栏。
 
@@ -125,7 +125,7 @@ bash scripts/mac-staging-mobile.sh
 
 ## 运营后台（不用终端）
 
-1. 浏览器打开：**http://192.168.31.53:5173**
+1. 浏览器打开：**http://192.168.31.4:5173**
 2. 登录密钥 = 服务器 `.env` 里的 `ADMIN_API_KEY`  
    （需要时让协助方在服务器执行：`grep ADMIN_API_KEY ~/Texas-Hold-em/.env`）
 3. 可查看用户、封禁、经济面板、举报
@@ -160,7 +160,7 @@ thgame
 | check 脚本 3 个 ✗ | 服务器服务没起来 | 见下方「服务器装一次」 |
 | 网页白屏 | Expo 没跑好 | `Ctrl+C` 停掉，再跑 `bash scripts/mac-staging-mobile.sh` |
 | 能开网页但登录失败 | API 挂了 | 服务器需 `pm2 status` 确认 th-api 在跑 |
-| 换 WiFi 后连不上 | 不在同一局域网 | Mac 和 192.168.31.53 必须同一 WiFi |
+| 换 WiFi 后连不上 | 不在同一局域网 | Mac 和 192.168.31.4 必须同一 WiFi |
 
 ---
 
@@ -182,7 +182,7 @@ bash scripts/mac-staging-mobile.sh
 在 **Mac 终端** SSH 进服务器：
 
 ```bash
-ssh uoto@192.168.31.53
+ssh uoto@192.168.31.4
 ```
 
 在服务器里执行（**没有 brew，用 bash 脚本**）：
@@ -197,13 +197,13 @@ curl -fsSL "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/T
 
 | 机器 | 地址 | 做什么 |
 |------|------|--------|
-| 家庭服务器 | `uoto@192.168.31.53`（`uoto@tex`） | 更新 API :3000、Room :3001、Admin :5173 |
+| 家庭服务器 | `uoto@192.168.31.4`（`uoto@tex`） | 更新 API :3000、Room :3001、Admin :5173 |
 | 本机 Mac mini | `je@jedeMac-mini` | 只跑 Expo 客户端 `localhost:8081` |
 
 **A. 家庭服务器上（SSH 上去再执行）：**
 
 ```bash
-ssh uoto@192.168.31.53
+ssh uoto@192.168.31.4
 cd ~/Texas-Hold-em
 ZIP_URL="https://ghfast.top/https://github.com/abutang-droid/Texas-Hold-em/archive/refs/heads/cursor/poker-rules-6max-9b0a.zip" \
   bash scripts/staging-update-no-git.sh cursor/poker-rules-6max-9b0a
@@ -275,12 +275,12 @@ bash scripts/mac-staging-check.sh
   Mac 浏览器  localhost:8081  ←── Expo 网页（Mac 本地跑）
            │
            ▼
-  192.168.31.53:3000  API
-  192.168.31.53:3001  Room
+  192.168.31.4:3000  API
+  192.168.31.4:3001  Room
 
-  Mac 浏览器  192.168.31.53:5173  ←── 运营后台（纯浏览器）
+  Mac 浏览器  192.168.31.4:5173  ←── 运营后台（纯浏览器）
 ```
 
 ---
 
-*v1.1 · Mac 网页版 · Staging 192.168.31.53*
+*v1.1 · Mac 网页版 · Staging 192.168.31.4*

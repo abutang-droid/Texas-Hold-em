@@ -1,6 +1,5 @@
 import { saveSession, loadSession, clearSession, type StoredSession } from '../storage/session';
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
+import { API_URL } from '../config/lan';
 
 export interface UserProfile {
   id: number;
@@ -198,6 +197,19 @@ export function formatApiError(message: string, t: (key: string) => string): str
     return translated !== message ? translated : message;
   }
   return message;
+}
+
+export function isStudUnavailableError(e: unknown): boolean {
+  const err = e as Error & { code?: string };
+  const message = err?.message ?? String(e);
+  const code = err?.code ?? '';
+  return (
+    code === 'STUD_UNAVAILABLE' ||
+    message === 'errors.stud_unavailable' ||
+    /Cannot (GET|POST) .*\/stud\//i.test(message) ||
+    /Request failed \(404\)/.test(message) ||
+    /stud_hands/i.test(message)
+  );
 }
 
 export async function guestLogin(deviceId?: string) {

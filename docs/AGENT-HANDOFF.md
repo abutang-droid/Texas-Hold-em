@@ -1,7 +1,7 @@
 # Agent 交接文档（Texas Hold'em）
 
 > **用途**：开新 Cursor 对话时，把本文档路径或全文贴给 Agent，可快速恢复上下文。  
-> **最后更新**：2026-08-30  
+> **最后更新**：2026-09-09  
 > **仓库**：`https://github.com/abutang-droid/Texas-Hold-em`  
 > **主分支**：`main`（开发以 `main` 为准，不再要求 checkout 旧 feature 分支）
 
@@ -12,7 +12,7 @@
 | 角色 | 机器 | 说明 |
 |------|------|------|
 | **客户端** | Mac mini `je@jedeMac-mini` | 只跑 Expo（`localhost:8081`）。**不要**在这台机器上更新 Staging 服务。`git pull` 常超时，用 mirror curl |
-| **服务端** | 家庭服务器 `uoto@192.168.31.53`（`uoto@tex`） | API `:3000`、Room `:3001`、Admin `:5173`；PM2 + Docker Postgres。部署脚本在这台机器上跑 |
+| **服务端** | 家庭服务器 `uoto@192.168.31.4`（`uoto@tex`） | API `:3000`、Room `:3001`、Admin `:5173`；PM2 + Docker Postgres。部署脚本在这台机器上跑 |
 
 **用户当前环境（已确认）**：
 - Node `v24.15.0`（文档建议 20，但 24 可用）
@@ -44,31 +44,42 @@ Monorepo（pnpm workspace）：
 
 ## 3. 用户当前卡点（优先处理）
 
-**现象**：用户在 Mac 执行 curl 脚本后 **Expo 没有启动**。
+**现象**：人庄页提示「人庄服务未就绪」。家庭服务器 API 还不是 **0.7.0**，或没跑 migration **007**（`stud_hands`）。
 
-**时间线**：
-1. 给了 `mac-start-mobile.sh` 的 main 镜像 URL → **404**（当时 PR #30 未合并）
-2. 已 fast-forward 合并到 `main`（commit `cec89b0`），镜像约 30s 后可用
-3. 用户尚未确认重试是否成功
+**在家庭服务器上执行（不要在 Mac 上跑）**：
 
-**请让用户执行（首选）**：
+```bash
+ssh uoto@192.168.31.4
+curl -fsSL "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/cursor/home-server-ip-9b0a/scripts/staging-enable-stud.sh" -o /tmp/enable-stud.sh
+bash /tmp/enable-stud.sh
+```
+
+成功：`curl http://127.0.0.1:3000/health` 含 `"version":"0.7.0"`，`/api/v1/stud/config` 含 `CARIBBEAN_STUD`。然后回 Mac 硬刷新再进「人庄模式」。
+
+**旧卡点（已处理）**：家庭服务器 IP 已改为 **`192.168.31.4`**。
+
+**Mac 上立刻改 `.env` 并清缓存重启**（不必等 git pull）：
 
 ```bash
 cd ~/Texas-Hold-em
-
-curl -fsSL "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/main/scripts/mac-start-mobile.sh" -o /tmp/mac-start.sh
-
-bash /tmp/mac-start.sh
+printf '%s\n' \
+  'EXPO_PUBLIC_API_URL=http://192.168.31.4:3000' \
+  'EXPO_PUBLIC_ROOM_URL=http://192.168.31.4:3001' \
+  > apps/mobile/.env
+lsof -tiTCP:8081 -sTCP:LISTEN | xargs kill -9 2>/dev/null || true
+rm -rf apps/mobile/.expo apps/mobile/node_modules/.cache
+cd apps/mobile && npx expo start --clear --port 8081
 ```
 
-**若 main 镜像仍 404**（缓存）：
+**连通确认**：
 
 ```bash
-curl -fsSL "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/cursor/mac-expo-start-fix-2fc9/scripts/mac-start-mobile.sh" -o /tmp/mac-start.sh
-bash /tmp/mac-start.sh
+ping -c 2 192.168.31.4
+curl -s --connect-timeout 3 http://192.168.31.4:3000/health
+curl -s --connect-timeout 3 http://192.168.31.4:3001/health
 ```
 
-**成功标志**：终端出现 `Starting Expo (Metro)`、`Waiting on http://localhost:8081`；浏览器打开 `http://localhost:8081/auth/login`。
+成功标志：登录不再请求 `192.168.31.53`；API health 有 JSON。若 ping `.4` 不通，先修局域网，不是客户端代码。
 
 **分步备选**（sync **不会**启动 Expo）：
 
@@ -121,12 +132,13 @@ https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em
 
 ## 5. Staging 服务器运维
 
-**SSH**：`uoto@192.168.31.53`（用户有时写 `uoto@tex`）
+**SSH**：`uoto@192.168.31.4`（用户有时写 `uoto@tex`）。旧地址 `192.168.31.53` 已废弃。  
+服务器 `.env` 的 `STAGING_LAN_IP` / `ROOM_SERVER_URL` 也必须是 `.4`，改完后 `pm2 restart all`。
 
 | 服务 | 端口 | 检查 |
 |------|------|------|
-| API | 3000 | `curl http://192.168.31.53:3000/health` |
-| Room | 3001 | `curl http://192.168.31.53:3001/health` → `version` 应为 **0.5.2**（官方场先进场观战，5 机器人开打） |
+| API | 3000 | `curl http://192.168.31.4:3000/health` |
+| Room | 3001 | `curl http://192.168.31.4:3001/health` → `version` 应为 **0.5.2**（官方场先进场观战，5 机器人开打） |
 | Admin | 5173 | 浏览器；密钥 = 服务器 `.env` 的 `ADMIN_API_KEY` |
 
 **Room 版本曾卡在 0.4.1**：dist 未重建 / PM2 未重启。  
@@ -241,11 +253,9 @@ cd /workspace && pnpm --filter @texas-holdem/shared build
 
 ## 12. 下一步建议（按优先级）
 
-1. **家庭服务器 `uoto@192.168.31.53` 部署 Room 0.5.2**（不要在 Mac mini 上跑）
-   - `ZIP_URL="https://ghfast.top/https://github.com/abutang-droid/Texas-Hold-em/archive/refs/heads/cursor/poker-rules-6max-9b0a.zip" bash scripts/staging-update-no-git.sh cursor/poker-rules-6max-9b0a`
-   - 成功：服务器上 `curl http://127.0.0.1:3001/health` → `"version":"0.5.2"`
-2. **Mac mini 只跑客户端**：`bash /tmp/mac-fix-call.sh` 或 `bash scripts/mac-mobile-dev.sh` → 登录 → 大厅 → Quick Start
-3. 更新 `MAC-MINI-操作指南.md` 的分支说明 → `main` + `mac-start-mobile.sh`
+1. **Mac `.env` 指向 `192.168.31.4` 并硬刷新 Expo**（当前登录失败的直接原因）
+2. **家庭服务器确认 API/Room 在 `.4` 上跑**（不要在 Mac mini 上部署）；`.env` 里 `STAGING_LAN_IP` / `ROOM_SERVER_URL` 也要是 `.4`
+3. **Mac mini 只跑客户端**：改完 `.env` 后 `npx expo start --clear` → 登录 → 大厅
 4. 修复 CI pnpm version 冲突（可选，不阻塞用户玩）
 5. 继续 Phase 1 游戏流程 / UI polish（见各 `cursor/*` 分支）
 

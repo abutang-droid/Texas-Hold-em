@@ -5,11 +5,14 @@ import { useTranslation } from 'react-i18next';
 import {
   actStudHand,
   formatApiError,
+  getProfile,
   getStudConfig,
   getStudHand,
+  isStudUnavailableError,
   startStudHand,
   type StudHandView,
 } from '../src/api/client';
+import { loadSession } from '../src/storage/session';
 import { PlayingCard } from '../src/components/ui/PlayingCard';
 import { Screen } from '../src/components/ui/Screen';
 import { Button } from '../src/components/ui/Button';
@@ -38,16 +41,37 @@ export default function CaribbeanStudScreen() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const studError = (e: unknown) =>
+    isStudUnavailableError(e) ? t('errors.stud_unavailable') : formatApiError((e as Error).message, t);
+
   const boot = useCallback(async () => {
+    setError(null);
     try {
-      const [cfg, open] = await Promise.all([getStudConfig(), getStudHand()]);
-      setAntes(cfg.anteOptions.length ? cfg.anteOptions : DEFAULT_ANTES);
-      setPaytable(cfg.paytable);
-      setBalance(open.chipsBalance);
-      setHand(open.hand);
-      if (open.hand?.ante) setAnte(open.hand.ante);
-    } catch (e) {
-      setError(formatApiError((e as Error).message, t));
+      const session = await loadSession();
+      if (session?.user) setBalance(session.user.chipsBalance);
+      try {
+        const profile = await getProfile();
+        setBalance(profile.chipsBalance);
+      } catch {
+        /* keep session balance so Deal is not stuck disabled */
+      }
+
+      try {
+        const cfg = await getStudConfig();
+        setAntes(cfg.anteOptions.length ? cfg.anteOptions : DEFAULT_ANTES);
+        setPaytable(cfg.paytable);
+      } catch (e) {
+        setError(studError(e));
+      }
+
+      try {
+        const open = await getStudHand();
+        setBalance(open.chipsBalance);
+        setHand(open.hand);
+        if (open.hand?.ante) setAnte(open.hand.ante);
+      } catch (e) {
+        setError(studError(e));
+      }
     } finally {
       setLoading(false);
     }
@@ -70,7 +94,7 @@ export default function CaribbeanStudScreen() {
       setHand(next);
       setBalance(next.chipsBalance);
     } catch (e) {
-      setError(formatApiError((e as Error).message, t));
+      setError(studError(e));
     } finally {
       setBusy(false);
     }
@@ -95,14 +119,15 @@ export default function CaribbeanStudScreen() {
   };
 
   const settled = hand?.phase === 'SETTLED';
-  const canRaise = deciding && balance >= (hand?.raiseToCall ?? ante * 2);
+  const deciding = hand?.phase === 'DECISION';
+  const canRaise = Boolean(deciding && balance >= (hand?.raiseToCall ?? ante * 2));
 
   if (loading) {
     return <Screen loading loadingLabel={t('common.loading')} />;
   }
 
   return (
-    <Screen>
+    <Screen scroll>
       <View style={styles.top}>
         <Pressable onPress={() => router.back()} hitSlop={10}>
           <Text style={styles.back}>← {t('stud.back')}</Text>
@@ -141,7 +166,12 @@ export default function CaribbeanStudScreen() {
           ))}
         </View>
         {settled ? <Text style={styles.outcome}>{outcomeText()}</Text> : null}
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+        {error ? (
+          <View style={styles.errorBlock}>
+            <Text style={styles.error}>{error}</Text>
+            <Button label={t('stud.retry')} variant="ghost" onPress={() => void boot()} />
+          </View>
+        ) : null}
       </View>
 
       {!hand || settled ? (
@@ -232,7 +262,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   felt: {
-    flex: 1,
+    minHeight: 280,
     backgroundColor: palette.accentSoft,
     borderRadius: radius.lg,
     borderWidth: 1,
@@ -245,6 +275,7 @@ const styles = StyleSheet.create({
   laneLabel: { ...typography.micro, color: colors.text.secondary },
   row: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap', justifyContent: 'center' },
   outcome: { ...typography.caption, color: colors.text.primary, textAlign: 'center', marginTop: spacing.sm },
+  errorBlock: { alignItems: 'center', gap: spacing.sm, marginTop: spacing.sm },
   error: { ...typography.caption, color: colors.semantic.danger, textAlign: 'center' },
   controls: { marginTop: spacing.md, gap: spacing.sm },
   chipRow: { flexDirection: 'row', gap: spacing.sm, justifyContent: 'center', flexWrap: 'wrap' },

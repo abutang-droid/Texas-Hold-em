@@ -133,6 +133,12 @@ export default function LobbyScreen() {
     return true;
   };
 
+  const onStud = () => {
+    if (compliancePending) return;
+    if (!requireRegistered()) return;
+    router.push('/stud');
+  };
+
   const onQuickStart = async () => {
     if (starting) return;
 
@@ -233,18 +239,18 @@ export default function LobbyScreen() {
         fullWidth
         style={styles.heroBtn}
       />
-      <Button
-        label={t('lobby.caribbean_stud')}
-        variant="secondary"
-        onPress={() => {
-          if (compliancePending) return;
-          if (!requireRegistered()) return;
-          router.push('/stud');
-        }}
+      <Pressable
+        onPress={onStud}
         disabled={starting || compliancePending || isGuest}
-        fullWidth
-        style={styles.browseBtn}
-      />
+        style={({ pressed }) => [
+          styles.studCard,
+          (starting || compliancePending || isGuest) && styles.studCardDisabled,
+          pressed && styles.tilePressed,
+        ]}
+      >
+        <Text style={styles.studTitle}>{t('lobby.caribbean_stud')}</Text>
+        <Text style={styles.studHint}>{t('lobby.caribbean_stud_hint')}</Text>
+      </Pressable>
       <Button
         label={t('lobby.browse_tables')}
         variant="secondary"
@@ -274,6 +280,7 @@ export default function LobbyScreen() {
       ) : null}
 
       <View style={styles.menuGrid}>
+        <MenuTile icon="♠" label={t('lobby.caribbean_stud')} onPress={onStud} />
         <MenuTile icon="🛒" label={t('lobby.recharge')} onPress={() => router.push('/shop')} />
         <MenuTile
           icon="🔒"
@@ -377,6 +384,21 @@ const styles = StyleSheet.create({
   balanceUnit: { ...typography.h2, color: colors.text.secondary },
   expText: { ...typography.micro, color: colors.text.secondary, marginTop: spacing.sm },
   heroBtn: { minHeight: 56, marginBottom: spacing.sm },
+  studCard: {
+    minHeight: 64,
+    marginBottom: spacing.sm,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.brand.secondary,
+    backgroundColor: colors.bg.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  studCardDisabled: { opacity: 0.45 },
+  studTitle: { ...typography.h2, color: colors.brand.secondary },
+  studHint: { ...typography.micro, color: colors.text.secondary, marginTop: 4 },
   browseBtn: { minHeight: 52, marginBottom: spacing.sm },
   complianceHint: {
     ...typography.micro,

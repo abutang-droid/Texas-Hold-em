@@ -11,7 +11,8 @@ cd "$ROOT"
 
 REPO="abutang-droid/Texas-Hold-em"
 BRANCH="${1:-main}"
-EXPECTED_ROOM_VERSION="${EXPECTED_ROOM_VERSION:-0.5.2}"
+EXPECTED_ROOM_VERSION="${EXPECTED_ROOM_VERSION:-0.6.0}"
+EXPECTED_API_VERSION="${EXPECTED_API_VERSION:-0.7.0}"
 
 zip_candidates=()
 if [ -n "${ZIP_URL:-}" ]; then
@@ -89,6 +90,13 @@ if ! grep -q "auth/register" apps/api/src/main.ts; then
   echo "ERROR: source still missing auth/register — wrong branch?" >&2
   exit 1
 fi
+if ! grep -q "stud/start" apps/api/src/main.ts; then
+  if [[ "${BRANCH}" == *stud* || "${BRANCH}" == *home-server* ]]; then
+    echo "ERROR: source missing stud/start — this branch cannot enable 人庄" >&2
+    exit 1
+  fi
+  echo "WARN: source has no stud/start (人庄 will stay unavailable)" >&2
+fi
 
 echo "==> Clean stale dist (avoid old poker-engine exports after rsync)"
 rm -rf apps/*/dist packages/*/dist
@@ -108,6 +116,13 @@ if ! grep -q "auth/register" apps/api/dist/main.js; then
   echo "ERROR: build missing auth/register in dist" >&2
   exit 1
 fi
+if ! grep -q "stud/start" apps/api/dist/main.js; then
+  if [[ "${BRANCH}" == *stud* || "${BRANCH}" == *home-server* ]]; then
+    echo "ERROR: build missing stud/start in dist — API will not serve 人庄" >&2
+    exit 1
+  fi
+  echo "WARN: dist has no stud/start" >&2
+fi
 
 echo "==> PM2 restart"
 pm2 startOrRestart infra/staging/ecosystem.config.cjs --update-env
@@ -118,10 +133,19 @@ API_P="${API_PORT:-3000}"
 ROOM_P="${ROOM_PORT:-3001}"
 echo ""
 echo "==> Health:"
-curl -sf "http://127.0.0.1:${API_P}/health" && echo "" || echo "API health FAIL"
+API_HEALTH="$(curl -sf "http://127.0.0.1:${API_P}/health" || true)"
+echo "${API_HEALTH:-API health FAIL}"
 ROOM_HEALTH="$(curl -sf "http://127.0.0.1:${ROOM_P}/health" || true)"
 echo "${ROOM_HEALTH:-Room health FAIL}"
+STUD_CFG="$(curl -sf "http://127.0.0.1:${API_P}/api/v1/stud/config" || true)"
+echo "stud/config: ${STUD_CFG:-FAIL}"
 
+if ! echo "${API_HEALTH}" | grep -q "\"version\":\"${EXPECTED_API_VERSION}\""; then
+  echo "WARN: API version not ${EXPECTED_API_VERSION}" >&2
+fi
+if ! echo "${STUD_CFG}" | grep -q "CARIBBEAN_STUD"; then
+  echo "WARN: stud/config missing CARIBBEAN_STUD — 人庄还不可用" >&2
+fi
 if ! echo "${ROOM_HEALTH}" | grep -q "\"version\":\"${EXPECTED_ROOM_VERSION}\""; then
   echo "WARN: room version not ${EXPECTED_ROOM_VERSION} — run: bash scripts/staging-redeploy-room.sh" >&2
 fi
@@ -133,4 +157,4 @@ curl -sf -X POST "http://127.0.0.1:${API_P}/api/v1/auth/register" \
   | head -c 150 && echo ""
 
 echo ""
-echo "Done. API 0.5.0 · Room ${EXPECTED_ROOM_VERSION} expected in health output above."
+echo "Done. API ${EXPECTED_API_VERSION} · Room ${EXPECTED_ROOM_VERSION} expected in health output above."

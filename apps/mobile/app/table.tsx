@@ -18,8 +18,7 @@ import {
 } from '../src/components/PrivateTablePanels';
 import type { HandEndPayload, LastAction, PokerAction, SeatAction, TurnContext } from '../src/types/table';
 import { colors, palette, radius } from '../src/theme';
-
-const ROOM_URL = process.env.EXPO_PUBLIC_ROOM_URL ?? 'http://localhost:3001';
+import { ROOM_URL } from '../src/config/lan';
 
 interface TableState {
   potTotal: number;
