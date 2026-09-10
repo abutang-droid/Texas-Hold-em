@@ -12,6 +12,7 @@
     "dev:room": "pnpm --filter @texas-holdem/room run start:dev",
     "dev:mobile": "pnpm --filter @texas-holdem/mobile run start",
     "dev:admin": "pnpm --filter @texas-holdem/admin run dev",
+    "dev:felt": "pnpm --filter @texas-holdem/felt-web run dev",
     "smoke": "tsx scripts/smoke-api.ts",
     "staging:regression": "tsx scripts/staging-regression.ts",
     "staging:deploy": "bash scripts/staging-remote-deploy.sh",
