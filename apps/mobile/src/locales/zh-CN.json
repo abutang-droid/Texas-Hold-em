@@ -9,7 +9,8 @@
     "quick_start": "快速加入",
     "quick_start_loading": "正在进入…",
     "browse_tables": "选择牌桌",
-    "caribbean_stud": "加勒比梭哈",
+    "caribbean_stud": "人庄模式",
+    "caribbean_stud_hint": "对庄家 · 加勒比梭哈",
     "guest_play_blocked": "游客不能加入游戏，请先注册账号",
     "register_to_play": "去注册",
     "recharge": "充值",
@@ -265,8 +266,8 @@
     "refund_line": "{{name}} 退回未跟注筹码 {{amount}}"
   },
   "stud": {
-    "title": "加勒比梭哈",
-    "subtitle": "人对庄 · 底注后一次加注或弃牌",
+    "title": "人庄模式",
+    "subtitle": "加勒比梭哈 · 人对庄，底注后一次加注或弃牌",
     "back": "大厅",
     "dealer": "庄家",
     "player": "你",

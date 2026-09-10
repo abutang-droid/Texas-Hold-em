@@ -9,7 +9,8 @@
     "quick_start": "Quick Join",
     "quick_start_loading": "Joining…",
     "browse_tables": "Choose a table",
-    "caribbean_stud": "Caribbean Stud",
+    "caribbean_stud": "Vs Dealer",
+    "caribbean_stud_hint": "Caribbean Stud · play the house",
     "guest_play_blocked": "Guests cannot join games. Please register first.",
     "register_to_play": "Register",
     "recharge": "Recharge",
@@ -265,8 +266,8 @@
     "refund_line": "{{name}} uncalled bet returned {{amount}}"
   },
   "stud": {
-    "title": "Caribbean Stud",
-    "subtitle": "Player vs dealer · one raise or fold",
+    "title": "Vs Dealer",
+    "subtitle": "Caribbean Stud · one raise or fold vs the house",
     "back": "Lobby",
     "dealer": "Dealer",
     "player": "You",
