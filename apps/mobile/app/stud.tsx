@@ -95,7 +95,8 @@ export default function CaribbeanStudScreen() {
   };
 
   const settled = hand?.phase === 'SETTLED';
-  const canRaise = deciding && balance >= (hand?.raiseToCall ?? ante * 2);
+  const deciding = hand?.phase === 'DECISION';
+  const canRaise = Boolean(deciding && balance >= (hand?.raiseToCall ?? ante * 2));
 
   if (loading) {
     return <Screen loading loadingLabel={t('common.loading')} />;
