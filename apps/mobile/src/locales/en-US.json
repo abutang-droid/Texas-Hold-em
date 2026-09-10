@@ -100,7 +100,8 @@
     "room_not_found": "That table was not found",
     "hand_not_found": "No open Caribbean Stud hand",
     "invalid_ante": "Choose a valid ante",
-    "hand_in_progress": "Finish the current hand first"
+    "hand_in_progress": "Finish the current hand first",
+    "stud_unavailable": "Vs-dealer is not on this server. Deploy API 0.7.0 and run migration 007"
   },
   "auth": {
     "login_title": "Sign In",
@@ -295,6 +296,7 @@
     "rule_5": "If the dealer qualifies and you win: raise pays 1x, ante pays the table (1x below a flush).",
     "paytable": "Ante paytable",
     "need_chips": "Not enough chips — recharge first",
+    "retry": "Retry",
     "cat_ROYAL_FLUSH": "Royal flush",
     "cat_STRAIGHT_FLUSH": "Straight flush",
     "cat_FOUR_OF_A_KIND": "Four of a kind",

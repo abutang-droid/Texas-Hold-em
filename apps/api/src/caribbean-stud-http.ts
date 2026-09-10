@@ -19,6 +19,14 @@ import {
 
 export { STUD_ANTE_OPTIONS, STUD_PAYTABLE };
 
+function rethrowStudDb(e: unknown): never {
+  const msg = String((e as Error)?.message ?? e);
+  if (/stud_hands/i.test(msg) && /does not exist/i.test(msg)) {
+    throw new Error('STUD_NOT_MIGRATED');
+  }
+  throw e;
+}
+
 function rowToHand(row: StudHandRow) {
   return parseStudHand({
     playerCards: row.player_cards,
@@ -53,30 +61,38 @@ export function presentStud(row: StudHandRow, chipsBalance: number) {
 }
 
 export async function loadOpenStud(userId: number) {
-  const chipsBalance = await currentStudBalance(userId);
-  const row = await findOpenStudHand(userId);
-  if (!row) return { hand: null, chipsBalance };
-  return { hand: presentStud(row, chipsBalance), chipsBalance };
+  try {
+    const chipsBalance = await currentStudBalance(userId);
+    const row = await findOpenStudHand(userId);
+    if (!row) return { hand: null, chipsBalance };
+    return { hand: presentStud(row, chipsBalance), chipsBalance };
+  } catch (e) {
+    rethrowStudDb(e);
+  }
 }
 
 export async function startCaribbeanStud(userId: number, ante: number) {
-  const open = await findOpenStudHand(userId);
-  if (open) throw new Error('HAND_IN_PROGRESS');
-  const started = startStudHand(ante);
-  const packed = serializeStudHand(started);
-  const { row, chipsBalance } = await insertStudHand({
-    userId,
-    ante,
-    playerCards: packed.playerCards,
-    dealerCards: packed.dealerCards,
-    community: packed.community,
-    remaining: packed.remaining,
-  });
-  return presentStud(row, chipsBalance);
+  try {
+    const open = await findOpenStudHand(userId);
+    if (open) throw new Error('HAND_IN_PROGRESS');
+    const started = startStudHand(ante);
+    const packed = serializeStudHand(started);
+    const { row, chipsBalance } = await insertStudHand({
+      userId,
+      ante,
+      playerCards: packed.playerCards,
+      dealerCards: packed.dealerCards,
+      community: packed.community,
+      remaining: packed.remaining,
+    });
+    return presentStud(row, chipsBalance);
+  } catch (e) {
+    rethrowStudDb(e);
+  }
 }
 
 export async function actCaribbeanStud(userId: number, action: 'fold' | 'raise') {
-  const open = await findOpenStudHand(userId);
+  const open = await findOpenStudHand(userId).catch(rethrowStudDb);
   if (!open) throw new Error('HAND_NOT_FOUND');
   if (action === 'raise') {
     const balance = await currentStudBalance(userId);

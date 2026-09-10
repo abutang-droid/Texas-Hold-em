@@ -199,6 +199,19 @@ export function formatApiError(message: string, t: (key: string) => string): str
   return message;
 }
 
+export function isStudUnavailableError(e: unknown): boolean {
+  const err = e as Error & { code?: string };
+  const message = err?.message ?? String(e);
+  const code = err?.code ?? '';
+  return (
+    code === 'STUD_UNAVAILABLE' ||
+    message === 'errors.stud_unavailable' ||
+    /Cannot (GET|POST) .*\/stud\//i.test(message) ||
+    /Request failed \(404\)/.test(message) ||
+    /stud_hands/i.test(message)
+  );
+}
+
 export async function guestLogin(deviceId?: string) {
   const data = await request<{
     token: string;

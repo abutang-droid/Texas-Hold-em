@@ -100,7 +100,8 @@
     "room_not_found": "找不到这张牌桌",
     "hand_not_found": "找不到进行中的牌局",
     "invalid_ante": "请选择有效的底注",
-    "hand_in_progress": "请先结束当前牌局"
+    "hand_in_progress": "请先结束当前牌局",
+    "stud_unavailable": "人庄服务未就绪。请在家庭服务器部署 API 0.7.0 并执行数据库迁移 007"
   },
   "auth": {
     "login_title": "登录",
@@ -295,6 +296,7 @@
     "rule_5": "庄家成牌且你更大：加注 1 倍，底注按赔率表支付（同花以下为 1 倍）。",
     "paytable": "底注赔率表",
     "need_chips": "筹码不足，请先充值",
+    "retry": "重试",
     "cat_ROYAL_FLUSH": "皇家同花顺",
     "cat_STRAIGHT_FLUSH": "同花顺",
     "cat_FOUR_OF_A_KIND": "四条",
