@@ -44,7 +44,19 @@ Monorepo（pnpm workspace）：
 
 ## 3. 用户当前卡点（优先处理）
 
-**现象**：家庭服务器 IP 已改为 **`192.168.31.4`**，登录仍打旧地址 `192.168.31.53:3000`（`ERR_ADDRESS_UNREACHABLE`）。
+**现象**：人庄页提示「人庄服务未就绪」。家庭服务器 API 还不是 **0.7.0**，或没跑 migration **007**（`stud_hands`）。
+
+**在家庭服务器上执行（不要在 Mac 上跑）**：
+
+```bash
+ssh uoto@192.168.31.4
+curl -fsSL "https://ghfast.top/https://raw.githubusercontent.com/abutang-droid/Texas-Hold-em/cursor/home-server-ip-9b0a/scripts/staging-enable-stud.sh" -o /tmp/enable-stud.sh
+bash /tmp/enable-stud.sh
+```
+
+成功：`curl http://127.0.0.1:3000/health` 含 `"version":"0.7.0"`，`/api/v1/stud/config` 含 `CARIBBEAN_STUD`。然后回 Mac 硬刷新再进「人庄模式」。
+
+**旧卡点（已处理）**：家庭服务器 IP 已改为 **`192.168.31.4`**。
 
 **Mac 上立刻改 `.env` 并清缓存重启**（不必等 git pull）：
 

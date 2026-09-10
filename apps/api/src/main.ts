@@ -1056,7 +1056,7 @@ class HealthController {
       status: 'ok',
       service: 'api',
       version: '0.7.0',
-      features: { emailAuth: true, guestAuth: true, oauth: true },
+      features: { emailAuth: true, guestAuth: true, oauth: true, caribbeanStud: true },
     };
   }
 }
