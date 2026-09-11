@@ -93,12 +93,12 @@ download "apps/mobile/src/components/HandStatusBar.tsx"
 download "apps/mobile/src/components/EmojiBar.tsx"
 download "apps/mobile/src/components/PotDisplay.tsx"
 download "apps/mobile/src/components/ui/PlayingCard.tsx"
-download "apps/mobile/src/assets/card-back-uri.ts"
-if ! grep -q 'CARD_BACK_URI' "${REPO}/apps/mobile/src/components/ui/PlayingCard.tsx"; then
-  echo "ERROR: PlayingCard.tsx is missing CARD_BACK_URI (bundle will crash without card-back.webp)." >&2
+if grep -q "require('../../../assets/card-back" "${REPO}/apps/mobile/src/components/ui/PlayingCard.tsx" ||
+   grep -q 'card-back-uri' "${REPO}/apps/mobile/src/components/ui/PlayingCard.tsx"; then
+  echo "ERROR: PlayingCard.tsx still pulls a local card-back asset (Metro 500 if the file is missing)." >&2
   exit 1
 fi
-download "apps/mobile/assets/card-back.webp" || echo "WARN: binary card-back.webp skipped (URI back is enough)"
+download "apps/mobile/assets/card-back.webp" || echo "WARN: binary card-back.webp skipped (CDN back is enough)"
 download "apps/mobile/src/components/ui/Button.tsx"
 download "apps/mobile/src/components/ui/Card.tsx"
 download "apps/mobile/src/components/ui/GameModal.tsx"

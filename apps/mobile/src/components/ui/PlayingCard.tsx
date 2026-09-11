@@ -1,6 +1,9 @@
 import { View, Text, Image, StyleSheet } from 'react-native';
-import { CARD_BACK_URI } from '../../assets/card-back-uri';
 import { palette } from '../../theme';
+
+/** CDN URL — do not require() a local binary (Mac mirror curl drops it and Metro returns 500). */
+const CARD_BACK_URI =
+  'https://cdn.jsdelivr.net/gh/abutang-droid/Texas-Hold-em@cursor/felt-theme-app-9b0a/apps/mobile/assets/card-back.webp';
 
 const SUIT_SYMBOL: Record<string, string> = {
   h: '♥',
