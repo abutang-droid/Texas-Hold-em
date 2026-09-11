@@ -297,6 +297,7 @@ apps/mobile/src/components/HandStatusBar.tsx
 apps/mobile/src/components/PotDisplay.tsx
 apps/mobile/src/components/PrivateTablePanels.tsx
 apps/mobile/src/components/ui/PlayingCard.tsx
+apps/mobile/src/assets/card-back-uri.ts
 apps/mobile/assets/card-back.webp
 apps/mobile/src/components/ui/GameModal.tsx
 apps/mobile/src/components/ui/Button.tsx

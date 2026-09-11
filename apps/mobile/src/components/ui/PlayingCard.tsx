@@ -1,7 +1,6 @@
 import { View, Text, Image, StyleSheet } from 'react-native';
+import { CARD_BACK_URI } from '../../assets/card-back-uri';
 import { palette } from '../../theme';
-
-const CARD_BACK = require('../../../assets/card-back.webp');
 
 const SUIT_SYMBOL: Record<string, string> = {
   h: '♥',
@@ -44,7 +43,7 @@ interface Props {
 function CardBack({ w, h }: { w: number; h: number }) {
   return (
     <View style={[styles.card, styles.back, w < 20 && styles.backTiny, { width: w, height: h }]}>
-      <Image source={CARD_BACK} style={styles.backImage} resizeMode="cover" />
+      <Image source={{ uri: CARD_BACK_URI }} style={styles.backImage} resizeMode="cover" />
     </View>
   );
 }
