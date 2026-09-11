@@ -1,5 +1,9 @@
-import { View, Text, StyleSheet } from 'react-native';
-import { colors, palette } from '../../theme';
+import { View, Text, Image, StyleSheet } from 'react-native';
+import { palette } from '../../theme';
+
+/** CDN URL — do not require() a local binary (Mac mirror curl drops it and Metro returns 500). */
+const CARD_BACK_URI =
+  'https://cdn.jsdelivr.net/gh/abutang-droid/Texas-Hold-em@cursor/felt-theme-app-9b0a/apps/mobile/assets/card-back.webp';
 
 const SUIT_SYMBOL: Record<string, string> = {
   h: '♥',
@@ -40,14 +44,9 @@ interface Props {
 }
 
 function CardBack({ w, h }: { w: number; h: number }) {
-  const tight = w < 20;
-  if (tight) {
-    return <View style={[styles.card, styles.back, styles.backTiny, { width: w, height: h }]} />;
-  }
-  const diamond = Math.max(10, Math.round(w * 0.38));
   return (
-    <View style={[styles.card, styles.back, { width: w, height: h }]}>
-      <View style={[styles.backDiamond, { width: diamond, height: diamond }]} />
+    <View style={[styles.card, styles.back, w < 20 && styles.backTiny, { width: w, height: h }]}>
+      <Image source={{ uri: CARD_BACK_URI }} style={styles.backImage} resizeMode="cover" />
     </View>
   );
 }
@@ -60,7 +59,7 @@ export function PlayingCard({ code, size = 'md', faceDown }: Props) {
     return <CardBack w={dim.w} h={dim.h} />;
   }
 
-  const ink = parsed.red ? palette.redSuit : colors.text.primary;
+  const ink = parsed.red ? palette.redSuit : palette.ink;
   const rankSize = parsed.rank === '10' ? Math.max(8, dim.rank - 3) : dim.rank;
   const pip = SUIT_SYMBOL[parsed.suit];
 
@@ -109,24 +108,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   face: {
-    backgroundColor: palette.inverse,
+    backgroundColor: palette.cardFace,
     borderWidth: 1,
-    borderColor: palette.line,
+    borderColor: palette.faceLine,
     alignItems: 'center',
     justifyContent: 'center',
   },
   back: {
     backgroundColor: palette.cardBack,
     borderWidth: 1,
-    borderColor: palette.line,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: palette.cardBackBorder,
   },
-  backDiamond: {
-    borderWidth: 1,
-    borderColor: colors.text.disabled,
-    backgroundColor: 'transparent',
-    transform: [{ rotate: '45deg' }],
+  backImage: {
+    width: '100%',
+    height: '100%',
   },
   rank: {
     position: 'absolute',

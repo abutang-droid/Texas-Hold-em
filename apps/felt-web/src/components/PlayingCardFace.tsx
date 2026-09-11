@@ -1,4 +1,5 @@
 import { RANK_LABEL, SUIT_GLYPH, isRedSuit, type PlayingCard } from '../deck';
+import cardBackUrl from '../assets/card-back.webp';
 
 interface Props {
   card?: PlayingCard;
@@ -12,10 +13,9 @@ export function PlayingCardFace({ card, faceDown = false, size = 'md', className
   if (faceDown || !card) {
     return (
       <div
-        className={`relative ${wide} rounded-[0.55rem] border border-emerald-900/70 bg-gradient-to-br from-emerald-950 via-emerald-900 to-stone-950 shadow-[0_8px_16px_rgba(0,0,0,0.35)] ${className}`}
+        className={`relative overflow-hidden ${wide} rounded-[0.55rem] border border-[#4a1018]/80 shadow-[0_8px_16px_rgba(0,0,0,0.35)] ${className}`}
       >
-        <div className="absolute inset-[3px] rounded-[0.4rem] border border-emerald-700/40 bg-[repeating-linear-gradient(135deg,rgba(46,125,99,0.35)_0_4px,rgba(6,20,15,0.9)_4px_8px)]" />
-        <div className="absolute inset-0 m-auto h-5 w-5 rotate-45 rounded-sm border border-lime-200/20" />
+        <img src={cardBackUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
       </div>
     );
   }

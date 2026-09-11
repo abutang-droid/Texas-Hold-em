@@ -70,12 +70,12 @@ const styles = StyleSheet.create({
   fullWidth: { width: '100%' },
   primary: { backgroundColor: colors.brand.primary },
   secondary: {
-    backgroundColor: palette.inverse,
+    backgroundColor: colors.bg.card,
     borderWidth: 1.5,
     borderColor: palette.line,
   },
   danger: {
-    backgroundColor: palette.inverse,
+    backgroundColor: colors.bg.card,
     borderWidth: 1.5,
     borderColor: colors.semantic.danger,
   },

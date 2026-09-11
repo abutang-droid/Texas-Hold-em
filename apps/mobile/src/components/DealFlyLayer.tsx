@@ -28,7 +28,7 @@ function FlyingDealCard({ event, onDone }: { event: DealFlyEvent; onDone: () => 
       Animated.delay(event.delayMs),
       Animated.timing(opacity, { toValue: 1, duration: 60, useNativeDriver: false }),
       Animated.parallel([
-        Animated.timing(progress, { toValue: 1, duration: 360, useNativeDriver: false }),
+        Animated.timing(progress, { toValue: 1, duration: 420, useNativeDriver: false }),
         Animated.sequence([
           Animated.delay(260),
           Animated.timing(opacity, { toValue: 0, duration: 100, useNativeDriver: false }),
@@ -49,7 +49,7 @@ function FlyingDealCard({ event, onDone }: { event: DealFlyEvent; onDone: () => 
   });
   const rotate = progress.interpolate({
     inputRange: [0, 1],
-    outputRange: ['-18deg', '8deg'],
+    outputRange: ['-22deg', '16deg'],
   });
   const scale = progress.interpolate({
     inputRange: [0, 0.6, 1],

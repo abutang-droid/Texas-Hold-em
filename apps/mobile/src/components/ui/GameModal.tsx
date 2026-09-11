@@ -36,12 +36,12 @@ export function GameModal({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(23,25,28,0.35)',
+    backgroundColor: palette.backdrop,
     justifyContent: 'center',
     padding: spacing.xl,
   },
   card: {
-    backgroundColor: colors.bg.card,
+    backgroundColor: colors.bg.modal,
     borderRadius: radius.lg,
     padding: spacing.xl,
     borderWidth: 1,

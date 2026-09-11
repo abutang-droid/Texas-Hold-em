@@ -75,6 +75,11 @@ download "apps/mobile/src/storage/session.ts" "${TABLE_FIX_REF}"
 download "apps/mobile/src/theme/index.ts"
 download "packages/shared/src/design-tokens/colors.json"
 download "packages/shared/src/avatars.ts"
+download "docs/DESIGN-SPEC.md"
+download "apps/mobile/src/components/Avatar.tsx"
+download "apps/mobile/src/components/PrivateTablePanels.tsx"
+download "apps/mobile/app/settings.tsx"
+download "apps/mobile/app/leaderboard.tsx"
 download "apps/mobile/src/components/ActionPanel.tsx"
 download "apps/mobile/src/components/ChipFlyLayer.tsx"
 download "apps/mobile/src/components/CommunityCardsRow.tsx"
@@ -88,6 +93,12 @@ download "apps/mobile/src/components/HandStatusBar.tsx"
 download "apps/mobile/src/components/EmojiBar.tsx"
 download "apps/mobile/src/components/PotDisplay.tsx"
 download "apps/mobile/src/components/ui/PlayingCard.tsx"
+if grep -q "require('../../../assets/card-back" "${REPO}/apps/mobile/src/components/ui/PlayingCard.tsx" ||
+   grep -q 'card-back-uri' "${REPO}/apps/mobile/src/components/ui/PlayingCard.tsx"; then
+  echo "ERROR: PlayingCard.tsx still pulls a local card-back asset (Metro 500 if the file is missing)." >&2
+  exit 1
+fi
+download "apps/mobile/assets/card-back.webp" || echo "WARN: binary card-back.webp skipped (CDN back is enough)"
 download "apps/mobile/src/components/ui/Button.tsx"
 download "apps/mobile/src/components/ui/Card.tsx"
 download "apps/mobile/src/components/ui/GameModal.tsx"

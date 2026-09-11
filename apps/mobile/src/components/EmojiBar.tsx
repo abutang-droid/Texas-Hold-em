@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     maxWidth: 360,
-    backgroundColor: palette.inverse,
+    backgroundColor: colors.bg.card,
     borderRadius: radius.lg,
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.sm,
