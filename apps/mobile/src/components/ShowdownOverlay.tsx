@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   banner: {
     maxWidth: 380,
     width: '100%',
-    backgroundColor: palette.inverse,
+    backgroundColor: colors.bg.card,
     borderRadius: radius.lg,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,

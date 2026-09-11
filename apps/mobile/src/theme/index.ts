@@ -5,12 +5,18 @@ export const colors = designTokens.color;
 
 /** Spec extras that are not in the shared JSON shape. */
 export const palette = {
-  accentSoft: 'rgba(46,125,99,0.10)',
-  inverse: '#FFFFFF',
-  line: '#E6E8EB',
-  redSuit: '#C23B3B',
-  cardBack: '#E9ECF0',
-  chipStack: '#D7DBE0',
+  accentSoft: 'rgba(52,211,153,0.16)',
+  inverse: '#F4F7F5',
+  line: 'rgba(232,245,238,0.14)',
+  redSuit: '#E11D48',
+  cardBack: '#0A2A1E',
+  cardBackBorder: '#145c43',
+  cardFace: '#FFFFFF',
+  faceLine: '#E6E8EB',
+  ink: '#17191C',
+  chipStack: '#1A3D30',
+  glow: 'rgba(163,230,53,0.45)',
+  backdrop: 'rgba(5,8,7,0.72)',
 } as const;
 
 export const spacing = {
@@ -37,18 +43,25 @@ export const typography = {
 
 export const shadows = {
   card: {
-    shadowColor: 'rgb(20,25,30)',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.05,
-    shadowRadius: 24,
-    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.45,
+    shadowRadius: 28,
+    elevation: 8,
   } satisfies ViewStyle,
   button: {
-    shadowColor: 'rgb(20,25,30)',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowColor: '#145c43',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 4,
+  } satisfies ViewStyle,
+  glow: {
+    shadowColor: '#A3E635',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.45,
+    shadowRadius: 14,
+    elevation: 6,
   } satisfies ViewStyle,
 };
 

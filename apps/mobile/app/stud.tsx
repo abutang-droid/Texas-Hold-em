@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: palette.line,
-    backgroundColor: palette.inverse,
+    backgroundColor: colors.bg.card,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.md,

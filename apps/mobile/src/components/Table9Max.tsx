@@ -114,7 +114,7 @@ function SeatActionBadge({ action }: { action: SeatAction }) {
 
 const ACTION_BG = {
   fold: { backgroundColor: palette.chipStack },
-  check: { backgroundColor: palette.inverse, borderWidth: 1, borderColor: palette.line },
+  check: { backgroundColor: colors.bg.card, borderWidth: 1, borderColor: palette.line },
   call: { backgroundColor: colors.brand.primary },
   raise: { backgroundColor: colors.brand.primary },
   allin: { backgroundColor: colors.semantic.danger },
@@ -427,6 +427,7 @@ export function Table9Max({
                           nickname={seat.nickname}
                           avatarUrl={seat.avatarUrl}
                           size="sm"
+                          glow={!!(seat.isActive || isHero)}
                           onPress={() =>
                             setProfileSeat((cur) => (cur === idx ? null : idx))
                           }
@@ -480,33 +481,42 @@ const styles = StyleSheet.create({
   railOuter: {
     flex: 1,
     margin: spacing.md,
-    borderRadius: 28,
-    padding: 0,
-    backgroundColor: 'transparent',
+    borderRadius: 36,
+    padding: 3,
+    backgroundColor: colors.felt.rail,
+    shadowColor: '#000',
+    shadowOpacity: 0.5,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 8,
   },
   railHighlight: {
-    display: 'none',
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 36,
+    borderWidth: 1,
+    borderColor: colors.felt.railHighlight,
+    pointerEvents: 'none',
   },
   rail: {
     flex: 1,
-    borderRadius: 28,
+    borderRadius: 33,
     padding: 0,
-    backgroundColor: 'transparent',
+    backgroundColor: colors.felt.rail,
   },
   felt: {
     flex: 1,
-    borderRadius: 28,
+    borderRadius: 32,
     backgroundColor: colors.felt.base,
     position: 'relative',
     borderWidth: 1,
-    borderColor: palette.line,
+    borderColor: 'rgba(163,230,53,0.12)',
   },
   feltPattern: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 22,
+    borderRadius: 26,
     borderWidth: 1,
-    borderColor: 'rgba(23,25,28,0.04)',
-    margin: 18,
+    borderColor: 'rgba(255,255,255,0.05)',
+    margin: 16,
   },
   center: {
     position: 'absolute',
@@ -578,7 +588,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     paddingVertical: 1,
     borderRadius: 8,
-    backgroundColor: palette.inverse,
+    backgroundColor: colors.bg.card,
     borderWidth: 1,
     borderColor: palette.line,
     alignItems: 'center',
@@ -593,7 +603,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -36,
     zIndex: 6,
-    backgroundColor: palette.inverse,
+    backgroundColor: colors.bg.card,
     borderRadius: 16,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -614,7 +624,7 @@ const styles = StyleSheet.create({
     marginLeft: -70,
     width: 140,
     marginBottom: 8,
-    backgroundColor: palette.inverse,
+    backgroundColor: colors.bg.card,
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: palette.line,
@@ -663,7 +673,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     alignItems: 'center',
     overflow: 'visible',
-    backgroundColor: palette.inverse,
+    backgroundColor: colors.bg.card,
     borderRadius: radius.md,
     paddingHorizontal: 8,
     paddingVertical: 8,

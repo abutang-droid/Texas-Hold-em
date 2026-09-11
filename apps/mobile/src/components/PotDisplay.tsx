@@ -36,7 +36,7 @@ export function PotDisplay({ potTotal, potLabel }: Props) {
 
 const styles = StyleSheet.create({
   potChip: {
-    backgroundColor: palette.inverse,
+    backgroundColor: colors.bg.card,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
     borderRadius: radius.md,

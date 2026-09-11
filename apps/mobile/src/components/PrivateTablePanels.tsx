@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   toolBtn: {
-    backgroundColor: palette.inverse,
+    backgroundColor: colors.bg.card,
     borderColor: palette.line,
     borderWidth: 1,
     borderRadius: radius.sm,
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   },
   hostName: { color: colors.text.secondary, fontSize: 11 },
   hostAction: {
-    backgroundColor: palette.inverse,
+    backgroundColor: colors.bg.card,
     borderRadius: radius.sm,
     paddingHorizontal: 8,
     paddingVertical: 6,
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modalCard: {
-    backgroundColor: palette.inverse,
+    backgroundColor: colors.bg.card,
     borderRadius: radius.lg,
     padding: 20,
     width: '100%',

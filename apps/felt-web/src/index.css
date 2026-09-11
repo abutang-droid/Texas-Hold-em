@@ -2,6 +2,14 @@
 
 @theme {
   --font-display: 'Sora', ui-sans-serif, system-ui, sans-serif;
+  --color-lobby: #07140f;
+  --color-card: #0e241c;
+  --color-felt: #0c3a2b;
+  --color-rail: #16120e;
+  --color-ink: #e8f5ee;
+  --color-muted: #8fbfab;
+  --color-accent: #2e7d63;
+  --color-lime: #a3e635;
 }
 
 html,

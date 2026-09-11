@@ -60,7 +60,7 @@ export function PlayingCard({ code, size = 'md', faceDown }: Props) {
     return <CardBack w={dim.w} h={dim.h} />;
   }
 
-  const ink = parsed.red ? palette.redSuit : colors.text.primary;
+  const ink = parsed.red ? palette.redSuit : palette.ink;
   const rankSize = parsed.rank === '10' ? Math.max(8, dim.rank - 3) : dim.rank;
   const pip = SUIT_SYMBOL[parsed.suit];
 
@@ -109,22 +109,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   face: {
-    backgroundColor: palette.inverse,
+    backgroundColor: palette.cardFace,
     borderWidth: 1,
-    borderColor: palette.line,
+    borderColor: palette.faceLine,
     alignItems: 'center',
     justifyContent: 'center',
   },
   back: {
     backgroundColor: palette.cardBack,
     borderWidth: 1,
-    borderColor: palette.line,
+    borderColor: palette.cardBackBorder,
     alignItems: 'center',
     justifyContent: 'center',
   },
   backDiamond: {
     borderWidth: 1,
-    borderColor: colors.text.disabled,
+    borderColor: 'rgba(163,230,53,0.35)',
     backgroundColor: 'transparent',
     transform: [{ rotate: '45deg' }],
   },

@@ -73,7 +73,7 @@ export default function RootLayout() {
 
   return (
     <>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg.lobby } }} />
       <NavigationGuards bootReady={bootReady} authTick={authTick} />
       {!bootReady ? (

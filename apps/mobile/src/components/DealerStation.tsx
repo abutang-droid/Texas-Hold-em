@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: palette.inverse,
+    backgroundColor: colors.bg.card,
     borderWidth: 1.5,
     borderColor: palette.line,
     alignItems: 'center',
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
   },
   pill: {
     marginTop: 6,
-    backgroundColor: palette.inverse,
+    backgroundColor: colors.bg.card,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 999,

@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   field: { marginBottom: spacing.md },
   label: { ...typography.micro, color: colors.text.secondary, marginBottom: spacing.xs },
   input: {
-    backgroundColor: palette.inverse,
+    backgroundColor: colors.bg.card,
     borderRadius: 10,
     minHeight: 44,
     padding: spacing.md,

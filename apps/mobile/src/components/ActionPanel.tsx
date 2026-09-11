@@ -223,7 +223,7 @@ function ActionBtn({
 
 const styles = StyleSheet.create({
   panel: {
-    backgroundColor: palette.inverse,
+    backgroundColor: colors.bg.card,
     borderRadius: radius.lg,
     padding: spacing.md,
     borderWidth: 1,
@@ -242,12 +242,12 @@ const styles = StyleSheet.create({
   },
   btnFlex: { flex: 1, minWidth: 0 },
   btn_fold: {
-    backgroundColor: palette.inverse,
+    backgroundColor: colors.bg.card,
     borderWidth: 1.5,
     borderColor: colors.semantic.danger,
   },
   btn_check: {
-    backgroundColor: palette.inverse,
+    backgroundColor: colors.bg.card,
     borderWidth: 1.5,
     borderColor: palette.line,
   },
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
   btn_raise: { backgroundColor: colors.brand.primary },
   btn_allin: { backgroundColor: colors.semantic.danger },
   btn_ghost: {
-    backgroundColor: palette.inverse,
+    backgroundColor: colors.bg.card,
     borderWidth: 1.5,
     borderColor: palette.line,
   },
