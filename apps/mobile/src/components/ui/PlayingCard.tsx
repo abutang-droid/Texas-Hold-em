@@ -1,5 +1,7 @@
-import { View, Text, StyleSheet } from 'react-native';
-import { colors, palette } from '../../theme';
+import { View, Text, Image, StyleSheet } from 'react-native';
+import { palette } from '../../theme';
+
+const CARD_BACK = require('../../../assets/card-back.webp');
 
 const SUIT_SYMBOL: Record<string, string> = {
   h: '♥',
@@ -40,14 +42,9 @@ interface Props {
 }
 
 function CardBack({ w, h }: { w: number; h: number }) {
-  const tight = w < 20;
-  if (tight) {
-    return <View style={[styles.card, styles.back, styles.backTiny, { width: w, height: h }]} />;
-  }
-  const diamond = Math.max(10, Math.round(w * 0.38));
   return (
-    <View style={[styles.card, styles.back, { width: w, height: h }]}>
-      <View style={[styles.backDiamond, { width: diamond, height: diamond }]} />
+    <View style={[styles.card, styles.back, w < 20 && styles.backTiny, { width: w, height: h }]}>
+      <Image source={CARD_BACK} style={styles.backImage} resizeMode="cover" />
     </View>
   );
 }
@@ -119,14 +116,10 @@ const styles = StyleSheet.create({
     backgroundColor: palette.cardBack,
     borderWidth: 1,
     borderColor: palette.cardBackBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  backDiamond: {
-    borderWidth: 1,
-    borderColor: 'rgba(163,230,53,0.35)',
-    backgroundColor: 'transparent',
-    transform: [{ rotate: '45deg' }],
+  backImage: {
+    width: '100%',
+    height: '100%',
   },
   rank: {
     position: 'absolute',

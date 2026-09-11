@@ -60,7 +60,7 @@
 | `--red-suit` / `palette.redSuit` | `#E11D48` | ♥ ♦ |
 | `--card-face` / `palette.cardFace` | `#FFFFFF` | 牌面底 |
 | `--card-ink` / `palette.ink` | `#17191C` | 牌面点数 / 黑花色 |
-| `--card-back` / `palette.cardBack` | `#0A2A1E` | 牌背 |
+| `--card-back` / `palette.cardBack` | `#4A1018` | 牌背底（图加载前） |
 | `--inverse` / `palette.inverse` | `#F4F7F5` | 绿按钮上的字，**不是**面板底 |
 | `--chip-stack` / `palette.chipStack` | `#1A3D30` | 筹码堆 |
 | `--backdrop` / `palette.backdrop` | `rgba(5,8,7,0.72)` | 弹层遮罩 |
@@ -154,9 +154,9 @@ Expo `userInterfaceStyle` 与启动屏为 `#07140F`。StatusBar 用 light conten
 
 牌背：
 
-- 深绿 `#0A2A1E`
-- 细描边 `#145c43`
-- 中心旋转菱形线框（几何，不是赌场花纹）
+- 使用 `apps/mobile/assets/card-back.webp`（felt-web 同图）：Serpentine Legacy 红底金蛇
+- 圆角裁切 + `cover`，细描边 `rgba(201,176,120,0.45)`
+- 图未到时底色 `#4A1018`
 
 摊牌：有竞争才亮对手手牌；单人赢（全弃）保持牌背。
 
@@ -215,7 +215,7 @@ Expo `userInterfaceStyle` 与启动屏为 `#07140F`。StatusBar 用 light conten
 
 - 紫蓝渐变、金色大标题、霓虹描边、WLD 紫
 - Emoji 充当系统图标（牌桌内表情互动条除外，且需收敛为次要控件）
-- 写实荷官、拟物赌场牌背、牌面四角重复索引
+- 写实荷官、牌面四角重复索引、除指定 Serpentine Legacy 外另做赌场花纹牌背
 - 浅灰大厅 / 白卡片皮肤（v1 已退役）
 - 主按钮深色字（绿底必须 inverse 字）
 - 用 `palette.inverse` 当面板背景
