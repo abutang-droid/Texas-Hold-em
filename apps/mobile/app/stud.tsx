@@ -18,6 +18,8 @@ import { PlayingCard } from '../src/components/ui/PlayingCard';
 import { GameModal } from '../src/components/ui/GameModal';
 import { colors, palette, spacing, typography } from '../src/theme';
 
+const STUD_UI_REV = '2026-09-12-v3';
+
 const DEFAULT_ANTES = [1, 2, 5, 10, 20];
 
 const CHIP_FACE: Record<number, string> = {
@@ -100,6 +102,7 @@ export default function CaribbeanStudScreen() {
   }, [t]);
 
   useEffect(() => {
+    if (__DEV__) console.log(`[mobile] stud ui ${STUD_UI_REV}`);
     void boot();
   }, [boot]);
 
@@ -297,7 +300,9 @@ export default function CaribbeanStudScreen() {
               <Text style={styles.gearText}>+</Text>
             </Pressable>
           </View>
-          <Text style={styles.room}>{t('stud.table_id')}</Text>
+          <Text style={styles.room}>
+            {t('stud.table_id')} · {STUD_UI_REV}
+          </Text>
         </View>
       </View>
 

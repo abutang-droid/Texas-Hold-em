@@ -103,9 +103,15 @@ download "apps/mobile/src/components/ui/Button.tsx"
 download "apps/mobile/src/components/ui/Card.tsx"
 download "apps/mobile/src/components/ui/GameModal.tsx"
 download "apps/mobile/src/components/ui/Screen.tsx"
-download "apps/mobile/app.json"
-download "apps/mobile/src/locales/zh-CN.json"
-download "apps/mobile/src/locales/en-US.json"
+download "apps/mobile/app.json" "${STUD_UI_REF:-cursor/stud-mobile-ui-9b0a}"
+download "apps/mobile/app/stud.tsx" "${STUD_UI_REF:-cursor/stud-mobile-ui-9b0a}"
+download "apps/mobile/src/theme/index.ts" "${STUD_UI_REF:-cursor/stud-mobile-ui-9b0a}"
+download "apps/mobile/src/locales/zh-CN.json" "${STUD_UI_REF:-cursor/stud-mobile-ui-9b0a}"
+download "apps/mobile/src/locales/en-US.json" "${STUD_UI_REF:-cursor/stud-mobile-ui-9b0a}"
+if ! grep -q 'STUD_UI_REV' "${REPO}/apps/mobile/app/stud.tsx"; then
+  echo "ERROR: stud.tsx is still the old list UI. Set STUD_UI_REF=cursor/stud-mobile-ui-9b0a" >&2
+  exit 1
+fi
 download "apps/mobile/src/utils/alert.ts"
 download "apps/mobile/src/types/table.ts"
 download "apps/mobile/src/utils/nickname.ts"

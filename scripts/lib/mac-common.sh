@@ -310,6 +310,7 @@ apps/mobile/app/settings.tsx
 apps/mobile/app/leaderboard.tsx
 apps/mobile/app/profile.tsx
 apps/mobile/app/stud.tsx
+scripts/mac-sync-stud-ui.sh
 docs/DESIGN-SPEC.md
 apps/mobile/src/locales/en-US.json
 apps/mobile/src/locales/zh-CN.json
