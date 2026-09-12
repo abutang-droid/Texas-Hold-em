@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { View, Text, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import {
@@ -14,21 +15,34 @@ import {
 } from '../src/api/client';
 import { loadSession } from '../src/storage/session';
 import { PlayingCard } from '../src/components/ui/PlayingCard';
-import { Screen } from '../src/components/ui/Screen';
-import { Button } from '../src/components/ui/Button';
 import { GameModal } from '../src/components/ui/GameModal';
-import { colors, palette, radius, spacing, typography } from '../src/theme';
+import { colors, palette, spacing, typography } from '../src/theme';
 
 const DEFAULT_ANTES = [1, 2, 5, 10, 20];
+
+const CHIP_FACE: Record<number, string> = {
+  1: '#F4F6F7',
+  2: '#F7E7A8',
+  5: '#3B82F6',
+  10: '#EF4444',
+  20: '#166534',
+};
 
 function signed(n: number): string {
   if (n > 0) return `+${n.toLocaleString()}`;
   return n.toLocaleString();
 }
 
+function chipColor(n: number): string {
+  return CHIP_FACE[n] ?? colors.brand.primary;
+}
+
 export default function CaribbeanStudScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const phone = Math.min(width, 430);
+
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [antes, setAntes] = useState<number[]>(DEFAULT_ANTES);
@@ -39,7 +53,15 @@ export default function CaribbeanStudScreen() {
   const [sessionNet, setSessionNet] = useState(0);
   const [hands, setHands] = useState(0);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [muted, setMuted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const minAnte = antes[0] ?? 1;
+  const maxAnte = antes[antes.length - 1] ?? 20;
+  const settled = hand?.phase === 'SETTLED';
+  const deciding = hand?.phase === 'DECISION';
+  const canRaise = Boolean(deciding && balance >= (hand?.raiseToCall ?? ante * 2));
+  const idle = !hand || settled;
 
   const studError = (e: unknown) =>
     isStudUnavailableError(e) ? t('errors.stud_unavailable') : formatApiError((e as Error).message, t);
@@ -108,6 +130,16 @@ export default function CaribbeanStudScreen() {
     void run(() => startStudHand(ante));
   };
 
+  const onAnteSpot = () => {
+    if (busy) return;
+    if (idle) onDeal();
+  };
+
+  const onRaiseSpot = () => {
+    if (!deciding || busy || !canRaise) return;
+    void run(() => actStudHand('raise'));
+  };
+
   const outcomeText = () => {
     const r = hand?.result;
     if (!r) return '';
@@ -118,181 +150,426 @@ export default function CaribbeanStudScreen() {
     return t('stud.outcome_push');
   };
 
-  const settled = hand?.phase === 'SETTLED';
-  const deciding = hand?.phase === 'DECISION';
-  const canRaise = Boolean(deciding && balance >= (hand?.raiseToCall ?? ante * 2));
+  const helpBody = useMemo(
+    () =>
+      `${t('stud.rule_1')}\n${t('stud.rule_2')}\n${t('stud.rule_3')}\n${t('stud.rule_4')}\n${t('stud.rule_5')}\n\n${t('stud.paytable')}\n${paytable
+        .map((row) => `${t(`stud.cat_${row.category}`)}  1:${row.odds}`)
+        .join('\n')}`,
+    [paytable, t],
+  );
 
   if (loading) {
-    return <Screen loading loadingLabel={t('common.loading')} />;
+    return (
+      <SafeAreaView style={styles.safe}>
+        <Text style={styles.loading}>{t('common.loading')}</Text>
+      </SafeAreaView>
+    );
   }
 
   return (
-    <Screen scroll>
-      <View style={styles.top}>
-        <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Text style={styles.back}>← {t('stud.back')}</Text>
-        </Pressable>
-        <View style={styles.topCenter}>
-          <Text style={styles.title}>{t('stud.title')}</Text>
-          <Text style={styles.meta}>
-            {t('lobby.balance')} {balance.toLocaleString()} · {t('stud.session_net', { net: signed(sessionNet) })}
-            {hands > 0 ? ` · ${t('stud.hands', { n: hands })}` : ''}
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+      <View style={[styles.phone, { width: phone }]}>
+        <View style={styles.iconBar}>
+          <IconBtn label="×" onPress={() => router.back()} />
+          <View style={styles.iconBarRight}>
+            <IconBtn label="☰" onPress={() => router.back()} />
+            <IconBtn label="?" onPress={() => setHelpOpen(true)} />
+            <IconBtn label="i" onPress={() => setHelpOpen(true)} />
+            <IconBtn label={muted ? '—' : '♪'} onPress={() => setMuted((m) => !m)} />
+            <IconBtn label="⌂" onPress={() => router.replace('/')} />
+          </View>
+        </View>
+
+        <View style={styles.stats}>
+          <Stat label={t('stud.stat_balance')} value={balance.toLocaleString()} />
+          <Stat label={t('stud.stat_hands')} value={String(hands)} align="right" />
+          <Stat label={t('stud.stat_ante')} value={String(hand?.ante ?? ante)} />
+          <Stat label={t('stud.stat_net')} value={signed(sessionNet)} align="right" />
+        </View>
+
+        <View style={styles.limits}>
+          <Text style={styles.limitLine}>
+            {t('stud.max_bet')}  {maxAnte.toLocaleString()}
+          </Text>
+          <Text style={styles.limitLine}>
+            {t('stud.min_bet')}  {minAnte.toLocaleString()}
           </Text>
         </View>
-        <Pressable onPress={() => setHelpOpen(true)} hitSlop={10}>
-          <Text style={styles.help}>{t('stud.help')}</Text>
-        </Pressable>
-      </View>
 
-      <Text style={styles.qualify}>{t('stud.qualify')}</Text>
+        <View style={styles.banner}>
+          <Text style={styles.bannerText}>{t('stud.qualify_banner')}</Text>
+        </View>
 
-      <View style={styles.felt}>
-        <Text style={styles.laneLabel}>{t('stud.dealer')}</Text>
-        <View style={styles.row}>
-          {(hand?.dealerCards ?? ['**', '**']).map((code, i) => (
-            <PlayingCard key={`d-${i}`} code={code || '**'} size="md" faceDown={!code || code === '**'} />
-          ))}
+        {hand ? (
+          <View style={styles.cardLane}>
+            <Text style={styles.laneLabel}>{t('stud.dealer')}</Text>
+            <View style={styles.cardRow}>
+              {(hand.dealerCards ?? ['**', '**']).map((code, i) => (
+                <PlayingCard key={`d-${i}`} code={code || '**'} size="sm" faceDown={!code || code === '**'} />
+              ))}
+            </View>
+            <View style={styles.cardRow}>
+              {(hand.community ?? []).filter(Boolean).map((code, i) => (
+                <PlayingCard key={`c-${i}`} code={code} size="xs" />
+              ))}
+            </View>
+          </View>
+        ) : (
+          <View style={styles.cardLaneSpacer} />
+        )}
+
+        <Text style={styles.heroTitle}>{t('stud.hero_title')}</Text>
+        <Text style={styles.heroSub}>{t('stud.hero_sub')}</Text>
+
+        <View style={styles.spots}>
+          <BetSpot
+            label={t('stud.spot_qualify')}
+            onPress={() => setHelpOpen(true)}
+            size={64}
+          />
+          <View style={styles.spotRow}>
+            <View style={styles.spotLine} />
+            <BetSpot
+              label={t('stud.ante')}
+              onPress={onAnteSpot}
+              active={idle && !busy && balance >= ante}
+              stacked={idle ? ante : hand?.ante}
+              disabled={busy || (!idle && !settled)}
+            />
+            <View style={styles.spotLine} />
+          </View>
+          <BetSpot
+            label={deciding ? t('stud.raise', { amount: hand?.raiseToCall ?? ante * 2 }) : t('stud.spot_raise')}
+            onPress={onRaiseSpot}
+            active={canRaise}
+            stacked={deciding ? hand.raiseToCall : undefined}
+            disabled={!canRaise}
+          />
         </View>
-        <Text style={styles.laneLabel}>{t('stud.board')}</Text>
-        <View style={styles.row}>
-          {(hand?.community ?? ['', '', '', '', '']).map((code, i) => (
-            <PlayingCard key={`c-${i}`} code={code || '**'} size="sm" faceDown={!code} />
-          ))}
-        </View>
-        <Text style={styles.laneLabel}>{t('stud.player')}</Text>
-        <View style={styles.row}>
-          {(hand?.playerCards ?? ['**', '**']).map((code, i) => (
-            <PlayingCard key={`p-${i}`} code={code || '**'} size="lg" faceDown={!code || code === '**'} />
-          ))}
-        </View>
-        {settled ? <Text style={styles.outcome}>{outcomeText()}</Text> : null}
-        {error ? (
-          <View style={styles.errorBlock}>
-            <Text style={styles.error}>{error}</Text>
-            <Button label={t('stud.retry')} variant="ghost" onPress={() => void boot()} />
+
+        {hand ? (
+          <View style={styles.cardLane}>
+            <Text style={styles.laneLabel}>{t('stud.player')}</Text>
+            <View style={styles.cardRow}>
+              {(hand.playerCards ?? ['**', '**']).map((code, i) => (
+                <PlayingCard key={`p-${i}`} code={code || '**'} size="md" faceDown={!code || code === '**'} />
+              ))}
+            </View>
+            {settled ? <Text style={styles.outcome}>{outcomeText()}</Text> : null}
           </View>
         ) : null}
-      </View>
 
-      {!hand || settled ? (
-        <View style={styles.controls}>
-          <Text style={styles.laneLabel}>{t('stud.ante')}</Text>
-          <View style={styles.chipRow}>
-            {antes.map((n) => (
-              <Pressable
-                key={n}
-                onPress={() => setAnte(n)}
-                style={[styles.chip, ante === n && styles.chipOn]}
-              >
-                <Text style={[styles.chipText, ante === n && styles.chipTextOn]}>{n}</Text>
-              </Pressable>
-            ))}
-          </View>
-          <View style={styles.actionRow}>
-            {settled ? (
-              <Button
-                label={t('stud.repeat')}
-                onPress={() => {
-                  setAnte(hand.ante);
-                  void run(() => startStudHand(hand.ante));
-                }}
-                loading={busy}
-                disabled={busy || balance < hand.ante}
-                style={styles.actionBtn}
-              />
-            ) : null}
-            <Button
-              label={t('stud.deal')}
-              onPress={onDeal}
-              loading={busy}
-              disabled={busy || balance < ante}
-              style={styles.actionBtn}
-            />
-          </View>
-        </View>
-      ) : (
-        <View style={styles.actionRow}>
-          <Button
-            label={t('stud.fold')}
-            variant="danger"
+        {error ? (
+          <Pressable onPress={() => void boot()} style={styles.errorTap}>
+            <Text style={styles.error}>{error}</Text>
+            <Text style={styles.retry}>{t('stud.retry')}</Text>
+          </Pressable>
+        ) : null}
+
+        {deciding ? (
+          <Pressable
             onPress={() => void run(() => actStudHand('fold'))}
-            loading={busy}
             disabled={busy}
-            style={styles.actionBtn}
-          />
-          <Button
-            label={t('stud.raise', { amount: hand.raiseToCall })}
-            onPress={() => void run(() => actStudHand('raise'))}
-            loading={busy}
-            disabled={busy || !canRaise}
-            style={styles.actionBtn}
-          />
+            style={styles.foldBtn}
+          >
+            <Text style={styles.foldText}>{t('stud.fold')}</Text>
+          </Pressable>
+        ) : null}
+
+        <View style={styles.rail}>
+          <View style={styles.chipRow}>
+            {antes.map((n) => {
+              const on = ante === n;
+              const face = chipColor(n);
+              const dark = n >= 5;
+              return (
+                <Pressable
+                  key={n}
+                  onPress={() => idle && setAnte(n)}
+                  disabled={!idle}
+                  style={[styles.chip, { backgroundColor: face }, on && styles.chipOn, !idle && styles.chipDim]}
+                >
+                  <Text style={[styles.chipVal, { color: dark ? palette.inverse : palette.ink }]}>{n}</Text>
+                </Pressable>
+              );
+            })}
+            <Pressable onPress={() => setHelpOpen(true)} style={styles.gear}>
+              <Text style={styles.gearText}>+</Text>
+            </Pressable>
+          </View>
+          <Text style={styles.room}>{t('stud.table_id')}</Text>
         </View>
-      )}
+      </View>
 
       <GameModal
         visible={helpOpen}
         title={t('stud.help_title')}
-        body={`${t('stud.rule_1')}\n${t('stud.rule_2')}\n${t('stud.rule_3')}\n${t('stud.rule_4')}\n${t('stud.rule_5')}\n\n${t('stud.paytable')}\n${paytable
-          .map((row) => `${t(`stud.cat_${row.category}`)}  1:${row.odds}`)
-          .join('\n')}`}
+        body={helpBody}
         confirmLabel={t('common.ok')}
         onConfirm={() => setHelpOpen(false)}
       />
-    </Screen>
+    </SafeAreaView>
+  );
+}
+
+function IconBtn({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} hitSlop={8} style={styles.iconBtn}>
+      <Text style={styles.iconTxt}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  align = 'left',
+}: {
+  label: string;
+  value: string;
+  align?: 'left' | 'right';
+}) {
+  return (
+    <View style={[styles.stat, align === 'right' && styles.statRight]}>
+      <Text style={styles.statLabel}>{label}</Text>
+      <Text style={styles.statValue}>{value}</Text>
+    </View>
+  );
+}
+
+function BetSpot({
+  label,
+  onPress,
+  active,
+  stacked,
+  disabled,
+  size = 72,
+}: {
+  label: string;
+  onPress: () => void;
+  active?: boolean;
+  stacked?: number;
+  disabled?: boolean;
+  size?: number;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled && !active}
+      style={[styles.spotWrap, { width: size + 24 }]}
+    >
+      <View
+        style={[
+          styles.spot,
+          { width: size, height: size, borderRadius: size / 2 },
+          active && styles.spotActive,
+        ]}
+      >
+        {stacked != null ? (
+          <View style={[styles.spotChip, { backgroundColor: chipColor(stacked) }]}>
+            <Text
+              style={[
+                styles.spotChipText,
+                stacked >= 5 && { color: palette.inverse },
+              ]}
+            >
+              {stacked}
+            </Text>
+          </View>
+        ) : (
+          <Text style={styles.spotInner} numberOfLines={2}>
+            {label}
+          </Text>
+        )}
+      </View>
+      <Text style={styles.spotCaption}>{label}</Text>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  top: {
+  safe: {
+    flex: 1,
+    backgroundColor: palette.studFelt,
+    alignItems: 'center',
+  },
+  phone: {
+    flex: 1,
+    maxWidth: 430,
+    paddingHorizontal: spacing.md,
+  },
+  loading: {
+    ...typography.body,
+    color: palette.studInk,
+    textAlign: 'center',
+    marginTop: 48,
+  },
+  iconBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: spacing.sm,
+    minHeight: 44,
   },
-  back: { ...typography.caption, color: colors.brand.secondary },
-  help: { ...typography.caption, color: colors.brand.secondary },
-  topCenter: { flex: 1, alignItems: 'center', paddingHorizontal: spacing.sm },
-  title: { ...typography.h2, color: colors.text.primary },
-  meta: { ...typography.micro, color: colors.text.secondary, marginTop: 2 },
-  qualify: {
+  iconBarRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  iconBtn: {
+    minWidth: 36,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconTxt: { color: palette.studInk, fontSize: 16, fontWeight: '700' },
+  stats: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: spacing.sm,
+  },
+  stat: { width: '50%', marginBottom: 6 },
+  statRight: { alignItems: 'flex-end' },
+  statLabel: { ...typography.micro, color: palette.studMuted },
+  statValue: { ...typography.caption, color: palette.studInk, fontWeight: '700' },
+  limits: { alignItems: 'center', marginTop: spacing.sm, marginBottom: spacing.sm },
+  limitLine: { ...typography.micro, color: palette.studInk, fontWeight: '600' },
+  banner: {
+    alignSelf: 'center',
+    backgroundColor: palette.studBanner,
+    paddingHorizontal: 22,
+    paddingVertical: 8,
+    borderRadius: 999,
+    maxWidth: '100%',
+  },
+  bannerText: {
     ...typography.micro,
-    color: colors.brand.secondary,
+    color: palette.studFeltDeep,
+    fontWeight: '700',
     textAlign: 'center',
-    marginBottom: spacing.sm,
   },
-  felt: {
-    minHeight: 280,
-    backgroundColor: palette.accentSoft,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: palette.line,
-    padding: spacing.md,
+  cardLane: { alignItems: 'center', marginTop: spacing.sm, gap: 4 },
+  cardLaneSpacer: { height: 12 },
+  laneLabel: { ...typography.micro, color: palette.studMuted },
+  cardRow: { flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap' },
+  heroTitle: {
+    marginTop: spacing.md,
+    textAlign: 'center',
+    color: palette.studInk,
+    fontSize: 22,
+    lineHeight: 26,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+  },
+  heroSub: {
+    ...typography.micro,
+    color: palette.studMuted,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  spots: { alignItems: 'center', marginTop: spacing.md, gap: 6 },
+  spotRow: { flexDirection: 'row', alignItems: 'center' },
+  spotLine: { width: 28, height: 2, backgroundColor: palette.studLine, opacity: 0.7 },
+  spotWrap: { alignItems: 'center' },
+  spot: {
+    borderWidth: 2,
+    borderColor: palette.studLine,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.sm,
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
-  laneLabel: { ...typography.micro, color: colors.text.secondary },
-  row: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap', justifyContent: 'center' },
-  outcome: { ...typography.caption, color: colors.text.primary, textAlign: 'center', marginTop: spacing.sm },
-  errorBlock: { alignItems: 'center', gap: spacing.sm, marginTop: spacing.sm },
-  error: { ...typography.caption, color: colors.semantic.danger, textAlign: 'center' },
-  controls: { marginTop: spacing.md, gap: spacing.sm },
-  chipRow: { flexDirection: 'row', gap: spacing.sm, justifyContent: 'center', flexWrap: 'wrap' },
-  chip: {
-    minWidth: 48,
-    minHeight: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: palette.line,
-    backgroundColor: colors.bg.card,
+  spotActive: {
+    borderColor: '#FFFFFF',
+    shadowColor: '#FFFFFF',
+    shadowOpacity: 0.45,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  spotInner: {
+    ...typography.micro,
+    color: palette.studInk,
+    textAlign: 'center',
+    fontWeight: '700',
+    paddingHorizontal: 6,
+  },
+  spotCaption: {
+    ...typography.micro,
+    color: palette.studInk,
+    marginTop: 4,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  spotChip: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#FFF',
+  },
+  spotChipText: { fontSize: 11, fontWeight: '800', color: palette.ink },
+  outcome: {
+    ...typography.caption,
+    color: palette.studInk,
+    textAlign: 'center',
+    marginTop: 4,
+    fontWeight: '700',
+  },
+  errorTap: { alignItems: 'center', marginTop: spacing.sm },
+  error: { ...typography.caption, color: '#FFE4E6', textAlign: 'center' },
+  retry: { ...typography.micro, color: palette.studInk, marginTop: 4, fontWeight: '700' },
+  foldBtn: {
+    alignSelf: 'center',
+    marginTop: spacing.sm,
+    minHeight: 44,
+    paddingHorizontal: 20,
+    justifyContent: 'center',
+    borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: '#FFE4E6',
+  },
+  foldText: { color: '#FFE4E6', fontWeight: '800', fontSize: 14 },
+  rail: {
+    marginTop: 'auto',
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
+    borderTopWidth: 8,
+    borderTopColor: '#C4A574',
+    backgroundColor: palette.studFeltDeep,
+    marginHorizontal: -spacing.md,
     paddingHorizontal: spacing.md,
   },
-  chipOn: { backgroundColor: colors.brand.primary, borderColor: colors.brand.primary },
-  chipText: { ...typography.caption, color: colors.text.primary, fontWeight: '700' },
-  chipTextOn: { color: palette.inverse },
-  actionRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
-  actionBtn: { flex: 1 },
+  chipRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  chip: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 3,
+    borderColor: '#FFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chipOn: {
+    transform: [{ translateY: -4 }],
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+  },
+  chipDim: { opacity: 0.45 },
+  chipVal: { fontSize: 13, fontWeight: '800' },
+  gear: {
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  gearText: { color: palette.studInk, fontSize: 18 },
+  room: {
+    ...typography.micro,
+    color: palette.studMuted,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+  },
 });

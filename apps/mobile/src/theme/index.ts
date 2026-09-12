@@ -17,6 +17,12 @@ export const palette = {
   chipStack: '#1A3D30',
   glow: 'rgba(163,230,53,0.45)',
   backdrop: 'rgba(5,8,7,0.72)',
+  studFelt: '#1C8A48',
+  studFeltDeep: '#14753C',
+  studInk: '#F4FFF8',
+  studMuted: 'rgba(244,255,248,0.78)',
+  studLine: 'rgba(255,255,255,0.88)',
+  studBanner: '#F3F4EF',
 } as const;
 
 export const spacing = {
