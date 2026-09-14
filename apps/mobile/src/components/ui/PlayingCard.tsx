@@ -1,8 +1,7 @@
-import { View, Text, Image, PixelRatio, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import { palette } from '../../theme';
 
 const CARD_BACK = require('../../../assets/card-back.webp');
-const CARD_BACK_SRC = Image.resolveAssetSource(CARD_BACK);
 
 const SUIT_SYMBOL: Record<string, string> = {
   h: '♥',
@@ -44,13 +43,9 @@ interface Props {
 }
 
 function CardBack({ w, h }: { w: number; h: number }) {
-  const scale = Math.max(2, PixelRatio.get());
-  const source = CARD_BACK_SRC
-    ? { uri: CARD_BACK_SRC.uri, width: CARD_BACK_SRC.width, height: CARD_BACK_SRC.height, scale }
-    : CARD_BACK;
   return (
     <View style={[styles.card, styles.back, w < 20 && styles.backTiny, { width: w, height: h }]}>
-      <Image source={source} style={styles.backImage} resizeMode="cover" />
+      <Image source={CARD_BACK} style={styles.backImage} resizeMode="cover" />
     </View>
   );
 }

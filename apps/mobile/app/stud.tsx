@@ -18,7 +18,7 @@ import { PlayingCard } from '../src/components/ui/PlayingCard';
 import { GameModal } from '../src/components/ui/GameModal';
 import { colors, palette, spacing, typography } from '../src/theme';
 
-const STUD_UI_REV = '2026-09-14-cards';
+const STUD_UI_REV = '2026-09-14-cards2';
 
 const DEFAULT_ANTES = [1, 2, 5, 10, 20];
 

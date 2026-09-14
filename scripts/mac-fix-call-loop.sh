@@ -98,6 +98,10 @@ if ! grep -q "require('../../../assets/card-back.webp')" "${REPO}/apps/mobile/sr
   echo "ERROR: PlayingCard.tsx is not using the local high-res card back." >&2
   exit 1
 fi
+if grep -q 'resolveAssetSource' "${REPO}/apps/mobile/src/components/ui/PlayingCard.tsx"; then
+  echo "ERROR: PlayingCard.tsx still calls Image.resolveAssetSource (crashes Expo Web)." >&2
+  exit 1
+fi
 if [ ! -s "${REPO}/apps/mobile/assets/card-back.webp" ] || [ "$(wc -c < "${REPO}/apps/mobile/assets/card-back.webp")" -lt 80000 ]; then
   echo "ERROR: card-back.webp missing or too small (Metro will 500)." >&2
   exit 1

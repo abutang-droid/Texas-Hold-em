@@ -54,6 +54,10 @@ if ! grep -q 'studFelt' "${REPO}/apps/mobile/src/theme/index.ts"; then
   echo "ERROR: theme missing studFelt — stud page will look broken." >&2
   exit 1
 fi
+if grep -q 'resolveAssetSource' "${REPO}/apps/mobile/src/components/ui/PlayingCard.tsx"; then
+  echo "ERROR: PlayingCard.tsx still calls Image.resolveAssetSource (crashes Expo Web)." >&2
+  exit 1
+fi
 if [ ! -s "${REPO}/apps/mobile/assets/card-back.webp" ] || [ "$(wc -c < "${REPO}/apps/mobile/assets/card-back.webp")" -lt 80000 ]; then
   echo "ERROR: card-back.webp missing or too small." >&2
   exit 1
