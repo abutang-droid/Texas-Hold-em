@@ -3,7 +3,7 @@
     "name": "Texas Hold'em",
     "slug": "texas-holdem",
     "version": "0.2.0",
-    "orientation": "landscape",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "scheme": "texasholdem",
     "userInterfaceStyle": "dark",
