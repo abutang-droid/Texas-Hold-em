@@ -18,7 +18,7 @@ import { PlayingCard } from '../src/components/ui/PlayingCard';
 import { GameModal } from '../src/components/ui/GameModal';
 import { colors, palette, spacing, typography } from '../src/theme';
 
-const STUD_UI_REV = '2026-09-12-v3';
+const STUD_UI_REV = '2026-09-14-cards';
 
 const DEFAULT_ANTES = [1, 2, 5, 10, 20];
 
@@ -208,12 +208,12 @@ export default function CaribbeanStudScreen() {
             <Text style={styles.laneLabel}>{t('stud.dealer')}</Text>
             <View style={styles.cardRow}>
               {(hand.dealerCards ?? ['**', '**']).map((code, i) => (
-                <PlayingCard key={`d-${i}`} code={code || '**'} size="sm" faceDown={!code || code === '**'} />
+                <PlayingCard key={`d-${i}`} code={code || '**'} size="md" faceDown={!code || code === '**'} />
               ))}
             </View>
             <View style={styles.cardRow}>
               {(hand.community ?? []).filter(Boolean).map((code, i) => (
-                <PlayingCard key={`c-${i}`} code={code} size="xs" />
+                <PlayingCard key={`c-${i}`} code={code} size="sm" />
               ))}
             </View>
           </View>
@@ -255,7 +255,7 @@ export default function CaribbeanStudScreen() {
             <Text style={styles.laneLabel}>{t('stud.player')}</Text>
             <View style={styles.cardRow}>
               {(hand.playerCards ?? ['**', '**']).map((code, i) => (
-                <PlayingCard key={`p-${i}`} code={code || '**'} size="md" faceDown={!code || code === '**'} />
+                <PlayingCard key={`p-${i}`} code={code || '**'} size="xl" faceDown={!code || code === '**'} />
               ))}
             </View>
             {settled ? <Text style={styles.outcome}>{outcomeText()}</Text> : null}

@@ -68,7 +68,7 @@ download "apps/mobile/app/index.tsx" "${TABLE_FIX_REF}"
 download "apps/mobile/app/tables.tsx" "${TABLE_FIX_REF}"
 download "apps/mobile/app/shop.tsx" "${TABLE_FIX_REF}"
 download "apps/mobile/app/profile.tsx" "${TABLE_FIX_REF}"
-download "apps/mobile/app/stud.tsx" "${TABLE_FIX_REF}"
+download "apps/mobile/app/stud.tsx" "${STUD_UI_REF:-cursor/stud-mobile-ui-9b0a}"
 download "apps/mobile/src/api/client.ts" "${TABLE_FIX_REF}"
 download "apps/mobile/src/config/lan.ts" "${TABLE_FIX_REF}"
 download "apps/mobile/src/storage/session.ts" "${TABLE_FIX_REF}"
@@ -93,12 +93,15 @@ download "apps/mobile/src/components/HandStatusBar.tsx"
 download "apps/mobile/src/components/EmojiBar.tsx"
 download "apps/mobile/src/components/PotDisplay.tsx"
 download "apps/mobile/src/components/ui/PlayingCard.tsx"
-if grep -q "require('../../../assets/card-back" "${REPO}/apps/mobile/src/components/ui/PlayingCard.tsx" ||
-   grep -q 'card-back-uri' "${REPO}/apps/mobile/src/components/ui/PlayingCard.tsx"; then
-  echo "ERROR: PlayingCard.tsx still pulls a local card-back asset (Metro 500 if the file is missing)." >&2
+download "apps/mobile/assets/card-back.webp"
+if ! grep -q "require('../../../assets/card-back.webp')" "${REPO}/apps/mobile/src/components/ui/PlayingCard.tsx"; then
+  echo "ERROR: PlayingCard.tsx is not using the local high-res card back." >&2
   exit 1
 fi
-download "apps/mobile/assets/card-back.webp" || echo "WARN: binary card-back.webp skipped (CDN back is enough)"
+if [ ! -s "${REPO}/apps/mobile/assets/card-back.webp" ] || [ "$(wc -c < "${REPO}/apps/mobile/assets/card-back.webp")" -lt 80000 ]; then
+  echo "ERROR: card-back.webp missing or too small (Metro will 500)." >&2
+  exit 1
+fi
 download "apps/mobile/src/components/ui/Button.tsx"
 download "apps/mobile/src/components/ui/Card.tsx"
 download "apps/mobile/src/components/ui/GameModal.tsx"

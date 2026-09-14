@@ -39,6 +39,8 @@ fi
 
 echo "==> Sync stud UI from ${REF}"
 download "apps/mobile/app/stud.tsx"
+download "apps/mobile/src/components/ui/PlayingCard.tsx"
+download "apps/mobile/assets/card-back.webp"
 download "apps/mobile/src/locales/zh-CN.json"
 download "apps/mobile/src/locales/en-US.json"
 download "apps/mobile/src/theme/index.ts"
@@ -50,6 +52,10 @@ if ! grep -q 'STUD_UI_REV' "${REPO}/apps/mobile/app/stud.tsx"; then
 fi
 if ! grep -q 'studFelt' "${REPO}/apps/mobile/src/theme/index.ts"; then
   echo "ERROR: theme missing studFelt — stud page will look broken." >&2
+  exit 1
+fi
+if [ ! -s "${REPO}/apps/mobile/assets/card-back.webp" ] || [ "$(wc -c < "${REPO}/apps/mobile/assets/card-back.webp")" -lt 80000 ]; then
+  echo "ERROR: card-back.webp missing or too small." >&2
   exit 1
 fi
 echo "OK stud.tsx is the portrait felt table (${REF})"

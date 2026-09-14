@@ -1,9 +1,8 @@
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, PixelRatio, StyleSheet } from 'react-native';
 import { palette } from '../../theme';
 
-/** CDN URL — do not require() a local binary (Mac mirror curl drops it and Metro returns 500). */
-const CARD_BACK_URI =
-  'https://cdn.jsdelivr.net/gh/abutang-droid/Texas-Hold-em@cursor/felt-theme-app-9b0a/apps/mobile/assets/card-back.webp';
+const CARD_BACK = require('../../../assets/card-back.webp');
+const CARD_BACK_SRC = Image.resolveAssetSource(CARD_BACK);
 
 const SUIT_SYMBOL: Record<string, string> = {
   h: '♥',
@@ -20,12 +19,13 @@ const RANK_LABEL: Record<string, string> = {
   A: 'A',
 };
 
-/** xs opponent backs · sm board / revealed rivals · lg hero holes */
+/** xs opponent backs · sm board · md / lg holes · xl 人庄手牌 */
 const SIZE = {
   xs: { w: 26, h: 36, rank: 9, suit: 14, pad: 2 },
   sm: { w: 46, h: 64, rank: 13, suit: 22, pad: 3 },
   md: { w: 46, h: 64, rank: 13, suit: 22, pad: 3 },
   lg: { w: 62, h: 88, rank: 18, suit: 32, pad: 4 },
+  xl: { w: 74, h: 104, rank: 20, suit: 36, pad: 5 },
 } as const;
 
 function parseCard(code: string): { rank: string; suit: string; red: boolean } | null {
@@ -39,14 +39,18 @@ function parseCard(code: string): { rank: string; suit: string; red: boolean } |
 
 interface Props {
   code: string;
-  size?: 'xs' | 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   faceDown?: boolean;
 }
 
 function CardBack({ w, h }: { w: number; h: number }) {
+  const scale = Math.max(2, PixelRatio.get());
+  const source = CARD_BACK_SRC
+    ? { uri: CARD_BACK_SRC.uri, width: CARD_BACK_SRC.width, height: CARD_BACK_SRC.height, scale }
+    : CARD_BACK;
   return (
     <View style={[styles.card, styles.back, w < 20 && styles.backTiny, { width: w, height: h }]}>
-      <Image source={{ uri: CARD_BACK_URI }} style={styles.backImage} resizeMode="cover" />
+      <Image source={source} style={styles.backImage} resizeMode="cover" />
     </View>
   );
 }
