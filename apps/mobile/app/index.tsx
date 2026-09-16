@@ -212,7 +212,7 @@ export default function PlaySelectScreen() {
           />
         ) : null}
         <Pressable onPress={() => router.push('/settings')} hitSlop={12} accessibilityRole="button">
-          <Text style={styles.gear}>{t('settings.title')}</Text>
+          <Text style={styles.gear}>{t('lobby.settings_short')}</Text>
         </Pressable>
       </View>
 
