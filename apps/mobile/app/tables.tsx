@@ -58,15 +58,8 @@ export default function PublicTablesScreen() {
         title={t('table.tables_title')}
         subtitle={t('table.tables_subtitle')}
         onBack={() => router.back()}
-        backLabel={t('table.back_lobby')}
+        backLabel={t('lobby.holdem')}
       />
-      <Card style={styles.row}>
-        <View style={styles.meta}>
-          <Text style={styles.name}>{t('lobby.caribbean_stud')}</Text>
-          <Text style={styles.seats}>{t('lobby.caribbean_stud_hint')}</Text>
-        </View>
-        <Button label={t('table.tables_join')} onPress={() => router.push('/stud')} style={styles.join} />
-      </Card>
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {tables.length === 0 && !error ? <Text style={styles.empty}>{t('table.tables_empty')}</Text> : null}
       {tables.map((table) => (

@@ -6,6 +6,15 @@
     "ok": "OK"
   },
   "lobby": {
+    "choose_mode": "Choose a game",
+    "choose_mode_hint": "Pick a mode, then open its main table",
+    "holdem": "Texas Hold'em",
+    "holdem_kicker": "6-MAX CASH",
+    "holdem_hint": "Official tables, sit-in, or a private room",
+    "holdem_hub_hint": "Quick join, pick a table, or host a private room",
+    "stud_kicker": "VS DEALER",
+    "back_modes": "Games",
+    "enter_mode": "Enter",
     "quick_start": "Quick Join",
     "quick_start_loading": "Joining…",
     "browse_tables": "Choose a table",
@@ -67,9 +76,9 @@
   },
   "onboarding": {
     "title": "Welcome to Texas Hold'em",
-    "step1": "Quick Start matches you to a 6-max official table. Bots fill empty seats.",
+    "step1": "After sign-in, pick a mode: 6-max Hold'em or vs-dealer Stud.",
     "step2": "New players receive 100 chips on signup. Buy in at the table.",
-    "step3": "Fold, check, call, and raise — standard poker actions. Good luck!",
+    "step3": "Hold'em uses fold, check, call, and raise. Stud is ante, then fold or 2× raise.",
     "next": "Next",
     "skip": "Skip",
     "start": "Play Now"
@@ -269,7 +278,7 @@
   "stud": {
     "title": "Vs Dealer",
     "subtitle": "Caribbean Stud · one raise or fold vs the house",
-    "back": "Lobby",
+    "back": "Games",
     "dealer": "Dealer",
     "player": "You",
     "board": "Board",
