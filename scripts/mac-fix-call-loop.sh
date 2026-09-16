@@ -10,6 +10,7 @@ SLUG="abutang-droid/Texas-Hold-em"
 
 # Pin table.tsx to a commit so ghfast/jsdelivr cannot serve the crashing snapshot.
 TABLE_FIX_REF="${TABLE_FIX_REF:-cursor/home-server-ip-9b0a}"
+PLAY_SELECT_REF="${PLAY_SELECT_REF:-cursor/play-select-home-9b0a}"
 
 download() {
   local rel="$1"
@@ -64,8 +65,14 @@ if ! grep -q 'emojiOpen' "${REPO}/apps/mobile/app/table.tsx"; then
   exit 1
 fi
 download "apps/mobile/app/_layout.tsx" "${TABLE_FIX_REF}"
-download "apps/mobile/app/index.tsx" "${TABLE_FIX_REF}"
-download "apps/mobile/app/tables.tsx" "${TABLE_FIX_REF}"
+download "apps/mobile/app/index.tsx" "${PLAY_SELECT_REF}"
+download "apps/mobile/app/holdem.tsx" "${PLAY_SELECT_REF}"
+download "apps/mobile/app/tables.tsx" "${PLAY_SELECT_REF}"
+download "apps/mobile/app/onboarding.tsx" "${PLAY_SELECT_REF}"
+if ! grep -q 'PLAY_SELECT_REV' "${REPO}/apps/mobile/app/index.tsx"; then
+  echo "ERROR: index.tsx is still the old mixed lobby. Set PLAY_SELECT_REF=cursor/play-select-home-9b0a" >&2
+  exit 1
+fi
 download "apps/mobile/app/shop.tsx" "${TABLE_FIX_REF}"
 download "apps/mobile/app/profile.tsx" "${TABLE_FIX_REF}"
 download "apps/mobile/app/stud.tsx" "${STUD_UI_REF:-cursor/stud-mobile-ui-9b0a}"
@@ -113,8 +120,9 @@ download "apps/mobile/src/components/ui/Screen.tsx"
 download "apps/mobile/app.json" "${STUD_UI_REF:-cursor/stud-mobile-ui-9b0a}"
 download "apps/mobile/app/stud.tsx" "${STUD_UI_REF:-cursor/stud-mobile-ui-9b0a}"
 download "apps/mobile/src/theme/index.ts" "${STUD_UI_REF:-cursor/stud-mobile-ui-9b0a}"
-download "apps/mobile/src/locales/zh-CN.json" "${STUD_UI_REF:-cursor/stud-mobile-ui-9b0a}"
-download "apps/mobile/src/locales/en-US.json" "${STUD_UI_REF:-cursor/stud-mobile-ui-9b0a}"
+download "apps/mobile/src/locales/zh-CN.json" "${PLAY_SELECT_REF}"
+download "apps/mobile/src/locales/en-US.json" "${PLAY_SELECT_REF}"
+download "docs/DESIGN-SPEC.md" "${PLAY_SELECT_REF}"
 if ! grep -q 'STUD_UI_REV' "${REPO}/apps/mobile/app/stud.tsx"; then
   echo "ERROR: stud.tsx is still the old list UI. Set STUD_UI_REF=cursor/stud-mobile-ui-9b0a" >&2
   exit 1

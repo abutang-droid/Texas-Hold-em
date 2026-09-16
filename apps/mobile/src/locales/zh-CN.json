@@ -6,6 +6,16 @@
     "ok": "确定"
   },
   "lobby": {
+    "choose_mode": "选择玩法",
+    "choose_mode_hint": "先选一种玩法，再进入对应主界面",
+    "holdem": "德州扑克",
+    "holdem_kicker": "6 人现金",
+    "holdem_hint": "官方桌、选桌或开私人场",
+    "holdem_hub_hint": "快速加入、选桌或开私人场",
+    "stud_kicker": "人对庄",
+    "back_modes": "选玩法",
+    "enter_mode": "进入",
+    "settings_short": "设置",
     "quick_start": "快速加入",
     "quick_start_loading": "正在进入…",
     "browse_tables": "选择牌桌",
@@ -67,9 +77,9 @@
   },
   "onboarding": {
     "title": "欢迎来到德州扑克",
-    "step1": "快速开始即可匹配官方 6 人桌，不足时 Bot 自动补位。",
+    "step1": "登录后先选玩法：6 人德州或人庄对庄。",
     "step2": "新玩家注册即送 100 筹码，可在牌桌内完成买入。",
-    "step3": "支持弃牌、过牌、跟注、加注等标准操作，祝你好运！",
+    "step3": "德州桌支持弃牌、过牌、跟注、加注；人庄是底注后弃牌或加注 2 倍。",
     "next": "下一步",
     "skip": "跳过",
     "start": "开始游戏"
@@ -269,7 +279,7 @@
   "stud": {
     "title": "人庄模式",
     "subtitle": "加勒比梭哈 · 人对庄，底注后一次加注或弃牌",
-    "back": "大厅",
+    "back": "选玩法",
     "dealer": "庄家",
     "player": "你",
     "board": "公共牌",

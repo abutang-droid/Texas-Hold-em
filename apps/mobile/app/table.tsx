@@ -677,7 +677,7 @@ export default function TableScreen() {
     const onRoomDissolved = () => {
       setDissolveVote(null);
       Alert.alert(t('table.room_dissolved'), '', [
-        { text: 'OK', onPress: () => router.replace('/') },
+        { text: 'OK', onPress: () => router.replace('/holdem') },
       ]);
     };
 

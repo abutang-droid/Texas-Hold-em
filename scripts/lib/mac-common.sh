@@ -267,6 +267,7 @@ apps/mobile/babel.config.js
 apps/mobile/.env.staging.example
 apps/mobile/app/_layout.tsx
 apps/mobile/app/index.tsx
+apps/mobile/app/holdem.tsx
 apps/mobile/app/onboarding.tsx
 apps/mobile/app/private.tsx
 apps/mobile/app/table.tsx
@@ -311,6 +312,7 @@ apps/mobile/app/leaderboard.tsx
 apps/mobile/app/profile.tsx
 apps/mobile/app/stud.tsx
 scripts/mac-sync-stud-ui.sh
+scripts/mac-sync-play-select.sh
 docs/DESIGN-SPEC.md
 apps/mobile/src/locales/en-US.json
 apps/mobile/src/locales/zh-CN.json
@@ -341,6 +343,14 @@ verify_mobile_index() {
   local root="$1"
   if grep -q "router.replace('/auth/login')" "${root}/apps/mobile/app/index.tsx" 2>/dev/null; then
     echo "ERROR: apps/mobile/app/index.tsx is still an old version." >&2
+    return 1
+  fi
+  if ! grep -q 'PLAY_SELECT_REV' "${root}/apps/mobile/app/index.tsx" 2>/dev/null; then
+    echo "ERROR: apps/mobile/app/index.tsx is not the play-select home." >&2
+    return 1
+  fi
+  if [ ! -s "${root}/apps/mobile/app/holdem.tsx" ]; then
+    echo "ERROR: apps/mobile/app/holdem.tsx missing." >&2
     return 1
   fi
   if [ ! -f "${root}/packages/shared/dist/index.js" ]; then
